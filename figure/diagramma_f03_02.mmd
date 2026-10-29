@@ -1,0 +1,5 @@
+flowchart TD
+ X["Sequenza x1, ..., xT"] --> R["Aggiornamenti ricorrenti"]
+ R --> H["Stato finale hT: riassunto della sequenza"]
+ H --> C["Proiezione o MLP"]
+ C --> O["Predizione e loss del compito"]

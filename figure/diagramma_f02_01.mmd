@@ -1,0 +1,21 @@
+flowchart TD
+  subgraph Input["Segnale Visivo"]
+    A["Immagine Digitale<br/>H × W × C (Tensore)"]
+  end
+  subgraph ConvEngine["Estrazione Gerarchica delle Feature"]
+    B["Filtro Convoluzionale LSI<br/>Connettività sparsa + Weight sharing"]
+    C["Mappe di Attivazione (Feature Maps)<br/>H' × W' × Cout"]
+    D["Funzione di Attivazione Non Lineare<br/>ReLU / Leaky ReLU / ELU"]
+    E["Espansione del Receptive Field<br/>Composizione multilivello (Bordi → Forme → Oggetti)"]
+  end
+  subgraph Classifier["Regola Decisionale"]
+    F["Flattening<br/>Vettore compatto di feature"]
+    G["Classificatore Fully Connected (MLP)<br/>Score delle classi"]
+  end
+
+  A --> B
+  B --> C
+  C --> D
+  D --> E
+  E --> F
+  F --> G

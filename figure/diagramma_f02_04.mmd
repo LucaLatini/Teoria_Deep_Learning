@@ -1,0 +1,19 @@
+flowchart TD
+  subgraph InputLayer["Immagine di Input"]
+    I1["Pixel (1..7)"]
+  end
+  subgraph Layer1["Primo Strato Convoluzionale (Kernel 3×3)"]
+    L1_1["Neurone L1 (RF = 3×3)"]
+    L1_2["Neurone L1 (RF = 3×3)"]
+    L1_3["Neurone L1 (RF = 3×3)"]
+  end
+  subgraph Layer2["Secondo Strato Convoluzionale (Kernel 3×3)"]
+    L2_1["Neurone L2 (RF = 5×5)"]
+  end
+
+  I1 -.-> L1_1
+  I1 -.-> L1_2
+  I1 -.-> L1_3
+  L1_1 --> L2_1
+  L1_2 --> L2_1
+  L1_3 --> L2_1

@@ -1,0 +1,9 @@
+flowchart TD
+ X["Sequenza in ingresso"] --> E["Pila di encoder"]
+ E --> Z["Sequenza di token contestualizzati"]
+ Z --> A["Media sulle posizioni"]
+ Z --> C["Se previsto: estrazione della riga CLS"]
+ A --> G["Vettore globale di D feature"]
+ C --> G
+ G --> H["Testa di classificazione"]
+ H --> S["Score delle classi e loss"]

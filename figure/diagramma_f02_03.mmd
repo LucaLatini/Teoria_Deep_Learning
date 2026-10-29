@@ -1,0 +1,10 @@
+flowchart LR
+  In["Input<br/>32×32×3"] --> Conv1["Conv + ReLU<br/>32 filtri"]
+  Conv1 --> FM1["Feature Maps<br/>32×32×32"]
+  FM1 --> Pool1["Pooling (/2)<br/>16×16×32"]
+  Pool1 --> Conv2["Conv + ReLU<br/>16 filtri"]
+  Conv2 --> FM2["Feature Maps<br/>16×16×16"]
+  FM2 --> Pool2["Pooling (/2)<br/>8×8×16"]
+  Pool2 --> Flat["Flattening<br/>1024 scalari"]
+  Flat --> MLP["Dense Layers<br/>Classificazione"]
+  MLP --> Out["Score Classi<br/>(Gatto, Cane, ...)"]

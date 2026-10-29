@@ -1,0 +1,5 @@
+flowchart LR
+  A["Immagine ad alta dimensionalità<br/>X ∈ R^(C×H×W)"] --> B["1. Feature Extraction<br/>(Estrazione di descrittori salienti)"]
+  B --> C["Vettore compatto di feature<br/>z ∈ R^d"]
+  C --> D["2. Decision Rule<br/>(Regola decisionale / Classificatore)"]
+  D --> E["Uscita / Decisione<br/>y ∈ {1, ..., K}"]

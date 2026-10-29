@@ -1,0 +1,9 @@
+flowchart TD
+ X["Ingresso X: T per D"] --> A["Multi-Head Attention"]
+ X --> S1["Somma residua"]
+ A --> S1
+ S1 --> N1["LayerNorm: Y"]
+ N1 --> F["MLP applicato a ogni token"]
+ N1 --> S2["Somma residua"]
+ F --> S2
+ S2 --> N2["LayerNorm: uscita B, T per D"]

@@ -1,0 +1,8 @@
+flowchart LR
+  A["batch (x, y)"] --> B["forward<br/>h1, h2, o, L"]
+  B --> C["∂L/∂o"]
+  C --> D["∂L/∂W3 e ∂L/∂h2"]
+  D --> E["∂L/∂W2 e ∂L/∂h1"]
+  E --> F["∂L/∂W1"]
+  F --> G["W ← W − α ∂L/∂W<br/>per ogni strato"]
+  G --> A

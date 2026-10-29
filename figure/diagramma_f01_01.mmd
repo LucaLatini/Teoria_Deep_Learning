@@ -1,0 +1,8 @@
+flowchart LR
+  A["Classificatore lineare<br/>Wx + b"] --> B["+ attivazione<br/>= neurone"]
+  B --> C["strati di neuroni<br/>= MLP"]
+  C --> D["forward:<br/>calcolo dell'uscita"]
+  D --> E["loss + regolarizzazione"]
+  E --> F["backpropagation:<br/>gradienti"]
+  F --> G["discesa del gradiente:<br/>aggiornamento dei pesi"]
+  G --> D

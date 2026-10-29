@@ -1,0 +1,12 @@
+flowchart TD
+ X["Ingresso xt e stato precedente h precedente"] --> G["Calcolo dei gate f, i, o"]
+ X --> Q["Calcolo del candidato C candidato"]
+ P["Memoria precedente C precedente"] --> F["Conservazione: f per C precedente"]
+ G --> F
+ Q --> I["Scrittura: i per C candidato"]
+ G --> I
+ F --> S["Somma: nuova memoria Ct"]
+ I --> S
+ S --> T["tanh della memoria"]
+ T --> O["Filtro del gate o: nuovo stato ht"]
+ G --> O

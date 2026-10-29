@@ -1,0 +1,34 @@
+{
+  "pagine": 183,
+  "argomenti": [
+    [
+      1,
+      "1 MLP - Multilayer Perceptron",
+      3
+    ],
+    [
+      1,
+      "2 CNN - Reti neurali convoluzionali",
+      45
+    ],
+    [
+      1,
+      "3 RNN - Reti neurali ricorrenti",
+      113
+    ],
+    [
+      1,
+      "4 TCN - Temporal Convolutional Networks",
+      147
+    ],
+    [
+      1,
+      "5 Transformer",
+      159
+    ]
+  ],
+  "elementi_fuori_area": [],
+  "sha256_pdf": "6c6b67a4e47064daa995dd8e85cdde66e0f8cc6006ef6fc055cf08574e224812",
+  "navigazione": "Indice generale per argomento e indici locali con collegamenti alle sezioni",
+  "verifica_visiva": "Ispezionate le dieci tavole di contatto e le aperture dei cinque argomenti; etichette finali uniformate."
+}

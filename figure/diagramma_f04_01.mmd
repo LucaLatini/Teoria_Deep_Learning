@@ -1,0 +1,9 @@
+flowchart TD
+ A["Sequenze: l'ordine conta"] --> B["Convoluzione 1D"]
+ B --> C["Dilatazione e causalità"]
+ C --> D["TCN: campo recettivo crescente e blocchi residui"]
+ D --> E["Relazioni dipendenti dal contenuto"]
+ E --> F["Transformer encoder"]
+ F --> G["Self-attention: query, key e value"]
+ G --> H["Più teste, MLP, residui e LayerNorm"]
+ H --> I["Rappresentazione globale e classificazione"]

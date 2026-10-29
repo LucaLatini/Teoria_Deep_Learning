@@ -1,0 +1,7 @@
+flowchart LR
+  subgraph ML["ML classico"]
+    A1[Dati grezzi] --> B1["Feature handcrafted<br/>(esperto umano)"] --> C1["Classificatore<br/>(log. reg., SVM, ...)"]
+  end
+  subgraph DL["Deep Learning"]
+    A2[Dati grezzi] --> B2["Rappresentazione appresa<br/>+ classificatore<br/>(ottimizzati insieme)"]
+  end

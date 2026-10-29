@@ -1,0 +1,2658 @@
+% BEGIN F01-B0001
+\chapter{MLP - Multilayer Perceptron}\label{fonte01}
+% END F01-B0001
+
+% BEGIN F01-B0002
+\begin{indiceargomento}
+\item \hyperref[f01-r31]{Introduzione}
+\item \hyperref[f01-r108]{Un passo indietro: i classificatori lineari}
+\item \hyperref[f01-r267]{Modellare un neurone}
+\item \hyperref[f01-r419]{Reti neurali: il Multilayer Perceptron}
+\item \hyperref[f01-r487]{Potere rappresentazionale}
+\item \hyperref[f01-r517]{Iperparametri e overfitting}
+\item \hyperref[f01-r548]{Addestrare una rete: funzione obiettivo e loss}
+\item \hyperref[f01-r727]{Backpropagation (slide 39--50)}
+\item \hyperref[f01-r922]{Inizializzazione dei pesi (slide 51)}
+\item \hyperref[f01-r969]{Regolarizzazione nelle reti profonde (slide 52--56)}
+\item \hyperref[f01-r1062]{Riepilogo}
+\end{indiceargomento}
+% END F01-B0002
+
+% BEGIN F01-B0003
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f01_01.pdf}}
+% END F01-B0003
+
+% BEGIN F01-B0004
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F01-B0004
+
+% BEGIN F01-B0005
+\section{Introduzione}\label{f01-r31}
+% END F01-B0005
+
+% BEGIN F01-B0006
+\subsection{Perché studiare il Deep Learning (slide 4)}\label{f01-r33}
+% END F01-B0006
+
+% BEGIN F01-B0007
+Gran parte dei risultati dell\textquotesingle IA moderna si fonda su sistemi di deep learning:
+% END F01-B0007
+
+% BEGIN F01-B0008
+\begin{itemize}
+\tightlist
+\item
+  IA generativa e \emph{large language models};
+\item
+  IA per la chimica (progettazione di proteine e farmaci);
+\item
+  la parte di \textbf{percezione} della guida autonoma;
+\item
+  in robotica, i modelli \textbf{Vision-Language-Action (VLA)}, che uniscono interpretazione del linguaggio, percezione e decisione per muovere il robot.
+\end{itemize}
+% END F01-B0008
+
+% BEGIN F01-B0009
+Questi sistemi sono in larga parte \textbf{indipendenti dall\textquotesingle applicazione}. Come in tutto il machine learning, una volta che si sa come sono fatti i modelli, come combinarli e come addestrarli, l\textquotesingle applicazione diventa secondaria: si prendono i dati del dominio e, se il modello è ben progettato, funziona.
+% END F01-B0009
+
+% BEGIN F01-B0010
+Molte "novità" sono in realtà un \textbf{rebranding} di tecniche di 10--15 anni fa: i \emph{world models} sono in sostanza autoencoder (li vedremo nel corso) e gli LLM come GPT sono il \emph{decoder} del Transformer. Quello che va padroneggiato è il machine learning che sta sotto, non l\textquotesingle etichetta applicativa.
+% END F01-B0010
+
+% BEGIN F01-B0011
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_587f2edfed724a8d.jpg}}
+\caption{Slide 4 -- Here is the HYPE}
+\end{figure}
+% END F01-B0011
+
+% BEGIN F01-B0012
+\subsection{Le reti neurali non sono nuove: tre ondate (slide 5)}\label{f01-r48}
+% END F01-B0012
+
+% BEGIN F01-B0013
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Periodo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Cosa succede
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{1940--1960} & Teorie di apprendimento ispirate alla biologia; primi modelli pionieristici come il \textbf{perceptron}. Per la prima volta si addestra un singolo neurone. \\
+\textbf{1980--1990} & Reti con un paio di strati nascosti addestrate con \textbf{backpropagation} (1986). \\
+\textbf{2006--oggi} & Ondata attuale di ricerca. \\
+\end{longtable}
+% END F01-B0013
+
+% BEGIN F01-B0014
+Negli anni \textquotesingle80 le reti si scontrarono con due limiti: \textbf{mancava la potenza di calcolo} e \textbf{mancavano i dati}, e le reti neurali sono modelli molto \emph{data hungry}.
+% END F01-B0014
+
+% BEGIN F01-B0015
+\subsection{Perché proprio ora? (slide 6--9)}\label{f01-r58}
+% END F01-B0015
+
+% BEGIN F01-B0016
+Le idee di base esistevano da tempo, ma le prestazioni sono esplose solo di recente grazie a fattori complementari:
+% END F01-B0016
+
+% BEGIN F01-B0017
+\begin{itemize}
+\tightlist
+\item
+  grandi dataset etichettati;
+\item
+  potenza di calcolo;
+\item
+  addestramento su \textbf{GPU} (eventualmente distribuito).
+\end{itemize}
+% END F01-B0017
+
+% BEGIN F01-B0018
+La crescita della scala dei dati è stata più che lineare, quasi esponenziale:
+% END F01-B0018
+
+% BEGIN F01-B0019
+\begin{itemize}
+\tightlist
+\item
+  \textbf{2003} (Fergus, Perona, Zisserman): un dataset "grande" contava \textbf{fino a 400 immagini} (slide 7);
+\item
+  \textbf{2017} (YouTube-BoundingBoxes, Real et al.): \textbf{240.000 video}, 5,6 milioni di bounding box e 10,5 milioni di annotazioni umane (slide 8).
+\end{itemize}
+% END F01-B0019
+
+% BEGIN F01-B0020
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_2c71462bd05909de.png}}
+\caption{Slide 9 -- Why Size Matters (Andrew Ng)}
+\end{figure}
+% END F01-B0020
+
+% BEGIN F01-B0021
+Il grafico di Andrew Ng (slide 9) riassume il punto:
+% END F01-B0021
+
+% BEGIN F01-B0022
+\begin{itemize}
+\tightlist
+\item
+  con pochi dati, gli algoritmi classici e il deep learning si equivalgono;
+\item
+  aumentando i dati, gli algoritmi classici raggiungono un \textbf{plateau}, mentre il deep learning \textbf{continua a migliorare}.
+\end{itemize}
+% END F01-B0022
+
+% BEGIN F01-B0023
+Per questo la "magia" di sistemi come GPT non è stata tecnica: si è presa un\textquotesingle architettura già esistente (il Transformer, 2017) e la si è riempita con un\textquotesingle enorme quantità di dati.
+% END F01-B0023
+
+% BEGIN F01-B0024
+\subsection{Il problema della rappresentazione dei dati (slide 10)}\label{f01-r80}
+% END F01-B0024
+
+% BEGIN F01-B0025
+Le prestazioni di un algoritmo di ML dipendono fortemente da \textbf{come rappresentiamo i dati}. Le \textbf{feature} sono i pezzi discreti d\textquotesingle informazione che usiamo come \emph{proxy} per modellare la complessità del mondo. Per molto tempo sono state \textbf{progettate a mano} (\emph{handcrafted}), in modo diverso per ogni compito. Il deep learning invece \textbf{impara la rappresentazione direttamente dai dati}.
+% END F01-B0025
+
+% BEGIN F01-B0026
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f01_02.pdf}}
+% END F01-B0026
+
+% BEGIN F01-B0027
+\textbf{Perché le feature fissate impongono un tetto.} Supponiamo di classificare immagini usando come unica feature il \textbf{colore medio}. Non si raggiungerà mai il 100\% di accuratezza, qualunque classificatore e qualunque quantità di dati si usi: la feature è troppo povera. Fissare le feature significa fissare implicitamente anche un \textbf{tetto alle prestazioni} (\emph{performance cap}): le feature sono il "carburante" del sistema di ML.
+% END F01-B0027
+
+% BEGIN F01-B0028
+\textbf{Cosa cambia con il deep learning.} Una rete neurale risolve \textbf{contemporaneamente due problemi}:
+% END F01-B0028
+
+% BEGIN F01-B0029
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  partendo dal dato il più grezzo possibile, \textbf{estrae una rappresentazione} adatta al problema;
+\item
+  su questa rappresentazione, \textbf{costruisce il classificatore}.
+\end{enumerate}
+% END F01-B0029
+
+% BEGIN F01-B0030
+I due problemi sono accoppiati: la rappresentazione appresa è quella più utile per minimizzare la loss. Se le feature possono cambiare, all\textquotesingle aumentare dei dati la rete impara feature sempre più espressive e può migliorare le prestazioni, senza garantirne la convergenza al 100\%. È questa la spiegazione della curva blu della slide 9.
+% END F01-B0030
+
+% BEGIN F01-B0031
+\begin{quote}
+\textbf{Il prezzo da pagare: la perdita di controllo}
+\end{quote}
+% END F01-B0031
+
+% BEGIN F01-B0032
+\begin{quote}
+La rete rappresenta il mondo con feature scelte \textbf{per risolvere la loss}, non secondo le nostre categorie. Per queste feature \textbf{non abbiamo un nome}, e ciò che non si può nominare non si può davvero capire. Si possono estrarre dal modello spiegazioni o regole, ma il "carburante" resta privo di significato per un essere umano. L\textquotesingle idea che si possano comprendere fino in fondo le rappresentazioni interne di un modello profondo è quindi falsa. (Annotazione slide 9: \emph{"il prezzo da pagare è la mancanza di feature {[}interpretabili{]}, quindi il controllo"}.)
+\end{quote}
+% END F01-B0032
+
+% BEGIN F01-B0033
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F01-B0033
+
+% BEGIN F01-B0034
+\section{Un passo indietro: i classificatori lineari}\label{f01-r108}
+% END F01-B0034
+
+% BEGIN F01-B0035
+Un \textbf{classificatore lineare} è un classificatore in cui la mappa è affine nell'input a parametri fissati e affine nei parametri a input fissato, ma non congiuntamente lineare nelle due variabili: calcola una \textbf{somma pesata} degli input. In 2D separa gli oggetti con una retta; in più dimensioni con un piano o un iperpiano. Conviene ripartire da qui perché \textbf{una rete neurale è una collezione di classificatori lineari}, ed è sorprendente che basti combinarli per ottenere modelli così potenti.
+% END F01-B0035
+
+% BEGIN F01-B0036
+\subsection{Formalizzazione (slide 12--14)}\label{f01-r112}
+% END F01-B0036
+
+% BEGIN F01-B0037
+Ci concentriamo sulla \textbf{classificazione di immagini}. Il training set contiene \(N\) immagini:
+% END F01-B0037
+
+% BEGIN F01-B0038
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+x_i \in \mathbb{R}^D,\quad i = 1,\dots,N, \qquad (x_i, y_i),\; y_i \in \{1,\dots,K\}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0038
+
+% BEGIN F01-B0039
+L\textquotesingle obiettivo è una funzione \(f:\mathbb{R}^D \to \mathbb{R}^K\) che associa a ogni immagine \textbf{un punteggio (score) per ciascuna classe}; la classe predetta è quella con lo score più alto. La mappa lineare è:
+% END F01-B0039
+
+% BEGIN F01-B0040
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{f(x_i, W, b) = W x_i + b}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0040
+
+% BEGIN F01-B0041
+\textbf{Esempio CIFAR-10 (slide 13--14).} Il dataset contiene \(N = 60\,000\) immagini RGB \(32\times32\) divise in \(K = 10\) classi.
+% END F01-B0041
+
+% BEGIN F01-B0042
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_26a247fabde99104.png}}
+\caption{Slide 13 -- CIFAR-10}
+\end{figure}
+% END F01-B0042
+
+% BEGIN F01-B0043
+Ogni immagine ha 3 canali (R, G, B) e va "srotolata" in un vettore colonna:
+% END F01-B0043
+
+% BEGIN F01-B0044
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+D = 32 \times 32 \times 3 = 3072 \;\Rightarrow\; x_i \in \mathbb{R}^{3072}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0044
+
+% BEGIN F01-B0045
+\begin{itemize}
+\tightlist
+\item
+  \(W \in \mathbb{R}^{10\times3072}\) è la \textbf{matrice dei pesi}: una riga per classe, cioè 10 righe da 3072 coefficienti. Ogni riga contiene i parametri che producono lo score di una classe.
+\item
+  \(b \in \mathbb{R}^{10}\) è il \textbf{vettore dei bias}.
+\item
+  \(Wx_i + b \in \mathbb{R}^{10}\) contiene i 10 score.
+\end{itemize}
+% END F01-B0045
+
+% BEGIN F01-B0046
+Si vuole imparare \(W, b\) dal training set in modo che, per una nuova immagine \(x^{test}\), \textbf{lo score della classe corretta sia più alto degli score delle altre classi}.
+% END F01-B0046
+
+% BEGIN F01-B0047
+\textbf{Il bias.} Se i dati non sono centrati nell\textquotesingle origine, il bias permette di \textbf{traslare} l\textquotesingle iperpiano di separazione. È importante, ma non cambia la sostanza matematica: si può sempre \textbf{assorbire nei dati}. Basta aggiungere a \(x\) una componente costante pari a 1 e a \(W\) una colonna con i bias:
+% END F01-B0047
+
+% BEGIN F01-B0048
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+Wx + b = \begin{bmatrix} W & b \end{bmatrix}\begin{bmatrix} x \\ 1 \end{bmatrix} = W'x'
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0048
+
+% BEGIN F01-B0049
+\subsection{Esempio numerico (slide 15)}\label{f01-r148}
+% END F01-B0049
+
+% BEGIN F01-B0050
+È la stessa formula \(f(x) = Wx + b\) del caso CIFAR-10, ma in miniatura, così i conti si fanno a mano: un\textquotesingle immagine di \textbf{4 pixel in scala di grigi} (\(D = 4\)) e \textbf{3 classi}, gatto, cane e nave (\(K = 3\)).
+% END F01-B0050
+
+% BEGIN F01-B0051
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_c2fb496bd32f35f0.jpg}}
+\caption{Slide 15 -- Mappare un\textquotesingle immagine sugli score}
+\end{figure}
+% END F01-B0051
+
+% BEGIN F01-B0052
+\textbf{Passo 1: l\textquotesingle immagine diventa un vettore.} L\textquotesingle immagine è \(2\times2\) e ogni pixel è un\textquotesingle intensità di grigio tra 0 (nero) e 255 (bianco). La si "stira" in una colonna (\emph{stretch pixels into single column}):
+% END F01-B0052
+
+% BEGIN F01-B0053
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{bmatrix}56 & 231\\ 24 & 2\end{bmatrix} \;\longrightarrow\; x = \begin{bmatrix}56\\231\\24\\2\end{bmatrix} \in \mathbb{R}^4
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0053
+
+% BEGIN F01-B0054
+\textbf{Passo 2: i parametri.} \(W\) ha \textbf{una riga per classe} e \textbf{una colonna per pixel}, quindi è \(3\times4\). La riga \(k\) dice quanto conta ciascun pixel per la classe \(k\):
+% END F01-B0054
+
+% BEGIN F01-B0055
+\begin{itemize}
+\tightlist
+\item
+  un peso positivo significa "se questo pixel è chiaro, lo score della classe sale";
+\item
+  un peso negativo significa il contrario.
+\end{itemize}
+% END F01-B0055
+
+% BEGIN F01-B0056
+Il bias \(b\) aggiunge un valore fisso per ogni classe.
+% END F01-B0056
+
+% BEGIN F01-B0057
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+W = \begin{bmatrix} 0.2 & -0.5 & 0.1 & 2.0 \\ 1.5 & 1.3 & 2.1 & 0.0 \\ 0 & 0.25 & 0.2 & -0.3 \end{bmatrix}\begin{matrix}\leftarrow \text{gatto}\\ \leftarrow \text{cane}\\ \leftarrow \text{nave}\end{matrix}
+\qquad
+b = \begin{bmatrix}1.1\\3.2\\-1.2\end{bmatrix}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0057
+
+% BEGIN F01-B0058
+\textbf{Passo 3: uno score per classe.} Ogni score è il \textbf{prodotto scalare} tra la riga della classe e \(x\) (pixel per peso, poi somma), più il bias della classe:
+% END F01-B0058
+
+% BEGIN F01-B0059
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+s_k = \sum_{j=1}^{4} W_{kj}\,x_j + b_k
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0059
+
+% BEGIN F01-B0060
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 14\tabcolsep) * \real{0.1250}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Classe
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+pixel 1 (56)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+pixel 2 (231)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+pixel 3 (24)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+pixel 4 (2)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+somma
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
++ bias
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\textbf{score}
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+gatto & \(0.2\cdot56 = 11.2\) & \(-0.5\cdot231 = -115.5\) & \(0.1\cdot24 = 2.4\) & \(2.0\cdot2 = 4.0\) & \(-97.9\) & \(+1.1\) & \textbf{−96.8} \\
+cane & \(1.5\cdot56 = 84.0\) & \(1.3\cdot231 = 300.3\) & \(2.1\cdot24 = 50.4\) & \(0.0\cdot2 = 0\) & \(434.7\) & \(+3.2\) & \textbf{437.9} \\
+nave & \(0\cdot56 = 0\) & \(0.25\cdot231 = 57.75\) & \(0.2\cdot24 = 4.8\) & \(-0.3\cdot2 = -0.6\) & \(61.95\) & \(-1.2\) & \textbf{60.75} \\
+\end{longtable}
+% END F01-B0060
+
+% BEGIN F01-B0061
+In forma matriciale sono le tre righe dello stesso prodotto: \(Wx + b = [-96.8,\ 437.9,\ 60.75]^T\).
+% END F01-B0061
+
+% BEGIN F01-B0062
+\textbf{Passo 4: la predizione.} Vince la classe con lo score più alto, cioè \textbf{cane}. L\textquotesingle immagine però è un gatto: la predizione è \textbf{sbagliata}, perché i pesi sono arbitrari e non addestrati. Addestrare il classificatore significa proprio \textbf{modificare \(W\) e \(b\)} finché, per le immagini di gatto, è la riga "gatto" a dare lo score più alto.
+% END F01-B0062
+
+% BEGIN F01-B0063
+Il pixel 2 (231) è molto chiaro: la riga "cane" gli assegna un peso positivo alto (1.3), la riga "gatto" un peso negativo (−0.5). Da solo, questo pixel sposta gli score di centinaia di punti.
+% END F01-B0063
+
+% BEGIN F01-B0064
+\begin{quote}
+\textbf{Errata slide 15}
+\end{quote}
+% END F01-B0064
+
+% BEGIN F01-B0065
+\begin{quote}
+La slide riporta \(s_{ship} = 61.95\), che è il valore di \(w_3^T x\) \textbf{senza} il bias \(-1.2\). Il valore corretto è \textbf{60.75}. Gli altri due score sono corretti.
+\end{quote}
+% END F01-B0065
+
+% BEGIN F01-B0066
+\textbf{Cosa c\textquotesingle è di sbagliato in questi score?} \textbf{Non sono normalizzati.} \(437.9\) è un valore alto o basso? Non si può dire: gli score vivono in \((-\infty, +\infty)\), non sommano a 1 e non hanno una scala di riferimento. Serve una funzione che li trasformi in quantità confrontabili, come nella regressione logistica.
+% END F01-B0066
+
+% BEGIN F01-B0067
+\subsection{Regressione logistica e binary cross-entropy (slide 16--17)}\label{f01-r196}
+% END F01-B0067
+
+% BEGIN F01-B0068
+Aggiungendo una non linearità sigmoide alla mappa lineare si ottiene la \textbf{regressione logistica}:
+% END F01-B0068
+
+% BEGIN F01-B0069
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+f(x_i, W, b) = \sigma(Wx_i + b), \qquad \sigma(x) = \frac{1}{1+e^{-x}}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0069
+
+% BEGIN F01-B0070
+La si addestra minimizzando la \textbf{binary cross-entropy} su \(m\) esempi, dove \(f_{x_i}\) indica \(f(x_i,W,b)\):
+% END F01-B0070
+
+% BEGIN F01-B0071
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\mathcal{L}(W,b) = -\frac{1}{m}\sum_{i=1}^{m}\Big( y_i \log f_{x_i} + (1-y_i)\log(1-f_{x_i}) \Big), \qquad y_i\in\{0,1\}}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0071
+
+% BEGIN F01-B0072
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_0b683e968aa69224.png}}
+\caption{Slide 17 -- Le due componenti della BCE}
+\end{figure}
+% END F01-B0072
+
+% BEGIN F01-B0073
+L\textquotesingle etichetta \(y_i\) fa da \textbf{selettore}:
+% END F01-B0073
+
+% BEGIN F01-B0074
+\begin{itemize}
+\tightlist
+\item
+  se \(y_i = 1\), il secondo termine si annulla (\(1-y_i = 0\)) e resta \(-\log f_{x_i}\). Vale 0 se \(f_{x_i} = 1\) e tende a \(+\infty\) se \(f_{x_i}\to 0\): \textbf{penalizza le predizioni vicine a 0};
+\item
+  se \(y_i = 0\), il primo termine si annulla e resta \(-\log(1-f_{x_i})\), che \textbf{penalizza le predizioni vicine a 1}.
+\end{itemize}
+% END F01-B0074
+
+% BEGIN F01-B0075
+In pratica si prende lo score che il modello assegna alla classe giusta e lo si vuole \textbf{alzare}, cioè si vuole abbassare il suo \(-\log\).
+% END F01-B0075
+
+% BEGIN F01-B0076
+\subsection{Classificatore Softmax (slide 18--19)}\label{f01-r219}
+% END F01-B0076
+
+% BEGIN F01-B0077
+Il \textbf{classificatore Softmax} generalizza la regressione logistica al caso multiclasse. La funzione softmax prende un vettore \(z\) di score reali arbitrari e lo "schiaccia" in valori tra 0 e 1 che sommano a 1:
+% END F01-B0077
+
+% BEGIN F01-B0078
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\text{softmax}_j(z) = \frac{e^{z_j}}{\sum_{k=1}^{K} e^{z_k}}}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0078
+
+% BEGIN F01-B0079
+\textbf{Calcolo passo passo dell\textquotesingle esempio della slide 18}, con \(z = [1.2,\ 5.1,\ 2.7]\):
+% END F01-B0079
+
+% BEGIN F01-B0080
+\begin{longtable}[]{@{}llll@{}}
+\toprule\noalign{}
+& \(z_j\) & \(e^{z_j}\) & \(e^{z_j} / \sum_k e^{z_k}\) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+classe 1 & 1.2 & 3.32 & \textbf{0.018} \\
+classe 2 & 5.1 & 164.02 & \textbf{0.900} \\
+classe 3 & 2.7 & 14.88 & \textbf{0.082} \\
+somma & & 182.22 & 1 \\
+\end{longtable}
+% END F01-B0080
+
+% BEGIN F01-B0081
+Rispetto alla regressione logistica multiclasse vista nel corso precedente, che modellava \(K-1\) classi e ricavava la \(K\)-esima per complemento, qui si tratta \textbf{allo stesso modo tutte le \(K\) classi}: esponenziale di ogni score, diviso la somma di tutti gli esponenziali. Si usa un insieme di parametri in più, ma la formulazione è più semplice.
+% END F01-B0081
+
+% BEGIN F01-B0082
+\textbf{La softmax produce una distribuzione di probabilità del modello:} ogni componente è positiva e la somma è 1. Questo non garantisce che i valori coincidano con le frequenze reali delle classi. Non è una soglia rigida e non spinge necessariamente il massimo vicino a 1: score tutti uguali producono \(1/K\) per classe. Le differenze fra score, non i loro rapporti, determinano i rapporti tra probabilità.
+% END F01-B0082
+
+% BEGIN F01-B0083
+Il motivo sta nell\textquotesingle esponenziale: il rapporto tra due uscite dipende dalla \textbf{differenza} degli score, non dal loro rapporto:
+% END F01-B0083
+
+% BEGIN F01-B0084
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\frac{\text{softmax}_2}{\text{softmax}_3} = \frac{e^{5.1}}{e^{2.7}} = e^{5.1-2.7} = e^{2.4} \approx 11
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0084
+
+% BEGIN F01-B0085
+L\textquotesingle annotazione «stiamo semplicemente applicando una soglia» va intesa come analogia con una decisione morbida. La decisione discreta avviene dopo, scegliendo \(\arg\max_j p_j\) (oppure confrontando una probabilità binaria con una soglia). La calibrazione riguarda l\textquotesingle attendibilità delle probabilità, non la loro validità matematica.
+% END F01-B0085
+
+% BEGIN F01-B0086
+Nel classificatore softmax gli score \(f(x_i,W) = Wx_i\) sono interpretati come \textbf{log-probabilità non normalizzate}, e lo si addestra con la \textbf{cross-entropy}:
+% END F01-B0086
+
+% BEGIN F01-B0087
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\mathcal{L} = -\sum_{k} y^{true}_{k}\,\log\big(y^{pred}_{k}\big)
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0087
+
+% BEGIN F01-B0088
+dove \(y^{true}\) è la distribuzione vera (un vettore \textbf{one-hot} che seleziona la classe corretta) e \(y^{pred} = \text{softmax}(f)\). La forma esplicita per il singolo esempio è derivata in §7.2.
+% END F01-B0088
+
+% BEGIN F01-B0089
+\begin{quote}
+\textbf{Errata slide 18--19}
+\end{quote}
+% END F01-B0089
+
+% BEGIN F01-B0090
+\begin{quote}
+Nella slide 18 il denominatore è scritto \(\sum_k e^{z_j}\): l\textquotesingle indice corretto è \(\sum_k e^{z_k}\). Nella slide 19 manca il segno \textbf{meno} davanti alla cross-entropy.
+\end{quote}
+% END F01-B0090
+
+% BEGIN F01-B0091
+\textbf{Riepilogo:}
+% END F01-B0091
+
+% BEGIN F01-B0092
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\underbrace{Wx+b}_{\text{classificatore lineare}} \;+\; \text{softmax} \;+\; \text{cross-entropy} \;+\; \text{discesa del gradiente} \;=\; \textbf{regressione logistica}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0092
+
+% BEGIN F01-B0093
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F01-B0093
+
+% BEGIN F01-B0094
+\section{Modellare un neurone}\label{f01-r267}
+% END F01-B0094
+
+% BEGIN F01-B0095
+\subsection{Il neurone biologico (slide 21)}\label{f01-r269}
+% END F01-B0095
+
+% BEGIN F01-B0096
+Le reti neurali sono un modello matematico \textbf{ispirato in modo grossolano} (\emph{coarsely}) al funzionamento del cervello. Il neurone ne è l\textquotesingle unità computazionale di base: ne abbiamo circa \textbf{86 miliardi}, collegati da circa \(10^{14}\)--\(10^{15}\) \textbf{sinapsi}. Ogni neurone riceve segnali dai \textbf{dendriti} e produce l\textquotesingle uscita lungo il suo (unico) \textbf{assone}, che si ramifica e si collega tramite sinapsi ai dendriti di altri neuroni.
+% END F01-B0096
+
+% BEGIN F01-B0097
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_fad5c4c0b45f5c29.jpg}}
+\caption{Slide 21 -- Neurone biologico}
+\end{figure}
+% END F01-B0097
+
+% BEGIN F01-B0098
+L\textquotesingle analogia utile associa la forza delle connessioni ai pesi, la combinazione dei segnali alla somma pesata e la risposta del neurone all\textquotesingle attivazione. Non è una descrizione fisiologica letterale: in particolare l\textquotesingle immagine di una sinapsi «dura o morbida» è soltanto una metafora della modulazione del segnale. Il neurone biologico ha una dinamica temporale che questa mappa statica non rappresenta.
+% END F01-B0098
+
+% BEGIN F01-B0099
+\subsection{Il neurone artificiale (slide 22--23)}\label{f01-r277}
+% END F01-B0099
+
+% BEGIN F01-B0100
+La traduzione in matematica è uno a uno:
+% END F01-B0100
+
+% BEGIN F01-B0101
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Biologia
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Matematica
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Dendriti (ingressi) & input \(x_i\) \\
+Sinapsi (amplifica/attenua) & moltiplicazione per un peso \(w_i\) (grande o piccolo) \\
+Cellula (mette insieme i segnali) & \textbf{somma}: \(\sum_i w_i x_i + b\) \\
+Soglia di accensione & \textbf{funzione di attivazione} \(f(\cdot)\) \\
+Assone (uscita) & \(y = f\big(\sum_i w_i x_i + b\big)\) \\
+\end{longtable}
+% END F01-B0101
+
+% BEGIN F01-B0102
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_329091fd2ed8702d.jpg}}
+\caption{Slide 22 -- Modello del singolo neurone}
+\end{figure}
+% END F01-B0102
+
+% BEGIN F01-B0103
+Un neurone può avere più ingressi. La sua uscita è il \textbf{prodotto scalare tra ingressi e pesi, più il bias, a cui si applica una non linearità}:
+% END F01-B0103
+
+% BEGIN F01-B0104
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{y = f\!\left(w^T x + b\right)}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0104
+
+% BEGIN F01-B0105
+È il \textbf{perceptron} di McCulloch e Pitts (anni \textquotesingle40).
+% END F01-B0105
+
+% BEGIN F01-B0106
+\begin{quote}
+\textbf{Neurone = regressione logistica (slide 23)}
+\end{quote}
+% END F01-B0106
+
+% BEGIN F01-B0107
+\begin{quote}
+Una combinazione affine seguita dalla \textbf{sigmoide} definisce il modello di regressione logistica binaria. Se il neurone usa la sigmoide ed è addestrato con la binary cross-entropy tramite discesa del gradiente, gli ingredienti sono gli stessi, al 100\%: stesse equazioni, quindi stesso modello.
+
+\textbf{Il grado di libertà in più:} nulla impone che la funzione di sogliatura sia la sigmoide o la softmax, se ne può usare qualunque. Prende il nome di \textbf{funzione di attivazione} perché stabilisce se il neurone è attivo (acceso) oppure no.
+\end{quote}
+% END F01-B0107
+
+% BEGIN F01-B0108
+\subsection{Funzioni di attivazione (slide 24--26)}\label{f01-r304}
+% END F01-B0108
+
+% BEGIN F01-B0109
+Le funzioni di attivazione sono \textbf{funzioni non lineari} calcolate sull\textquotesingle uscita di ogni neurone. Le più usate storicamente sono \textbf{sigmoide, tanh e ReLU}; ne esistono anche di più complesse.
+% END F01-B0109
+
+% BEGIN F01-B0110
+Nel deep learning il successo dipende dai \textbf{dettagli}. Progettare una rete si fa in un pomeriggio, farla addestrare è un\textquotesingle altra storia. Molto spesso il problema non è di progetto ma \textbf{tecnico}:
+% END F01-B0110
+
+% BEGIN F01-B0111
+\begin{itemize}
+\tightlist
+\item
+  la saturazione del gradiente;
+\item
+  \textbf{neuroni che non si attivano mai};
+\item
+  il \textbf{gradiente che svanisce} perché la rete è troppo profonda.
+\end{itemize}
+% END F01-B0111
+
+% BEGIN F01-B0112
+Le attivazioni sono il primo di questi dettagli.
+% END F01-B0112
+
+% BEGIN F01-B0113
+\subsubsection{Sigmoide}\label{f01-r316}
+% END F01-B0113
+
+% BEGIN F01-B0114
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\sigma(x) = \frac{1}{1+e^{-x}} = \frac{e^{x}}{1+e^{x}} \in (0,1)}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0114
+
+% BEGIN F01-B0115
+La seconda forma si ottiene moltiplicando numeratore e denominatore per \(e^x\) ed è quella della regressione logistica. La curva ha la forma a "S" di una soglia morbida: sopra la soglia spinge verso 1, sotto verso 0.
+% END F01-B0115
+
+% BEGIN F01-B0116
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_041dd0c66ee14a3b.png}}
+\caption{Slide 24 -- Sigmoide e zone di saturazione}
+\end{figure}
+% END F01-B0116
+
+% BEGIN F01-B0117
+\textbf{La derivata, passo passo.} Serve per capire il secondo difetto della sigmoide.
+% END F01-B0117
+
+% BEGIN F01-B0118
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Si riscrive \(\sigma(x) = (1+e^{-x})^{-1}\).
+\item
+  Si deriva con la regola della catena, dove la funzione esterna è \(u^{-1}\) e quella interna è \(u = 1+e^{-x}\): \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \sigma'(x) = -(1+e^{-x})^{-2}\cdot\frac{d}{dx}(1+e^{-x}) = -(1+e^{-x})^{-2}\cdot(-e^{-x}) = \frac{e^{-x}}{(1+e^{-x})^2}$
+\end{adjustbox}
+\end{center}
+\item
+  Si spezza la frazione in due fattori: \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \sigma'(x) = \frac{1}{1+e^{-x}}\cdot\frac{e^{-x}}{1+e^{-x}}$
+\end{adjustbox}
+\end{center}
+\item
+  Si riconosce che il secondo fattore è \(1-\sigma(x)\): \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \frac{e^{-x}}{1+e^{-x}} = \frac{(1+e^{-x})-1}{1+e^{-x}} = 1-\frac{1}{1+e^{-x}} = 1-\sigma(x)$
+\end{adjustbox}
+\end{center}
+\item
+  Quindi: \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{\sigma'(x) = \sigma(x)\big(1-\sigma(x)\big)}$
+\end{adjustbox}
+\end{center}
+\end{enumerate}
+% END F01-B0118
+
+% BEGIN F01-B0119
+\begin{longtable}[]{@{}lllllll@{}}
+\toprule\noalign{}
+\(x\) & 0 & 2 & 4 & 5 & 10 & 100 \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(\sigma(x)\) & 0.5 & 0.881 & 0.982 & 0.993 & 0.99995 & ≈ 1 \\
+\(\sigma'(x)\) & \textbf{0.25} & 0.105 & 0.018 & 0.0066 & 0.00005 & ≈ 0 \\
+\end{longtable}
+% END F01-B0119
+
+% BEGIN F01-B0120
+Il massimo della derivata è \(0.25\), in \(x = 0\). Già per \(|x| \gtrsim 4\) la derivata è praticamente nulla: sono le zone esterne alle due linee verticali disegnate sulla slide 24.
+% END F01-B0120
+
+% BEGIN F01-B0121
+La sigmoide è meno usata negli strati nascosti profondi, per \textbf{due difetti} (slide 24).
+% END F01-B0121
+
+% BEGIN F01-B0122
+\textbf{1. Non è centrata sullo zero.} Le uscite della sigmoide sono positive e valgono 0.5 quando la preattivazione è zero. Questa asimmetria può influenzare la dinamica dell'ottimizzazione; non è una contraddizione biologica del modello matematico.
+% END F01-B0122
+
+% BEGIN F01-B0123
+\textbf{2. Saturazione.} Negli strati nascosti una derivata piccola può attenuare il segnale di apprendimento.
+% END F01-B0123
+
+% BEGIN F01-B0124
+Con la BCE e \(p=\sigma(z)\), la regola della catena dà \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+\frac{\partial L}{\partial z}
+&=\left(-\frac{y}{p}+\frac{1-y}{1-p}\right)p(1-p)\\
+&=-y(1-p)+(1-y)p=p-y.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center} Per \(z=5\) e \(y=1\) vale circa \(-0.0067\); per \(z=100\) è estremamente vicino a zero perché la predizione è corretta e molto sicura. Con lo stesso \(z\) ma \(y=0\) il gradiente è invece vicino a 1. Non esiste una soglia finita oltre la quale il gradiente della BCE sia sempre nullo: l\textquotesingle arrotondamento numerico va distinto dal limite matematico.
+% END F01-B0124
+
+% BEGIN F01-B0125
+Negli strati nascosti ogni sigmoide introduce il fattore \(\sigma'(z)\leq1/4\), ma compaiono anche le matrici dei pesi. Il contributo delle sole attivazioni lungo dieci strati è al più \(4^{-10}\approx9.54\cdot10^{-7}\); non è un limite sull\textquotesingle intero gradiente senza ulteriori ipotesi sui pesi.
+% END F01-B0125
+
+% BEGIN F01-B0126
+La saturazione rende difficile trasmettere gradienti attraverso molte attivazioni sigmoidi. È una difficoltà di ottimizzazione e va distinta dall'errore piccolo di una predizione già corretta.
+% END F01-B0126
+
+% BEGIN F01-B0127
+\subsubsection{Tangente iperbolica (tanh)}\label{f01-r365}
+% END F01-B0127
+
+% BEGIN F01-B0128
+Per risolvere la mancata centratura si riscalano l'argomento e l'uscita della sigmoide e si sottrae 1, così che in 0 valga 0:
+% END F01-B0128
+
+% BEGIN F01-B0129
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\tanh(x) = \frac{e^{x}-e^{-x}}{e^{x}+e^{-x}} = 2\sigma(2x) - 1 \in (-1, 1)}, \qquad \tanh(0) = 0
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0129
+
+% BEGIN F01-B0130
+\textbf{Verifica dell\textquotesingle identità, passo passo:}
+% END F01-B0130
+
+% BEGIN F01-B0131
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+2\sigma(2x)-1 = \frac{2}{1+e^{-2x}} - 1 = \frac{2-(1+e^{-2x})}{1+e^{-2x}} = \frac{1-e^{-2x}}{1+e^{-2x}} \overset{\cdot\, e^{x}/e^{x}}{=} \frac{e^{x}-e^{-x}}{e^{x}+e^{-x}} = \tanh(x)
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0131
+
+% BEGIN F01-B0132
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_81a3e54a2f3013db.png}}
+\caption{Slide 25 -- Tanh}
+\end{figure}
+% END F01-B0132
+
+% BEGIN F01-B0133
+L\textquotesingle uscita è \textbf{centrata sullo zero}, ma la funzione \textbf{satura ancora}: la sua derivata \(1-\tanh^2(x)\) vale al massimo 1 in \(x=0\) e tende a 0 per \(|x|\) grande. La tanh risolve il primo difetto della sigmoide, non il secondo.
+% END F01-B0133
+
+% BEGIN F01-B0134
+\begin{quote}
+\textbf{Errata slide 25}
+\end{quote}
+% END F01-B0134
+
+% BEGIN F01-B0135
+\begin{quote}
+La slide scrive \(\tanh(x) = 2\sigma(x) - 1\). L\textquotesingle identità esatta è \(\tanh(x) = 2\sigma(2x) - 1\) (con \(2\sigma(x)-1\) si ottiene \(\tanh(x/2)\); per \(x = 0.7\): \(\tanh(0.7) = 0.604\), mentre \(2\sigma(0.7)-1 = 0.336\)). Il concetto non cambia: è una sigmoide riscalata e centrata.
+\end{quote}
+% END F01-B0135
+
+% BEGIN F01-B0136
+\subsubsection{ReLU (Rectified Linear Unit)}\label{f01-r386}
+% END F01-B0136
+
+% BEGIN F01-B0137
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\text{ReLU}(x) = \max(0, x)}, \qquad \frac{d}{dx}\text{ReLU}(x) = \begin{cases}1 & x>0\\ 0 & x<0\end{cases}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0137
+
+% BEGIN F01-B0138
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_4c29b6d91b85f692.png}}
+\caption{Slide 26 -- ReLU}
+\end{figure}
+% END F01-B0138
+
+% BEGIN F01-B0139
+La ReLU evita la saturazione sul semiasse positivo:
+% END F01-B0139
+
+% BEGIN F01-B0140
+\begin{itemize}
+\tightlist
+\item
+  nel \textbf{semipiano sinistro} il neurone è \textbf{spento} (uscita 0);
+\item
+  nel \textbf{semipiano destro} il neurone \textbf{copia} l\textquotesingle ingresso.
+\end{itemize}
+% END F01-B0140
+
+% BEGIN F01-B0141
+Proprietà principali:
+% END F01-B0141
+
+% BEGIN F01-B0142
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Non satura verso l\textquotesingle alto.} Per \(x>0\) la derivata è 1: questo fattore non attenua il gradiente. I pesi degli altri strati possono comunque amplificarlo o ridurlo, quindi non è una garanzia contro ogni problema di gradiente.
+\end{itemize}
+% END F01-B0142
+
+% BEGIN F01-B0143
+\begin{quote}
+\textbf{Precisazione}
+\end{quote}
+% END F01-B0143
+
+% BEGIN F01-B0144
+\begin{quote}
+La ReLU è \textbf{continua} in 0 ma \textbf{non derivabile} in 0 (spigolo). La non linearità deriva dallo spigolo, non da una discontinuità. In pratica in \(x = 0\) si usa per convenzione derivata 0.
+\end{quote}
+% END F01-B0144
+
+% BEGIN F01-B0145
+\subsection{Perché servono le non linearità (slide 27)}\label{f01-r406}
+% END F01-B0145
+
+% BEGIN F01-B0146
+Viene spontaneo chiedersi perché non togliere l\textquotesingle attivazione e usare solo \(Wx\): non satura ed è centrata sullo zero. Il problema è che \textbf{la composizione di funzioni lineari è lineare}.
+% END F01-B0146
+
+% BEGIN F01-B0147
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Con due strati e attivazioni la rete è \(f(x) = \phi\big(W_2\,\phi(W_1 x)\big)\).
+\item
+  Si tolgono le attivazioni: \(f(x) = W_2 (W_1 x)\).
+\item
+  Per l\textquotesingle associatività del prodotto matriciale, \(W_2 (W_1 x) = (W_2 W_1)x\).
+\item
+  \(W_2 W_1\) è \textbf{un\textquotesingle unica matrice}: con \(W_1\in\mathbb{R}^{H\times D}\) e \(W_2\in\mathbb{R}^{K\times H}\), si ha \(W = W_2W_1 \in \mathbb{R}^{K\times D}\). Quindi \(f(x) = Wx\).
+\end{enumerate}
+% END F01-B0147
+
+% BEGIN F01-B0148
+Qualunque sia il numero di strati, senza attivazioni tutta la rete \textbf{collassa in un singolo strato lineare}, cioè in una mappa affine se sono presenti bias. Si ottiene regressione logistica solo conservando una sigmoide o softmax finale. Le attivazioni, essendo non lineari (ReLU compresa), \textbf{impediscono questa fattorizzazione}: sono loro a dare senso alla profondità.
+% END F01-B0148
+
+% BEGIN F01-B0149
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F01-B0149
+
+% BEGIN F01-B0150
+\section{Reti neurali: il Multilayer Perceptron}\label{f01-r419}
+% END F01-B0150
+
+% BEGIN F01-B0151
+\subsection{Struttura a strati (slide 29)}\label{f01-r421}
+% END F01-B0151
+
+% BEGIN F01-B0152
+Connettendo un insieme di neuroni in un grafo si ottiene un \textbf{Multilayer Perceptron (MLP)}. I neuroni sono organizzati in \textbf{strati} (\emph{layer}):
+% END F01-B0152
+
+% BEGIN F01-B0153
+\begin{itemize}
+\tightlist
+\item
+  \textbf{input layer}: un cerchio per ogni feature d\textquotesingle ingresso. Sono \textbf{cerchi fittizi}: nessun peso, nessuna attivazione, \textbf{nessun parametro};
+\item
+  \textbf{N hidden layer} nel mezzo;
+\item
+  \textbf{output layer}: \textbf{un cerchio per ogni classe}, ciascuno dà lo score della sua classe.
+\end{itemize}
+% END F01-B0153
+
+% BEGIN F01-B0154
+Le connessioni sono \textbf{fully connected}:
+% END F01-B0154
+
+% BEGIN F01-B0155
+\begin{itemize}
+\tightlist
+\item
+  \textbf{nessuna connessione tra neuroni dello stesso strato};
+\item
+  ogni neurone di uno strato è connesso a \textbf{tutti} i neuroni dello strato successivo;
+\item
+  ogni connessione è una \textbf{sinapsi}, cioè un peso \(w\).
+\end{itemize}
+% END F01-B0155
+
+% BEGIN F01-B0156
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_de29cb90415415c5.jpg}}
+\caption{Slide 29 -- MLP con 47 parametri}
+\end{figure}
+% END F01-B0156
+
+% BEGIN F01-B0157
+\textbf{L\textquotesingle equazione di un layer è esattamente il classificatore lineare di §2}, seguito dall\textquotesingle attivazione. La matrice \(W\) ha:
+% END F01-B0157
+
+% BEGIN F01-B0158
+\begin{itemize}
+\tightlist
+\item
+  \textbf{numero di colonne = numero di feature in ingresso} (\emph{inbound});
+\item
+  \textbf{numero di righe = numero di feature in uscita} (\emph{outbound}, cioè i neuroni dello strato).
+\end{itemize}
+% END F01-B0158
+
+% BEGIN F01-B0159
+Ogni neurone ha la sua funzione di attivazione. Nella figura ogni neurone del primo hidden layer riceve 6 pesi e produce un valore, quindi \(W_1\) ha 6 colonne e 4 righe.
+% END F01-B0159
+
+% BEGIN F01-B0160
+\subsection{Esercizio: da dove vengono i 47 parametri?}\label{f01-r444}
+% END F01-B0160
+
+% BEGIN F01-B0161
+Ogni cerchio rappresenta una combinazione affine \(w^Tx+b\) seguita da un'attivazione: ogni neurone non di input ha \textbf{un peso per ogni ingresso più un bias}. Il conteggio \(6\cdot4 + 4\cdot3 + 3\cdot1 = 39\) dimentica proprio i bias.
+% END F01-B0161
+
+% BEGIN F01-B0162
+\begin{longtable}[]{@{}llll@{}}
+\toprule\noalign{}
+Strato & Pesi & Bias & Totale \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Input (6) & -- & -- & 0 \\
+Hidden 1 (4) & \(4\times6 = 24\) & 4 & 28 \\
+Hidden 2 (3) & \(3\times4 = 12\) & 3 & 15 \\
+Output (1) & \(1\times3 = 3\) & 1 & 4 \\
+\textbf{Totale} & \textbf{39} & \textbf{8} & \textbf{47} \\
+\end{longtable}
+% END F01-B0162
+
+% BEGIN F01-B0163
+In generale, uno strato con \(d\) ingressi e \(k\) neuroni ha \(k\cdot d + k = k(d+1)\) parametri. Questi conteggi vanno avuti perfettamente chiari, perché le architetture cresceranno molto rapidamente.
+% END F01-B0163
+
+% BEGIN F01-B0164
+\subsection{Forward propagation (slide 30--31)}\label{f01-r458}
+% END F01-B0164
+
+% BEGIN F01-B0165
+La rete a 4 strati della figura si scrive così, con i bias incorporati nelle matrici \(W\) per alleggerire la notazione:
+% END F01-B0165
+
+% BEGIN F01-B0166
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\text{out} = \phi\Big(W_3\,\phi\big(W_2\,\phi(W_1 x)\big)\Big)}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0166
+
+% BEGIN F01-B0167
+con \(x \in \mathbb{R}^6\), \(W_1 \in \mathbb{R}^{4\times6}\), \(W_2 \in \mathbb{R}^{3\times4}\), \(W_3 \in \mathbb{R}^{1\times3}\). Esplicitando i bias, strato per strato:
+% END F01-B0167
+
+% BEGIN F01-B0168
+\begin{longtable}[]{@{}lll@{}}
+\toprule\noalign{}
+Passo & Calcolo & Forma \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & \(h_1 = \phi(W_1x + b_1)\) & \((4\times6)(6) + (4) \to 4\) \\
+2 & \(h_2 = \phi(W_2h_1 + b_2)\) & \((3\times4)(4) + (3) \to 3\) \\
+3 & \(\text{out} = \phi(W_3h_2 + b_3)\) & \((1\times3)(3) + (1) \to 1\) \\
+\end{longtable}
+% END F01-B0168
+
+% BEGIN F01-B0169
+\begin{quote}
+\textbf{Errata slide 30}
+\end{quote}
+% END F01-B0169
+
+% BEGIN F01-B0170
+\begin{quote}
+La slide chiama tutte le matrici \(W_1\) e indica \(W_2\in\mathbb{R}^{4\times3}\). Seguendo la regola "righe = outbound, colonne = inbound", le dimensioni corrette sono \textbf{\(W_2 \in \mathbb{R}^{3\times4}\)} e \textbf{\(W_3 \in \mathbb{R}^{1\times3}\)}.
+\end{quote}
+% END F01-B0170
+
+% BEGIN F01-B0171
+La \textbf{forward propagation} è il calcolo dell\textquotesingle uscita della rete dato l\textquotesingle ingresso. Si chiama \emph{forward} perché segue il flusso dell\textquotesingle informazione \textbf{dall\textquotesingle input verso la risposta}, ad esempio dall\textquotesingle immagine alla sua classe.
+% END F01-B0171
+
+% BEGIN F01-B0172
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_568c3a2a50b4a77d.jpg}}
+\caption{Slide 31 -- Forward propagation}
+\end{figure}
+% END F01-B0172
+
+% BEGIN F01-B0173
+Una rete neurale è quindi una \textbf{composizione non lineare di tante unità lineari}, cioè una grande composizione di funzioni.
+% END F01-B0173
+
+% BEGIN F01-B0174
+Le equazioni rendono esplicito il calcolo della rete. Questo non rende automaticamente interpretabili le rappresentazioni apprese: conoscere le operazioni e attribuire un significato semantico a ogni feature sono problemi distinti.
+% END F01-B0174
+
+% BEGIN F01-B0175
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F01-B0175
+
+% BEGIN F01-B0176
+\section{Potere rappresentazionale}\label{f01-r487}
+% END F01-B0176
+
+% BEGIN F01-B0177
+Nella formula compatta senza bias questi sono \textbf{omessi}, non incorporati nelle matrici delle dimensioni riportate. Per incorporarli bisogna aumentare l\textquotesingle ingresso di una componente costante e aggiungere una colonna a ogni matrice: \([W\ b][h^T\ 1]^T=Wh+b\).
+% END F01-B0177
+
+% BEGIN F01-B0178
+\subsection{Il teorema di approssimazione universale (slide 32)}\label{f01-r491}
+% END F01-B0178
+
+% BEGIN F01-B0179
+Una rete è fatta solo di prodotti scalari, somme e soglie. Che percentuale di "tutte le funzioni del mondo", anche quelle non ancora scoperte, può rappresentare?
+% END F01-B0179
+
+% BEGIN F01-B0180
+\begin{quote}
+\textbf{Teorema di approssimazione universale (slide 32)}
+\end{quote}
+% END F01-B0180
+
+% BEGIN F01-B0181
+\begin{quote}
+Siano \(K\subset\mathbb{R}^d\) compatto e \(f:K\to\mathbb{R}\) continua. Con un\textquotesingle attivazione adatta, per esempio sigmoide, per ogni \(\epsilon>0\) esiste una rete con uno strato nascosto sufficientemente ampio tale che \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{\sup_{x\in K}|f(x)-g(x)|<\epsilon.}$
+\end{adjustbox}
+\end{center} Una forma della rete è \(g(x)=\sum_{j=1}^{m}a_j\sigma(w_j^Tx+b_j)+c\), con \(w_j\in\mathbb{R}^d\) e gli altri coefficienti scalari.
+\end{quote}
+% END F01-B0181
+
+% BEGIN F01-B0182
+La precisione è uniforme su \(K\): vale per ogni suo punto, non soltanto in media sui campioni. Il numero \(m\) può dipendere dalla funzione e dalla precisione richiesta. L\textquotesingle enunciato non promette un\textquotesingle approssimazione uniforme sull\textquotesingle intero spazio non limitato, né dice che qualunque attivazione o qualunque rete piccola siano sufficienti. Non permette di dedurre la prevedibilità di fenomeni casuali o l\textquotesingle esistenza di informazioni assenti dall\textquotesingle input.
+% END F01-B0182
+
+% BEGIN F01-B0183
+Per esempio, approssimare una funzione su \([0,1]\) con errore inferiore a \(0.01\) significa mantenere tutta la curva della rete nella fascia verticale \(f(x)\pm0.01\). È una proprietà di rappresentazione, non un algoritmo per trovare i pesi.
+% END F01-B0183
+
+% BEGIN F01-B0184
+\textbf{Rappresentare non significa imparare bene.} Il teorema dice che lo strumento \emph{può} rappresentare la funzione, non che la imparerà. È come chiedersi "sei fisicamente in grado di giocare a calcio?": sì. "Sei un buon giocatore?": dipende dall\textquotesingle allenamento. Il teorema riguarda la \textbf{rappresentazione}, non la \textbf{performance}.
+% END F01-B0184
+
+% BEGIN F01-B0185
+\subsection{Dalla teoria alla pratica}\label{f01-r506}
+% END F01-B0185
+
+% BEGIN F01-B0186
+Passando dalla matematica al computer si introducono approssimazioni:
+% END F01-B0186
+
+% BEGIN F01-B0187
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  nel computer funzioni e numeri \textbf{non sono continui ma discreti} (precisione finita);
+\item
+  anche le \textbf{misure} degli strumenti sono discrete (risoluzione finita).
+\end{enumerate}
+% END F01-B0187
+
+% BEGIN F01-B0188
+Una capacità sufficiente permette di rappresentare relazioni complesse; più profondità può rappresentarle in modo più efficiente. Aumentare la dimensione, però, non garantisce prestazioni migliori: contano dati, ottimizzazione e regolarizzazione. La precisione finita non dimostra che una rete più grande sia sempre preferibile.
+% END F01-B0188
+
+% BEGIN F01-B0189
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F01-B0189
+
+% BEGIN F01-B0190
+\section{Iperparametri e overfitting}\label{f01-r517}
+% END F01-B0190
+
+% BEGIN F01-B0191
+\subsection{Iperparametri dell\textquotesingle architettura (slide 33)}\label{f01-r519}
+% END F01-B0191
+
+% BEGIN F01-B0192
+Numero di layer e numero di neuroni per layer sono \textbf{iperparametri} dell\textquotesingle architettura:
+% END F01-B0192
+
+% BEGIN F01-B0193
+\begin{itemize}
+\tightlist
+\item
+  aumentarli fa \textbf{crescere la capacità} della rete, cioè lo spazio delle funzioni rappresentabili (\textbf{bene});
+\item
+  reti più grandi \textbf{senza regolarizzazione} sono molto più inclini all\textquotesingle{}\textbf{overfitting} (\textbf{male}).
+\end{itemize}
+% END F01-B0193
+
+% BEGIN F01-B0194
+\subsection{Perché le reti tendono a fare overfitting}\label{f01-r526}
+% END F01-B0194
+
+% BEGIN F01-B0195
+Durante l\textquotesingle addestramento si dà alla rete solo una \textbf{loss} da ottimizzare sul training set, chiedendole di risolverla al meglio. Con molti parametri la rete ha \textbf{molti "posti" in cui memorizzare il training set}: questo è l\textquotesingle overfitting.
+% END F01-B0195
+
+% BEGIN F01-B0196
+La sovraparametrizzazione rende possibile memorizzare il training set, ma non implica necessariamente overfitting. Il problema è una discrepanza tra buone prestazioni di training e prestazioni peggiori su dati nuovi: si valuta con un insieme di validazione indipendente.
+% END F01-B0196
+
+% BEGIN F01-B0197
+L'overfitting è una causa di scarsa generalizzazione anche quando il training è ben ottimizzato e va tenuto sempre presente.
+% END F01-B0197
+
+% BEGIN F01-B0198
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_711961814de58055.png}}
+\caption{Slide 34 -- Superfici di decisione al variare dei neuroni e di λ}
+\end{figure}
+% END F01-B0198
+
+% BEGIN F01-B0199
+\textbf{Riga superiore (slide 34).} Rete a 3 layer che separa punti rossi e verdi, al variare del numero di neuroni nascosti:
+% END F01-B0199
+
+% BEGIN F01-B0200
+\begin{itemize}
+\tightlist
+\item
+  \textbf{3 neuroni}: superficie non lineare ma regolare;
+\item
+  \textbf{6 neuroni}: compaiono forme irregolari;
+\item
+  \textbf{20 neuroni}: superficie molto irregolare, con zone rosse attorno a singoli punti che probabilmente sarebbero verdi. Aumentando ancora, la rete finirebbe per \textbf{disegnare un cerchio attorno a ogni punto}.
+\end{itemize}
+% END F01-B0200
+
+% BEGIN F01-B0201
+Una frontiera molto irregolare può suggerire overfitting, che va verificato su dati indipendenti. E 20 neuroni sono pochissimi.
+% END F01-B0201
+
+% BEGIN F01-B0202
+\textbf{Regola pratica (slide 34).} Le reti si fanno \textbf{grandi quanto consente il budget computazionale}, e poi si previene l\textquotesingle overfitting con opportune \textbf{tecniche di regolarizzazione} (dropout, weight decay, input noise\ldots), viste in §7.4 e §10.
+% END F01-B0202
+
+% BEGIN F01-B0203
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F01-B0203
+
+% BEGIN F01-B0204
+\section{Addestrare una rete: funzione obiettivo e loss}\label{f01-r548}
+% END F01-B0204
+
+% BEGIN F01-B0205
+\subsection{La funzione obiettivo (slide 36)}\label{f01-r550}
+% END F01-B0205
+
+% BEGIN F01-B0206
+Con l\textquotesingle architettura si è definita una \textbf{funzione parametrica}, la forward propagation. Ora serve una procedura per \textbf{imparare i parametri}, esattamente come per qualunque modello parametrico di ML: si definisce una loss e la si minimizza.
+% END F01-B0206
+
+% BEGIN F01-B0207
+La loss deve essere un \textbf{surrogato continuo} del problema da risolvere: cross-entropy per la classificazione, MSE per la regressione, ecc. Valgono tutte le considerazioni di ML già viste: \textbf{l\textquotesingle ipotesi i.i.d.}, il modo di campionare i dati, la \textbf{partizione training/test}, la variabilità del training set.
+% END F01-B0207
+
+% BEGIN F01-B0208
+La funzione obiettivo misura la \textbf{qualità della mappatura} input → output e ha due termini:
+% END F01-B0208
+
+% BEGIN F01-B0209
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\mathcal{L}(\theta; x, y) = \underbrace{\frac{1}{N}\sum_{i=1}^{N} L_i(\theta; x_i, y_i)}_{\text{data term}} + \underbrace{\lambda\,\Omega(\theta)}_{\text{regularization term}}}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0209
+
+% BEGIN F01-B0210
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Simbolo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Significato
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(N\) & numero di esempi di training \\
+\(\theta\) & insieme di \textbf{tutti} i parametri della rete: \(\{W_1, b_1, W_2, b_2, \dots\}\) \\
+\(L_i\) & loss del singolo esempio \(i\) \\
+\(\Omega(\theta)\) & regolarizzatore \\
+\(\lambda \ge 0\) & \textbf{forza} della regolarizzazione \\
+\end{longtable}
+% END F01-B0210
+
+% BEGIN F01-B0211
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Data term.} Dipende dai \textbf{parametri}, dagli \textbf{input} e dalla \textbf{ground truth}. È una media sugli esempi e misura quanto sono buone le predizioni rispetto alle etichette; dipende dal problema (classificazione o regressione).
+\item
+  \textbf{Regularization term.} Dipende \textbf{solo dai parametri}: non dall\textquotesingle input, non dall\textquotesingle output, non dalla bontà delle predizioni. Impone un \textbf{vincolo strutturale} sui pesi: chiede di risolvere il problema \textbf{usando i parametri il meno possibile}, e così riduce il rischio di overfitting.
+\end{itemize}
+% END F01-B0211
+
+% BEGIN F01-B0212
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_a6013aed45ce7bd3.png}}
+\caption{Slide 36 -- Funzione obiettivo, con annotazioni}
+\end{figure}
+% END F01-B0212
+
+% BEGIN F01-B0213
+\subsection{Le loss più usate (slide 37)}\label{f01-r575}
+% END F01-B0213
+
+% BEGIN F01-B0214
+Le funzioni di loss sono moltissime, ma circa il 90\% dei problemi usa quelle della slide 37. La maggior parte delle loss moderne sono loro \textbf{piccole modifiche}.
+% END F01-B0214
+
+% BEGIN F01-B0215
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_5fd355097a7cb78b.png}}
+\caption{Slide 37 -- Loss functions, con annotazioni}
+\end{figure}
+% END F01-B0215
+
+% BEGIN F01-B0216
+Notazione: \(f = f(x_i;\theta) \in \mathbb{R}^K\) è il vettore degli score prodotti dalla rete per l\textquotesingle esempio \(i\), \(f_j\) lo score della classe \(j\), \(y_i\) l\textquotesingle indice della classe corretta.
+% END F01-B0216
+
+% BEGIN F01-B0217
+\subsubsection{Hinge loss (classificazione)}\label{f01-r583}
+% END F01-B0217
+
+% BEGIN F01-B0218
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{L_i = \sum_{j\neq y_i}\max\big(0,\; f_j - f_{y_i} + 1\big)}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0218
+
+% BEGIN F01-B0219
+È la loss della \textbf{SVM lineare} (algoritmo \emph{Pegasos}). Si chiede al classificatore non solo di classificare correttamente, ma di farlo con un \textbf{margine}: lo score della classe corretta deve superare quello di \textbf{ogni} altra classe di almeno 1.
+% END F01-B0219
+
+% BEGIN F01-B0220
+\textbf{Come funziona, passo passo.} Per ogni classe sbagliata \(j\):
+% END F01-B0220
+
+% BEGIN F01-B0221
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  si calcola \(f_j - f_{y_i} + 1\);
+\item
+  se \(f_{y_i} \ge f_j + 1\), cioè la classe giusta batte la \(j\) con margine almeno 1, la quantità è \(\le 0\) e il \(\max\) restituisce \textbf{0: nessuna penalità};
+\item
+  altrimenti la quantità è positiva e si \textbf{paga una penalità proporzionale} a quanto manca per raggiungere il margine;
+\item
+  si sommano i contributi di tutte le classi sbagliate.
+\end{enumerate}
+% END F01-B0221
+
+% BEGIN F01-B0222
+(Annotazione slide 37: \emph{"se è negativo non paghiamo penalità; se \(f_j - f_{y_i}\) è minore di −1 allora stiamo facendo bene, altrimenti pagheremo una penalità"}.)
+% END F01-B0222
+
+% BEGIN F01-B0223
+\textbf{Esempio con gli score della slide 15}, \(f = [-96.8,\ 437.9,\ 60.75]\) (gatto, cane, nave):
+% END F01-B0223
+
+% BEGIN F01-B0224
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Classe vera
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Termini della somma
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\(L_i\)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+gatto & \(\max(0,\ 437.9+96.8+1) + \max(0,\ 60.75+96.8+1) = 535.7 + 158.55\) & \textbf{694.25} \\
+cane & \(\max(0,\ -96.8-437.9+1) + \max(0,\ 60.75-437.9+1) = 0 + 0\) & \textbf{0} \\
+\end{longtable}
+% END F01-B0224
+
+% BEGIN F01-B0225
+Se l\textquotesingle immagine è un gatto il classificatore paga molto. Se fosse un cane la loss sarebbe nulla, perché "cane" batte le altre classi con ampio margine.
+% END F01-B0225
+
+% BEGIN F01-B0226
+È la stessa idea del margine della SVM, dove si chiede una distanza minima tra l\textquotesingle iperplano di separazione e le due classi. Qui però il margine non è imposto con un \textbf{vincolo}, ma tramite una sua versione "morbida" e linearizzata, il \(\max(0,\cdot)\).
+% END F01-B0226
+
+% BEGIN F01-B0227
+\textbf{Perché proprio 1?} La riscalatura del margine richiede anche di adattare il peso relativo della regolarizzazione per mantenere lo stesso problema. Qualunque altro margine \(\Delta > 0\) (10, 20, 300\ldots) sarebbe equivalente, perché può essere \textbf{assorbito nella norma dei parametri}:
+% END F01-B0227
+
+% BEGIN F01-B0228
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  moltiplicando per \(c > 0\) i pesi e il bias dello strato di uscita (in un classificatore lineare, tutti i parametri), tutti gli score si moltiplicano per \(c\): \(f \to c f\);
+\item
+  quindi anche le differenze si moltiplicano per \(c\): \(f_{y_i} - f_j \to c\,(f_{y_i} - f_j)\);
+\item
+  se dei parametri garantiscono il margine 1, gli stessi parametri con lo strato di uscita moltiplicato per \(\Delta\) garantiscono il margine \(\Delta\), e viceversa.
+\end{enumerate}
+% END F01-B0228
+
+% BEGIN F01-B0229
+Il valore del margine si ottiene quindi semplicemente cambiando la scala dei pesi. È lo stesso passaggio della SVM, dove il margine \(2\rho\) veniva riportato a 1 assorbendolo in \(w\).
+% END F01-B0229
+
+% BEGIN F01-B0230
+\subsubsection{Softmax loss / cross-entropy (classificazione)}\label{f01-r619}
+% END F01-B0230
+
+% BEGIN F01-B0231
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{L_i = -\log\left(\frac{e^{f_{y_i}}}{\sum_j e^{f_j}}\right)}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0231
+
+% BEGIN F01-B0232
+È la loss più usata, ed è \textbf{un altro modo di scrivere la cross-entropy} (annotazione slide 37: \emph{"a new way to rewrite cross entropy"}). Prende infatti i nomi di \emph{cross-entropy} o \emph{softmax loss}. Anche GPT usa questa loss, in una forma leggermente diversa.
+% END F01-B0232
+
+% BEGIN F01-B0233
+\textbf{Derivazione dalla cross-entropy, passo passo:}
+% END F01-B0233
+
+% BEGIN F01-B0234
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Si parte dalla cross-entropy di §2.4: \(L_i = -\sum_k y^{true}_k \log y^{pred}_k\).
+\item
+  \(y^{true}\) è one-hot: vale 1 solo per \(k = y_i\) e 0 altrove. La somma fa quindi da \textbf{selettore}, come nella BCE, e sopravvive un solo termine: \(L_i = -\log y^{pred}_{y_i}\).
+\item
+  \(y^{pred}\) è la softmax degli score, quindi \(y^{pred}_{y_i} = \dfrac{e^{f_{y_i}}}{\sum_j e^{f_j}}\), da cui la formula nel riquadro.
+\item
+  Usando \(\log(a/b) = \log a - \log b\) e \(\log e^{a} = a\) si ottiene una forma equivalente, utile per i calcoli: \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle L_i = -f_{y_i} + \log\sum_j e^{f_j}$
+\end{adjustbox}
+\end{center}
+\end{enumerate}
+% END F01-B0234
+
+% BEGIN F01-B0235
+Minimizzare \(-\log(\cdot)\) equivale a \textbf{massimizzare} la probabilità (normalizzata) della classe corretta: si prende lo score della risposta giusta e lo si vuole alzare.
+% END F01-B0235
+
+% BEGIN F01-B0236
+\textbf{Esempio} con gli score della slide 18, \(z = [1.2,\ 5.1,\ 2.7]\) e softmax \([0.018,\ 0.900,\ 0.082]\):
+% END F01-B0236
+
+% BEGIN F01-B0237
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Classe vera & \(L_i = -\log(\text{softmax}_{y_i})\) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+classe 2 (score più alto) & \(-\log 0.900 = 0.105\) \\
+classe 3 & \(-\log 0.082 = 2.51\) \\
+classe 1 (score più basso) & \(-\log 0.018 = 4.01\) \\
+\end{longtable}
+% END F01-B0237
+
+% BEGIN F01-B0238
+\textbf{Il gradiente della softmax loss.} È il termine \(\partial L/\partial o\) da cui parte la backpropagation (§8.4). Derivando la forma del passo 4 rispetto al generico score \(f_k\):
+% END F01-B0238
+
+% BEGIN F01-B0239
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  il termine \(-f_{y_i}\) ha derivata \(-1\) se \(k = y_i\) e \(0\) altrimenti; si scrive \(-\mathbb{1}[k = y_i]\);
+\item
+  il termine \(\log\sum_j e^{f_j}\) ha derivata \(\dfrac{1}{\sum_j e^{f_j}}\cdot e^{f_k}\) (regola della catena: derivata del log per derivata dell\textquotesingle argomento), cioè proprio \(\text{softmax}_k(f)\);
+\item
+  quindi: \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{\frac{\partial L_i}{\partial f_k} = \text{softmax}_k(f) - \mathbb{1}[k = y_i]}$
+\end{adjustbox}
+\end{center}
+\end{enumerate}
+% END F01-B0239
+
+% BEGIN F01-B0240
+Il gradiente è "probabilità predetta meno target": per l\textquotesingle esempio con classe vera 2 vale \([0.018,\ 0.900-1,\ 0.082] = [0.018,\ -0.100,\ 0.082]\). È la stessa forma "predizione − etichetta" della regressione logistica.
+% END F01-B0240
+
+% BEGIN F01-B0241
+\subsubsection{Mean Squared Error (regressione)}\label{f01-r654}
+% END F01-B0241
+
+% BEGIN F01-B0242
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{L_i = \lVert f - y_i \rVert_2^2 = \sum_k \big(f_k - y_{i,k}\big)^2}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0242
+
+% BEGIN F01-B0243
+Nella regressione si conoscono coppie di input e output di una funzione, ma non la sua forma né la sua equazione, e la si vuole "indovinare" a meno di una certa approssimazione. Nella regressione lineare la funzione cercata era lineare; con una rete neurale non lo è. La loss più usata, nella sua forma base, è l\textquotesingle errore quadratico: si prende la differenza tra predizione e target e la si eleva al quadrato.
+% END F01-B0243
+
+% BEGIN F01-B0244
+Ad esempio, con predizione \(2.5\) e target \(2\) si ha \(L_i = 0.25\). Il gradiente rispetto alla predizione è \(2(f - y_i)\), cioè di nuovo proporzionale all\textquotesingle errore.
+% END F01-B0244
+
+% BEGIN F01-B0245
+\begin{quote}
+\textbf{Le loss dipendono dal compito}
+\end{quote}
+% END F01-B0245
+
+% BEGIN F01-B0246
+\begin{quote}
+Queste sono le famiglie principali. La funzione obiettivo dipende molto dal compito e spesso la si personalizza, con termini aggiuntivi o una forma adattata alle particolarità del problema.
+\end{quote}
+% END F01-B0246
+
+% BEGIN F01-B0247
+\subsection{Imparare i parametri (slide 38)}\label{f01-r667}
+% END F01-B0247
+
+% BEGIN F01-B0248
+Durante il training si cerca l\textquotesingle insieme di parametri che \textbf{minimizza la funzione obiettivo} (data term + regolarizzazione) sul training set:
+% END F01-B0248
+
+% BEGIN F01-B0249
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\theta^* = \arg\min_\theta \left( \frac{1}{N}\sum_i L_i(\theta; x_i, y_i) + \lambda\,\Omega(\theta) \right)}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0249
+
+% BEGIN F01-B0250
+Lo si fa con la discesa del gradiente, \(\theta \leftarrow \theta - \eta\,\nabla_\theta\mathcal{L}\). Serve quindi la derivata della loss rispetto a \textbf{ogni} parametro di \textbf{ogni} strato, ed è questo il compito della backpropagation (§8).
+% END F01-B0250
+
+% BEGIN F01-B0251
+\subsection{\texorpdfstring{Regolarizzazione esplicita: \(L_2\) e \(L_1\) (slide 36)}{Regolarizzazione esplicita: L\_2 e L\_1 (slide 36)}}\label{f01-r677}
+% END F01-B0251
+
+% BEGIN F01-B0252
+\textbf{Quadrato della norma \(L_2\)} (equivalente a decadimento dei pesi nella discesa del gradiente semplice):
+% END F01-B0252
+
+% BEGIN F01-B0253
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\Omega(\theta) = \sum_j \theta_j^2, \qquad \frac{\partial\Omega}{\partial\theta_j} = 2\theta_j
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0253
+
+% BEGIN F01-B0254
+È minima quando i parametri sono \textbf{nulli o piccoli}. Essendo una funzione liscia, \textbf{non forza i parametri a essere esattamente zero, ma li rende piccoli} (\emph{"force to be near to 0"}). Pesi molto grandi producono funzioni oscillanti e sensibili a minime variazioni dell\textquotesingle input; pesi piccoli favoriscono funzioni \textbf{più lisce e generalizzabili} (annotazione slide 36).
+% END F01-B0254
+
+% BEGIN F01-B0255
+\textbf{Norma \(L_1\):}
+% END F01-B0255
+
+% BEGIN F01-B0256
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\Omega(\theta) = \sum_j |\theta_j|, \qquad \frac{\partial\Omega}{\partial\theta_j} = \operatorname{sign}(\theta_j)\quad(\theta_j \neq 0)
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0256
+
+% BEGIN F01-B0257
+La derivata ha modulo \textbf{1 per ogni parametro non nullo}, indipendentemente da quanto è piccolo. La \(L_1\) è un regolarizzatore di \textbf{sparsità}: favorisce soluzioni con alcuni parametri \textbf{esattamente zero}, ma penalizza la somma dei moduli, non il numero dei coefficienti non nulli.
+% END F01-B0257
+
+% BEGIN F01-B0258
+\textbf{Da dove viene la differenza: l\textquotesingle aggiornamento passo passo.} Si guarda solo l\textquotesingle effetto del regolarizzatore su un singolo peso \(\theta\), con learning rate \(\eta\).
+% END F01-B0258
+
+% BEGIN F01-B0259
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{\(L_2\):} \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \theta \leftarrow \theta - \eta\lambda\cdot 2\theta = (1 - 2\eta\lambda)\,\theta$
+\end{adjustbox}
+\end{center} A ogni passo il peso viene \textbf{moltiplicato} per un fattore tra 0 e 1 quando \(0<2\eta\lambda<1\): decade in proporzione a quanto è grande (da qui il nome \emph{weight decay}). Più è piccolo, più piccola è la spinta.
+\item
+  \textbf{\(L_1\):} \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \theta \leftarrow \theta - \eta\lambda\,\operatorname{sign}(\theta)$
+\end{adjustbox}
+\end{center} A ogni passo al peso si \textbf{sottrae} una quantità \textbf{costante}, qualunque sia il suo valore. La spinta non si attenua, ma il metodo a passo costante può oltrepassare zero e oscillare. Per esempio, con passo \(0.1\), \(0.05\to-0.05\to0.05\). La sparsità dell'ottimo non garantisce che un aggiornamento elementare raggiunga esattamente zero. In zero si usa un sottogradiente in \([-1,1]\).
+\end{enumerate}
+% END F01-B0259
+
+% BEGIN F01-B0260
+\textbf{Esempio:} \(\theta = 1\) con \(2\eta\lambda = 0.2\) per \(L_2\) e \(\eta\lambda = 0.1\) per \(L_1\), ignorando il data term.
+% END F01-B0260
+
+% BEGIN F01-B0261
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 12\tabcolsep) * \real{0.1429}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+passo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+0
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+1
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+2
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+3
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+\ldots{}
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+10
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(L_2\): \(\theta \cdot 0.8\) & 1 & 0.8 & 0.64 & 0.512 & \ldots{} & 0.107 (mai 0) \\
+\(L_1\): \(\theta - 0.1\) & 1 & 0.9 & 0.8 & 0.7 & \ldots{} & \textbf{0} \\
+\end{longtable}
+% END F01-B0261
+
+% BEGIN F01-B0262
+\begin{quote}
+\textbf{\(L_2\) vs \(L_1\)}
+\end{quote}
+% END F01-B0262
+
+% BEGIN F01-B0263
+\begin{quote}
+\begin{itemize}
+\tightlist
+\item
+  \(L_2\) rende i pesi \textbf{piccoli}.
+\item
+  \(L_1\) rende una parte dei pesi \textbf{esattamente zero} (sparsità).
+\end{itemize}
+
+Entrambe penalizzano i valori dei parametri della rete, quindi entrambe regolarizzano. Si chiamano \textbf{regolarizzatori espliciti} perché sono scritti esplicitamente nella loss e agiscono attraverso i gradienti.
+\end{quote}
+% END F01-B0263
+
+% BEGIN F01-B0264
+\textbf{Effetto di \(\lambda\) (slide 34, riga inferiore).} La rete con \textbf{20 neuroni}, quella in overfitting, viene addestrata con regolarizzazione \(L_2\) di forza crescente:
+% END F01-B0264
+
+% BEGIN F01-B0265
+\begin{itemize}
+\tightlist
+\item
+  \(\lambda = 0.001\): superficie ancora frastagliata;
+\item
+  \(\lambda = 0.01\): forme più regolari;
+\item
+  \(\lambda = 0.1\): il problema viene risolto \textbf{in modo quasi lineare}.
+\end{itemize}
+% END F01-B0265
+
+% BEGIN F01-B0266
+Il risultato si ottiene solo \textbf{costringendo la rete a usare meno parametri possibile}, senza cambiarne l\textquotesingle architettura.
+% END F01-B0266
+
+% BEGIN F01-B0267
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F01-B0267
+
+% BEGIN F01-B0268
+\section{Backpropagation (slide 39--50)}\label{f01-r727}
+% END F01-B0268
+
+% BEGIN F01-B0269
+\subsection{La regola della catena (slide 39)}\label{f01-r729}
+% END F01-B0269
+
+% BEGIN F01-B0270
+L\textquotesingle algoritmo che calcola i gradienti della loss rispetto ai parametri si chiama \textbf{backpropagation}. Si basa sulla \textbf{regola della catena}, la regola per derivare una \textbf{composizione di funzioni}. Una rete è proprio una composizione di funzioni, in cui ogni funzione è l\textquotesingle equazione di uno strato e a valle c\textquotesingle è la loss: prima o poi bisogna calcolare la derivata di \(f(g(x))\).
+% END F01-B0270
+
+% BEGIN F01-B0271
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\frac{dz}{dx} = \frac{dz}{dy}\,\frac{dy}{dx}}, \qquad z = f(g(x)),\quad y = g(x)
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0271
+
+% BEGIN F01-B0272
+Si introduce una variabile ausiliaria \(y\) (l\textquotesingle argomento della funzione esterna) e si scrive la derivata come prodotto di due derivate più semplici.
+% END F01-B0272
+
+% BEGIN F01-B0273
+\textbf{Controllo rapido.} Per verificare di aver scritto bene la catena si "semplificano" formalmente i termini uguali al numeratore e al denominatore (il \(dy\), barrato nell\textquotesingle annotazione della slide 39). Se si ottiene un\textquotesingle identità, \(\frac{dz}{dx} = \frac{dz}{dx}\), la catena è scritta correttamente; altrimenti c\textquotesingle è un errore. È solo un controllo mnemonico, non un\textquotesingle operazione algebrica vera.
+% END F01-B0273
+
+% BEGIN F01-B0274
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_e1f0f82c6f896cd9.png}}
+\caption{Slide 39 -- Regola della catena, con annotazioni}
+\end{figure}
+% END F01-B0274
+
+% BEGIN F01-B0275
+\textbf{Esempio:} \(z = (3x+1)^2\).
+% END F01-B0275
+
+% BEGIN F01-B0276
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Si pone \(y = 3x+1\), quindi \(z = y^2\).
+\item
+  \(\dfrac{dz}{dy} = 2y\) e \(\dfrac{dy}{dx} = 3\).
+\item
+  \(\dfrac{dz}{dx} = 2y\cdot 3 = 6(3x+1)\).
+\end{enumerate}
+% END F01-B0276
+
+% BEGIN F01-B0277
+La procedura procede \textbf{all\textquotesingle indietro} rispetto al flusso di calcoli fatto per ottenere la loss, da qui il nome.
+% END F01-B0277
+
+% BEGIN F01-B0278
+\subsection{Le due derivate locali di uno strato (slide 40)}\label{f01-r751}
+% END F01-B0278
+
+% BEGIN F01-B0279
+La backpropagation è un processo \textbf{locale}: un neurone (o uno strato) non conosce la topologia della rete in cui si trova. Perché l\textquotesingle algoritmo funzioni, ogni strato deve saper calcolare \textbf{solo due cose}.
+% END F01-B0279
+
+% BEGIN F01-B0280
+Si consideri lo strato \(i\), con ingresso \(h_i\in\mathbb{R}^d\), parametri \(W_{i+1}\in\mathbb{R}^{k\times d}\) (\(k\) righe = uscite, \(d\) colonne = ingressi) e uscita \(h_{i+1}\in\mathbb{R}^k\). Con attivazione ReLU (bias incorporato in \(W\)):
+% END F01-B0280
+
+% BEGIN F01-B0281
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+h_{i+1} = \max\big(0,\; W_{i+1}h_i\big)
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0281
+
+% BEGIN F01-B0282
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_148b8cd02522274b.png}}
+\caption{Slide 40 -- Le due derivate locali, con annotazioni}
+\end{figure}
+% END F01-B0282
+
+% BEGIN F01-B0283
+Le due derivate da saper calcolare sono:
+% END F01-B0283
+
+% BEGIN F01-B0284
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{la derivata dell\textquotesingle uscita rispetto ai pesi}, \(\dfrac{\partial h_{i+1}}{\partial W_{i+1}}\), che serve ad \textbf{aggiornare} i pesi dello strato;
+\item
+  \textbf{la derivata dell\textquotesingle uscita rispetto all\textquotesingle ingresso}, \(\dfrac{\partial h_{i+1}}{\partial h_i}\), che serve a \textbf{passare il gradiente} allo strato precedente.
+\end{enumerate}
+% END F01-B0284
+
+% BEGIN F01-B0285
+\textbf{Calcolo nel caso scalare.} Un neurone con un ingresso: \(h_{i+1} = \max(0,\; w\,h_i)\). Si considera il caso "acceso" (\(w h_i > 0\)), in cui la ReLU è l\textquotesingle identità e lo strato è lineare, \(h_{i+1} = w\,h_i\). Come per \(a\cdot x\), la cui derivata rispetto a \(x\) è \(a\):
+% END F01-B0285
+
+% BEGIN F01-B0286
+\begin{itemize}
+\tightlist
+\item
+  \(\dfrac{\partial h_{i+1}}{\partial w} = h_i\): la derivata rispetto al peso \textbf{"preleva" l\textquotesingle ingresso};
+\item
+  \(\dfrac{\partial h_{i+1}}{\partial h_i} = w\): la derivata rispetto all\textquotesingle ingresso \textbf{"preleva" il peso}.
+\end{itemize}
+% END F01-B0286
+
+% BEGIN F01-B0287
+Se il neurone è spento (\(w h_i < 0\)), l\textquotesingle uscita è costantemente 0 ed entrambe le derivate valgono \textbf{0}.
+% END F01-B0287
+
+% BEGIN F01-B0288
+\textbf{Calcolo nel caso vettoriale, passo passo.} Si chiama \(z = W_{i+1}h_i\) (il "pre-attivazione", \(k\) componenti).
+% END F01-B0288
+
+% BEGIN F01-B0289
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  La componente \(k\) è \(z_k = \sum_{j=1}^{d} W_{kj}\,h_{i,j}\), quindi \(\dfrac{\partial z_k}{\partial W_{kj}} = h_{i,j}\) e \(\dfrac{\partial z_k}{\partial h_{i,j}} = W_{kj}\).
+\item
+  La ReLU agisce componente per componente: \(h_{i+1,k} = \max(0, z_k)\), con derivata \(m_k = \mathbb{1}[z_k > 0]\) (1 se il neurone è acceso, 0 se spento).
+\item
+  Per la catena: \(\dfrac{\partial h_{i+1,k}}{\partial W_{kj}} = m_k\,h_{i,j}\) e \(\dfrac{\partial h_{i+1,k}}{\partial h_{i,j}} = m_k\,W_{kj}\).
+\item
+  Nella backpropagation arriva da valle il vettore \(g = \partial\mathcal{L}/\partial h_{i+1}\) (\(k\) componenti). Si calcola prima \(\delta = g \odot m\), cioè si azzera il gradiente dei neuroni spenti. Allora: \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{\frac{\partial\mathcal{L}}{\partial W_{i+1}} = \delta\, h_i^{T} \in \mathbb{R}^{k\times d}}\qquad\boxed{\frac{\partial\mathcal{L}}{\partial h_i} = W_{i+1}^{T}\,\delta \in \mathbb{R}^{d}}$
+\end{adjustbox}
+\end{center}
+\end{enumerate}
+% END F01-B0289
+
+% BEGIN F01-B0290
+Le forme tornano: il gradiente rispetto a \(W\) ha la stessa forma di \(W\) (\(k\times d\)), quello rispetto a \(h_i\) la stessa forma di \(h_i\) (\(d\)). Le due formule sono la versione matriciale di "preleva l\textquotesingle ingresso" (\(h_i^T\)) e "preleva il peso" (\(W^T\)).
+% END F01-B0290
+
+% BEGIN F01-B0291
+\begin{quote}
+\textbf{Derivate locali e addestramento}
+\end{quote}
+% END F01-B0291
+
+% BEGIN F01-B0292
+\begin{quote}
+Per propagare il gradiente bastano le derivate locali necessarie alla regola della catena, calcolate esplicitamente o mediante differenziazione automatica. Ai punti non differenziabili occorre una convenzione appropriata. Questo rende calcolabile il backward, ma non garantisce convergenza o buona generalizzazione.
+\end{quote}
+% END F01-B0292
+
+% BEGIN F01-B0293
+Con un bias \(b\in\mathbb{R}^k\), \(z=Wh+b\) e \(\partial z_j/\partial b_i=\delta_{ij}\): pertanto \(\boxed{\nabla_b\mathcal L=\delta\in\mathbb{R}^k}\).
+% END F01-B0293
+
+% BEGIN F01-B0294
+\subsection{Il gradiente che si propaga (slide 41)}\label{f01-r790}
+% END F01-B0294
+
+% BEGIN F01-B0295
+Durante la backpropagation lo strato riceve da valle \(\dfrac{\partial\mathcal{L}}{\partial h_{i+1}}\), cioè l\textquotesingle influenza della sua uscita sull\textquotesingle uscita dell\textquotesingle intera rete. Questo gradiente viene \textbf{concatenato} con i due gradienti locali:
+% END F01-B0295
+
+% BEGIN F01-B0296
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\frac{\partial \mathcal{L}}{\partial W_{i+1}} = \frac{\partial \mathcal{L}}{\partial h_{i+1}}\,\frac{\partial h_{i+1}}{\partial W_{i+1}} \quad(\text{per aggiornare i pesi}), \qquad
+\frac{\partial \mathcal{L}}{\partial h_{i}} = \frac{\partial \mathcal{L}}{\partial h_{i+1}}\,\frac{\partial h_{i+1}}{\partial h_{i}} \quad(\text{passato allo strato precedente})
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0296
+
+% BEGIN F01-B0297
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_ebaeb1d2b82ac054.png}}
+\caption{Slide 41 -- Concatenazione del gradiente}
+\end{figure}
+% END F01-B0297
+
+% BEGIN F01-B0298
+\subsection{Esempio: MLP a 3 strati con ReLU (slide 42--50)}\label{f01-r801}
+% END F01-B0298
+
+% BEGIN F01-B0299
+Si consideri un MLP a tre strati, in cui ogni cerchio è uno strato con attivazione ReLU, e un dataset su cui addestrarlo.
+% END F01-B0299
+
+% BEGIN F01-B0300
+\textbf{1. Forward (slide 43--47).} Si passa un esempio \(x\) attraverso i tre strati e si calcola la penalità della loss sull\textquotesingle uscita:
+% END F01-B0300
+
+% BEGIN F01-B0301
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+h_1 = \max(0, W_1x),\qquad h_2 = \max(0, W_2h_1),\qquad o = \max(0, W_3h_2),\qquad \mathcal{L} = \text{Loss}(o, y)
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0301
+
+% BEGIN F01-B0302
+Dato che \(o\) e \(y\) sono numeri, la penalità si calcola con l\textquotesingle equazione della loss scelta. Per applicare la discesa del gradiente servono ora le derivate parziali della loss rispetto a \textbf{ogni} insieme di parametri. Le si calcola \textbf{strato per strato, a partire dall\textquotesingle ultimo}: prima \(W_3\), poi \(W_2\), poi \(W_1\).
+% END F01-B0302
+
+% BEGIN F01-B0303
+\textbf{2. Gradiente rispetto a \(W_3\) (slide 47--48).} Tra \(\mathcal{L}\) e \(W_3\) non c\textquotesingle è una dipendenza diretta: in mezzo c\textquotesingle è l\textquotesingle equazione della loss (un quadrato, un esponenziale, \ldots), che è a sua volta una funzione di \(o\). Si applica la regola della catena una prima volta:
+% END F01-B0303
+
+% BEGIN F01-B0304
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\frac{\partial\mathcal{L}}{\partial W_3} = \frac{\partial\mathcal{L}}{\partial o}\cdot\frac{\partial o}{\partial W_3}}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0304
+
+% BEGIN F01-B0305
+\begin{itemize}
+\tightlist
+\item
+  \(\dfrac{\partial o}{\partial W_3}\) è la derivata locale di §8.2: vale \(h_2\) se il neurone è acceso, \(0\) se è spento.
+\item
+  \(\dfrac{\partial\mathcal{L}}{\partial o}\) dipende dall\textquotesingle equazione della loss: ad esempio \(2(o-y)\) per la MSE, oppure \(\text{softmax}(o) - y\) per la cross-entropy (§7.2).
+\end{itemize}
+% END F01-B0305
+
+% BEGIN F01-B0306
+Una volta calcolato il valore numerico (su un esempio, su un batch o su tutto il dataset, come nella discesa del gradiente classica), si prepara l'aggiornamento del parametro. \textbf{Tutti i gradienti si calcolano con gli stessi pesi del forward; gli aggiornamenti si applicano solo dopo avere completato il backward:}
+% END F01-B0306
+
+% BEGIN F01-B0307
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+W_3^{new} = W_3 - \alpha\,\frac{\partial\mathcal{L}}{\partial W_3}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0307
+
+% BEGIN F01-B0308
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_76b50c6991feb177.png}}
+\caption{Slide 47 -- Gradiente e aggiornamento di W3, con annotazioni}
+\end{figure}
+% END F01-B0308
+
+% BEGIN F01-B0309
+\textbf{3. Gradiente rispetto a \(W_2\) (slide 49).} Anche qui non c\textquotesingle è dipendenza diretta, perché tra la loss e \(W_2\) c\textquotesingle è un altro strato.
+% END F01-B0309
+
+% BEGIN F01-B0310
+Un primo tentativo naturale ma \textbf{sbagliato} è \(\frac{\partial\mathcal{L}}{\partial o}\cdot\frac{\partial o}{\partial W_3}\cdot\frac{\partial W_3}{\partial W_2}\). Non esiste alcuna equazione che leghi \(W_3\) a \(W_2\): sono parametri \textbf{indipendenti}, quindi \(\partial W_3/\partial W_2=0\): quel percorso non esprime la dipendenza della loss da \(W_2\).
+% END F01-B0310
+
+% BEGIN F01-B0311
+La strada giusta è passare attraverso le \textbf{attivazioni}, che sono legate tra loro dalle equazioni degli strati:
+% END F01-B0311
+
+% BEGIN F01-B0312
+\begin{itemize}
+\tightlist
+\item
+  \(o\) dipende da \(h_2\) tramite \(o = \max(0, W_3h_2)\);
+\item
+  \(h_2\) dipende da \(W_2\) tramite \(h_2 = \max(0, W_2h_1)\).
+\end{itemize}
+% END F01-B0312
+
+% BEGIN F01-B0313
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\frac{\partial\mathcal{L}}{\partial W_2} = \frac{\partial\mathcal{L}}{\partial o}\cdot\frac{\partial o}{\partial h_2}\cdot\frac{\partial h_2}{\partial W_2}}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0313
+
+% BEGIN F01-B0314
+Per §8.2, nel caso acceso \(\dfrac{\partial o}{\partial h_2} = W_3\) ("preleva il peso") e \(\dfrac{\partial h_2}{\partial W_2} = h_1\) ("preleva l\textquotesingle ingresso"). I primi due fattori insieme sono \(\dfrac{\partial\mathcal{L}}{\partial h_2}\), la freccia rossa che torna indietro nella slide 49.
+% END F01-B0314
+
+% BEGIN F01-B0315
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_a1f97259021427be.png}}
+\caption{Slide 49 -- Gradiente di W2, con annotazioni}
+\end{figure}
+% END F01-B0315
+
+% BEGIN F01-B0316
+\textbf{4. Gradiente rispetto a \(W_1\) (slide 50).} Stesso ragionamento, con un anello in più nella catena:
+% END F01-B0316
+
+% BEGIN F01-B0317
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\frac{\partial\mathcal{L}}{\partial W_1} = \frac{\partial\mathcal{L}}{\partial o}\cdot\frac{\partial o}{\partial h_2}\cdot\frac{\partial h_2}{\partial h_1}\cdot\frac{\partial h_1}{\partial W_1}}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0317
+
+% BEGIN F01-B0318
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_dabdbb34b5bf3150.png}}
+\caption{Slide 50 -- Backpropagation completa, con annotazioni}
+\end{figure}
+% END F01-B0318
+
+% BEGIN F01-B0319
+\textbf{La forma generale.} Per ogni strato, il gradiente dei pesi è sempre \textbf{"gradiente della loss rispetto all\textquotesingle uscita dello strato" × "derivata dell\textquotesingle uscita rispetto ai pesi"}:
+% END F01-B0319
+
+% BEGIN F01-B0320
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\frac{\partial\mathcal{L}}{\partial W_3} = \frac{\partial\mathcal{L}}{\partial o}\frac{\partial o}{\partial W_3},\qquad
+\frac{\partial\mathcal{L}}{\partial W_2} = \frac{\partial\mathcal{L}}{\partial h_2}\frac{\partial h_2}{\partial W_2},\qquad
+\frac{\partial\mathcal{L}}{\partial W_1} = \frac{\partial\mathcal{L}}{\partial h_1}\frac{\partial h_1}{\partial W_1}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0320
+
+% BEGIN F01-B0321
+E i gradienti rispetto alle uscite si ottengono uno dall\textquotesingle altro, \textbf{riusando quello appena calcolato}:
+% END F01-B0321
+
+% BEGIN F01-B0322
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\frac{\partial\mathcal{L}}{\partial h_2} = \frac{\partial\mathcal{L}}{\partial o}\cdot\frac{\partial o}{\partial h_2},\qquad
+\frac{\partial\mathcal{L}}{\partial h_1} = \frac{\partial\mathcal{L}}{\partial h_2}\cdot\frac{\partial h_2}{\partial h_1}
+$
+\end{adjustbox}
+\end{center}
+% END F01-B0322
+
+% BEGIN F01-B0323
+Per \(W_1\) non si ricalcola tutta la catena da zero: si prende \(\partial\mathcal{L}/\partial h_2\), già calcolato per \(W_2\), e lo si moltiplica per un solo fattore locale. Per questo si procede \textbf{dall\textquotesingle ultimo strato al primo}: ogni strato riceve il gradiente da valle, lo usa e lo passa a monte. È ciò che rende l\textquotesingle algoritmo efficiente.
+% END F01-B0323
+
+% BEGIN F01-B0324
+\textbf{5. Il ciclo completo.} Aggiornati i parametri, si prende un altro esempio o un altro batch, si ripete forward, backward e aggiornamento, e si itera fino a convergenza: è la discesa del gradiente stocastica.
+% END F01-B0324
+
+% BEGIN F01-B0325
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f01_03.pdf}}
+% END F01-B0325
+
+% BEGIN F01-B0326
+\begin{quote}
+\textbf{Esempio numerico (rete scalare, un neurone per strato)}
+\end{quote}
+% END F01-B0326
+
+% BEGIN F01-B0327
+\begin{quote}
+Con \(x = 1\), \(y = 2\), \(w_1 = 0.5\), \(w_2 = 2\), \(w_3 = 1.5\), ReLU e loss \(\mathcal{L} = (o-y)^2\).
+
+\textbf{Forward:} - \(h_1 = \max(0,\ 0.5\cdot1) = 0.5\) - \(h_2 = \max(0,\ 2\cdot0.5) = 1\) - \(o = \max(0,\ 1.5\cdot1) = 1.5\) - \(\mathcal{L} = (1.5-2)^2 = 0.25\)
+
+Tutti i neuroni sono accesi, quindi le ReLU si comportano come identità.
+
+\textbf{Backward}, dall\textquotesingle uscita verso l\textquotesingle ingresso:
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Passo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Formula
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Valore
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(\partial\mathcal{L}/\partial o\) & \(2(o-y)\) & \(2(1.5-2) = -1\) \\
+\(\partial\mathcal{L}/\partial w_3\) & \(\partial\mathcal{L}/\partial o \cdot h_2\) & \(-1\cdot1 = -1\) \\
+\(\partial\mathcal{L}/\partial h_2\) & \(\partial\mathcal{L}/\partial o \cdot w_3\) & \(-1\cdot1.5 = -1.5\) \\
+\(\partial\mathcal{L}/\partial w_2\) & \(\partial\mathcal{L}/\partial h_2 \cdot h_1\) & \(-1.5\cdot0.5 = -0.75\) \\
+\(\partial\mathcal{L}/\partial h_1\) & \(\partial\mathcal{L}/\partial h_2 \cdot w_2\) & \(-1.5\cdot2 = -3\) \\
+\(\partial\mathcal{L}/\partial w_1\) & \(\partial\mathcal{L}/\partial h_1 \cdot x\) & \(-3\cdot1 = -3\) \\
+\end{longtable}
+
+\textbf{Aggiornamento} con \(\alpha = 0.05\): - \(w_1 = 0.5 + 0.15 = 0.65\) - \(w_2 = 2 + 0.0375 = 2.0375\) - \(w_3 = 1.5 + 0.05 = 1.55\)
+
+\textbf{Nuovo forward:} \(o = 2.053\) e \(\mathcal{L} = 0.0028\), molto più vicino al target. I gradienti sono stati verificati numericamente con le differenze finite.
+\end{quote}
+% END F01-B0327
+
+% BEGIN F01-B0328
+\subsection{Perché la backpropagation è così importante}\label{f01-r914}
+% END F01-B0328
+
+% BEGIN F01-B0329
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Vale per qualunque strato.} Nelle formule di §8.4 non si specifica mai l\textquotesingle equazione degli strati: si scrive solo \(\partial h_2/\partial h_1\) o \(\partial h_1/\partial W_1\). L\textquotesingle algoritmo vale quindi per qualunque strato di cui si sappiano calcolare le due derivate locali, ed è questo che dà la libertà di costruire qualunque architettura.
+\item
+  \textbf{È lo stesso algoritmo dal 1986.} Ciò che è cambiato è l\textquotesingle{}\textbf{ottimizzatore}, cioè la regola di aggiornamento (SGD, Adam, \ldots), ma il modo di calcolare i gradienti è rimasto identico. In oltre 30 anni nessuno ha trovato un metodo migliore per efficienza, scalabilità e tempo di calcolo; ci sono stati tentativi, alcuni buoni e altri meno.
+\item
+  \textbf{La usa ogni rete.} Chi ha addestrato una rete, ad esempio per la tesi triennale, l\textquotesingle ha usata senza saperlo, che fosse un Transformer, una rete convoluzionale o altro. In PyTorch è ciò che esegue \texttt{loss.backward()} (vedi 01 Introduzione PyTorch e 02 LogReg torch optim).
+\end{itemize}
+% END F01-B0329
+
+% BEGIN F01-B0330
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F01-B0330
+
+% BEGIN F01-B0331
+\section{Inizializzazione dei pesi (slide 51)}\label{f01-r922}
+% END F01-B0331
+
+% BEGIN F01-B0332
+La discesa del gradiente parte da una \textbf{inizializzazione casuale} dei pesi. Con 10 o 20 pesi la cosa sembra banale; con milioni, miliardi o migliaia di miliardi di pesi anche l\textquotesingle inizializzazione diventa un problema. I requisiti sono due.
+% END F01-B0332
+
+% BEGIN F01-B0333
+\textbf{1. Pesi piccoli, per evitare l\textquotesingle esplosione dei valori.} Si consideri uno strato con \(n = 10\,000\) ingressi. Ogni neurone calcola una somma di 10 000 termini \(w_j x_j\).
+% END F01-B0333
+
+% BEGIN F01-B0334
+\begin{itemize}
+\tightlist
+\item
+  Se tutti i pesi valessero 1 e gli ingressi fossero circa 100, l\textquotesingle uscita sarebbe circa \(10\,000\cdot100 = 10^6\).
+\item
+  Strato dopo strato, numeri così crescono senza controllo.
+\end{itemize}
+% END F01-B0334
+
+% BEGIN F01-B0335
+Si vuole quindi evitare il più possibile che la grandezza delle uscite degli strati cresca, e per questo all\textquotesingle inizio servono pesi \textbf{molto piccoli}, ma non trascurabili.
+% END F01-B0335
+
+% BEGIN F01-B0336
+\textbf{2. Pesi diversi tra loro, per rompere la simmetria.} I pesi non possono essere tutti uguali. Se neuroni permutabili sono inizializzati simmetricamente sia nelle connessioni entranti sia in quelle uscenti, ricevono gli stessi aggiornamenti:
+% END F01-B0336
+
+% BEGIN F01-B0337
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  con le stesse righe in \(W\), tutti i neuroni calcolano la \textbf{stessa uscita};
+\item
+  ricevono quindi lo \textbf{stesso gradiente} (\(\delta h^T\) ha righe uguali);
+\item
+  subiscono lo \textbf{stesso aggiornamento};
+\item
+  restano uguali per sempre, e lo strato si comporta come un solo neurone.
+\end{enumerate}
+% END F01-B0337
+
+% BEGIN F01-B0338
+Ogni neurone riesce a imparare qualcosa di diverso solo perché parte da pesi diversi.
+% END F01-B0338
+
+% BEGIN F01-B0339
+\textbf{La prassi} è campionare valori \textbf{piccoli, attorno allo zero, positivi o negativi}, ad esempio da una gaussiana a media zero, e mettere i \textbf{bias a zero}. Il difficile è trovare per ogni neurone pesi abbastanza piccoli da evitare problemi numerici e, allo stesso tempo, abbastanza diversi da quelli degli altri neuroni dello strato.
+% END F01-B0339
+
+% BEGIN F01-B0340
+\textbf{Scalare con il fan-in (inizializzazione di Glorot).} Un trucco molto diffuso è \textbf{scalare i pesi in base al fan-in} del neurone, cioè al numero dei suoi ingressi. Per controllare la varianza della somma, la deviazione standard dei pesi si scala in proporzione a \(1/\sqrt{n}\); dividere i pesi per \(n\) ridurrebbe eccessivamente la varianza, come mostra il calcolo seguente.
+% END F01-B0340
+
+% BEGIN F01-B0341
+\textbf{Perché funziona, passo passo.} Si calcola la varianza dell\textquotesingle uscita \(z = \sum_{j=1}^{n} w_j x_j\) di un neurone con \(n\) ingressi.
+% END F01-B0341
+
+% BEGIN F01-B0342
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Si assume che i pesi \(w_j\) siano indipendenti, a media zero, con varianza \(\sigma_w^2\), e per semplicità ingressi fissati con \(x_j^2 = 1\).
+\item
+  La varianza di una somma di termini indipendenti è la somma delle varianze: \(\text{Var}(z) = \sum_j \text{Var}(w_j x_j)\).
+\item
+  Ogni termine vale \(\text{Var}(w_j x_j) = x_j^2\,\sigma_w^2 = \sigma_w^2\).
+\item
+  Quindi \(\text{Var}(z) = n\,\sigma_w^2\): la deviazione standard dell\textquotesingle uscita è \(\sqrt{n}\,\sigma_w\) e \textbf{cresce con il numero di ingressi}.
+\item
+  Per mantenerla dell\textquotesingle ordine di 1 serve \(\sigma_w^2 = 1/n\), cioè pesi con deviazione standard \(1/\sqrt{n}\).
+\end{enumerate}
+% END F01-B0342
+
+% BEGIN F01-B0343
+\begin{longtable}[]{@{}ll@{}}
+\toprule\noalign{}
+Pesi (\(n = 10\,000\), \(x_j = 1\)) & Deviazione standard di \(z\) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(\mathcal{N}(0, 1)\) & \(\approx 100\) \\
+\(\mathcal{N}(0, 1/n)\), cioè std \(1/\sqrt{n}\) & \(\approx 1\) \\
+\(\mathcal{N}(0,1)/n\) & \(\approx 0.01\) (troppo piccola) \\
+\end{longtable}
+% END F01-B0343
+
+% BEGIN F01-B0344
+\begin{quote}
+\textbf{Precisazione sulle formule esatte}
+\end{quote}
+% END F01-B0344
+
+% BEGIN F01-B0345
+\begin{quote}
+Dividere per \(n\) dà l\textquotesingle idea, ma per tenere la varianza costante si scala la \textbf{varianza} per \(1/\text{fan-in}\), cioè la deviazione standard per \(1/\sqrt{\text{fan-in}}\). Le varianti note sono: - \textbf{Glorot/Xavier}: \(\text{Var}(w) = 2/(\text{fan-in} + \text{fan-out})\); - \textbf{He}: \(2/\text{fan-in}\), pensata per la ReLU.
+\end{quote}
+% END F01-B0345
+
+% BEGIN F01-B0346
+Tutte queste strategie sono già implementate in \textbf{PyTorch}, non vanno scritte a mano. Quando si crea uno strato lineare (\texttt{nn.Linear}), è già inizializzato; si può scegliere un\textquotesingle altra inizializzazione (gaussiana, uniforme, Glorot, \ldots) con le funzioni di \texttt{torch.nn.init}.
+% END F01-B0346
+
+% BEGIN F01-B0347
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F01-B0347
+
+% BEGIN F01-B0348
+\section{Regolarizzazione nelle reti profonde (slide 52--56)}\label{f01-r969}
+% END F01-B0348
+
+% BEGIN F01-B0349
+\subsection{Regolarizzazione implicita (slide 53)}\label{f01-r971}
+% END F01-B0349
+
+% BEGIN F01-B0350
+Le reti profonde hanno una \textbf{capacità rappresentazionale molto alta}: è un bene, perché possono apprendere funzioni complesse. Per lo stesso motivo, però, sono soggette a overfitting se non vengono regolarizzate.
+% END F01-B0350
+
+% BEGIN F01-B0351
+\begin{itemize}
+\tightlist
+\item
+  È facilissimo aggiungere milioni di parametri, mentre il dataset contiene magari migliaia di esempi: quasi sempre ci sono più parametri che dati.
+\item
+  Oltre ai \textbf{regolarizzatori espliciti} (\(L_1\), \(L_2\) di §7.4), che sono scritti nella loss e agiscono tramite i gradienti, esistono tecniche \textbf{implicite}.
+\item
+  Si chiamano implicite perché non compaiono nell\textquotesingle equazione da ottimizzare: sono \textbf{accorgimenti applicati durante l\textquotesingle apprendimento} che costringono la rete a regolarizzarsi.
+\end{itemize}
+% END F01-B0351
+
+% BEGIN F01-B0352
+\subsection{Dropout (slide 54)}\label{f01-r979}
+% END F01-B0352
+
+% BEGIN F01-B0353
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_50efc11447727fca.png}}
+\caption{Slide 54 -- Dropout, con annotazioni}
+\end{figure}
+% END F01-B0353
+
+% BEGIN F01-B0354
+Il \textbf{dropout} è la tecnica implicita più popolare. Ha come iperparametro una \textbf{probabilità di drop \(p\) per ogni strato}, tipicamente tra il 10\% e il 50\%.
+% END F01-B0354
+
+% BEGIN F01-B0355
+\textbf{Come funziona in training:}
+% END F01-B0355
+
+% BEGIN F01-B0356
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  per ogni neurone dello strato, prima del forward, si "lancia una moneta" che con probabilità \(p\) dice di spegnerlo;
+\item
+  il neurone spento ha uscita \textbf{0}, sia nel forward sia nel backward;
+\item
+  a ogni passo il neurone spento è diverso.
+\end{enumerate}
+% END F01-B0356
+
+% BEGIN F01-B0357
+Formalmente l\textquotesingle uscita dello strato diventa \(\tilde h = r \odot h\), dove ogni \(r_k\) vale 0 con probabilità \(p\) e 1 con probabilità \(1-p\). Nel backward \(\partial\tilde h_k/\partial h_k = r_k\): un neurone spento non riceve gradiente e il suo contributo al gradiente dei pesi in ingresso è nullo in quel passo. Regolarizzazione o memoria dell'ottimizzatore possono comunque modificarli. La maschera campionata nel forward viene mantenuta nel relativo backward.
+% END F01-B0357
+
+% BEGIN F01-B0358
+Il risultato è che si tagliano \textbf{a caso} alcuni percorsi dentro la rete: la rete non può più usare quei neuroni e deve trovare altre strade. Equivale a \textbf{campionare a ogni passo una sotto-rete diversa} e ad aggiornare solo la sua porzione di parametri.
+% END F01-B0358
+
+% BEGIN F01-B0359
+\textbf{Perché può ridurre l'overfitting.} Il dropout rende meno affidabile l'uso congiunto di specifiche unità e incoraggia rappresentazioni utili anche quando altre unità mancano. L'immagine dei posti di memoria che cambiano è un'analogia: non dimostra che la memorizzazione diventi impossibile.
+% END F01-B0359
+
+% BEGIN F01-B0360
+\textbf{In test.} \textbf{Nessun dropout}: dopo il training tutti i neuroni sono attivi. Lo si può interpretare come un'approssimazione della \textbf{predizione di un ensemble} di sotto-reti; per una rete non lineare il riscalamento non è generalmente la loro media esatta.
+% END F01-B0360
+
+% BEGIN F01-B0361
+\begin{quote}
+\textbf{Precisazione: il riscalamento}
+\end{quote}
+% END F01-B0361
+
+% BEGIN F01-B0362
+\begin{quote}
+In training ogni neurone è attivo solo con probabilità \(1-p\), quindi in media la sua uscita vale \((1-p)\,h_k\). In test, con tutti i neuroni accesi, varrebbe \(h_k\). Per rendere coerenti le due fasi: - si moltiplicano le uscite per \((1-p)\) in test; - oppure, come fa PyTorch (\emph{inverted dropout}), si dividono per \((1-p)\) in training.
+\end{quote}
+% END F01-B0362
+
+% BEGIN F01-B0363
+\textbf{Perché spegnere neuroni a caso, in modo uniforme.}
+% END F01-B0363
+
+% BEGIN F01-B0364
+\begin{itemize}
+\tightlist
+\item
+  In training non si sa a priori quali neuroni stiano imparando cosa, e l\textquotesingle addestramento è dinamico: un neurone può imparare una cosa all\textquotesingle inizio e un\textquotesingle altra dopo.
+\item
+  Si campiona quindi in modo \textbf{uniforme}. Spegnere un neurone che è già spento non cambia nulla: il dropout ha effetto solo sui neuroni effettivamente attivi.
+\end{itemize}
+% END F01-B0364
+
+% BEGIN F01-B0365
+\textbf{Una probabilità per strato.} \(p\) è la stessa per tutti i neuroni di uno strato, ma di solito cambia da strato a strato, in base al numero di neuroni e alla posizione nella rete.
+% END F01-B0365
+
+% BEGIN F01-B0366
+La probabilità può variare fra strati. Eliminare il 90\% delle unità di uno strato molto stretto può lasciare troppo poca informazione; non esiste una regola generale che vieti la regolarizzazione vicino all'uscita.
+% END F01-B0366
+
+% BEGIN F01-B0367
+Le probabilità di dropout sono iperparametri da valutare sul validation set. La sensibilità alla loro scelta dipende dal modello e dai dati: non è garantito che le differenze rimangano entro pochi punti percentuali.
+% END F01-B0367
+
+% BEGIN F01-B0368
+\subsection{Data augmentation (slide 55)}\label{f01-r1015}
+% END F01-B0368
+
+% BEGIN F01-B0369
+Il modo migliore per generalizzare meglio sarebbe \textbf{allenarsi su più dati}, che però non sempre sono disponibili. La \textbf{data augmentation} genera \textbf{nuovi esempi di training applicando trasformazioni agli input} del training set, trasformazioni che devono \textbf{preservare l\textquotesingle etichetta} dell\textquotesingle esempio originale.
+% END F01-B0369
+
+% BEGIN F01-B0370
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_138dc04a0425d8ee.png}}
+\caption{Slide 55 -- Data augmentation}
+\end{figure}
+% END F01-B0370
+
+% BEGIN F01-B0371
+Per un\textquotesingle immagine si applicano trasformazioni \textbf{non distruttive}:
+% END F01-B0371
+
+% BEGIN F01-B0372
+\begin{itemize}
+\tightlist
+\item
+  una leggera rotazione;
+\item
+  un cambio di scala;
+\item
+  un ribaltamento (\emph{flip});
+\item
+  un cambio di colori, contrasto o luminosità;
+\item
+  la conversione in bianco e nero.
+\end{itemize}
+% END F01-B0372
+
+% BEGIN F01-B0373
+Si applicano solo le trasformazioni che mantengono valida l'etichetta per il compito scelto.
+% END F01-B0373
+
+% BEGIN F01-B0374
+\textbf{Due vantaggi contro l\textquotesingle overfitting:}
+% END F01-B0374
+
+% BEGIN F01-B0375
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Più dati senza nuove annotazioni.} Con 10 trasformazioni per esempio il dataset diventa 10 volte più grande, e più il dataset è grande, più è difficile memorizzarlo.
+\item
+  \textbf{Memorizzare diventa inefficiente.} Si creano varianti dello stesso input che devono dare \textbf{la stessa uscita}. Memorizzando, la rete dovrebbe imparare a parte ogni variante: un lavoro moltiplicato per il numero di augmentation. Le conviene invece imparare la \textbf{regola} che porta tutte le varianti alla stessa risposta. In un certo senso si "inganna" la rete, presentandole un problema in cui generalizzare costa meno che memorizzare.
+\end{enumerate}
+% END F01-B0375
+
+% BEGIN F01-B0376
+La data augmentation aumenta la varietà delle osservazioni disponibili e può limitare la memorizzazione. Ogni trasformazione deve conservare il significato del target: una rotazione adatta a una categoria di immagini può cambiare l'etichetta in un altro compito.
+% END F01-B0376
+
+% BEGIN F01-B0377
+\textbf{Non sempre è facile.} Per le immagini esiste un ampio insieme di trasformazioni non distruttive; per altri dati no.
+% END F01-B0377
+
+% BEGIN F01-B0378
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Testo.} Una frase non si può ribaltare, ricolorare o ruotare. Servono trasformazioni lessicali, come i sinonimi, che sono più complicate.
+\item
+  \textbf{Serie temporali} (temperatura, pressione\ldots). Ribaltarle inverte il trend e distrugge l\textquotesingle informazione.
+\end{itemize}
+% END F01-B0378
+
+% BEGIN F01-B0379
+\subsection{Early stopping (slide 56)}\label{f01-r1043}
+% END F01-B0379
+
+% BEGIN F01-B0380
+Prolungare il training può peggiorare la generalizzazione: l'early stopping usa la validazione per riconoscere quando ulteriori aggiornamenti non migliorano il risultato.
+% END F01-B0380
+
+% BEGIN F01-B0381
+\textbf{Come si riconosce.} Dopo ogni \textbf{epoca} (un passaggio completo sul dataset) si calcolano due loss:
+% END F01-B0381
+
+% BEGIN F01-B0382
+\begin{itemize}
+\tightlist
+\item
+  quella sul \textbf{training set}, per vedere se gli aggiornamenti la fanno scendere;
+\item
+  quella su un piccolo \textbf{validation set}, non usato per l\textquotesingle addestramento.
+\end{itemize}
+% END F01-B0382
+
+% BEGIN F01-B0383
+Se la loss di training continua a scendere mentre quella di validazione \textbf{inizia a salire}, la rete sta entrando nella fase di \textbf{memorizzazione}: sui dati nuovi comincerà a funzionare peggio.
+% END F01-B0383
+
+% BEGIN F01-B0384
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_7187db7a023ba7ac.png}}
+\caption{Slide 56 -- Training vs validation loss}
+\end{figure}
+% END F01-B0384
+
+% BEGIN F01-B0385
+\textbf{Early stopping:} si interrompe l'addestramento secondo il criterio di pazienza e si recupera il checkpoint con la migliore metrica di validazione, che può precedere l'ultima epoca. Il test set resta escluso da questa scelta.
+% END F01-B0385
+
+% BEGIN F01-B0386
+\textbf{La patience.} Non si decide in base a una sola misura, che potrebbe essere una fluttuazione. Si fissa un numero \(n\) di valutazioni consecutive in cui la loss di validazione resta stabile o peggiora prima di fermarsi. Questo numero si chiama \textbf{patience}.
+% END F01-B0386
+
+% BEGIN F01-B0387
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F01-B0387
+
+% BEGIN F01-B0388
+\section{Riepilogo}\label{f01-r1062}
+% END F01-B0388
+
+% BEGIN F01-B0389
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Il deep learning funziona oggi grazie a \textbf{dati + GPU} e perché \textbf{impara le feature} invece di fissarle. Il prezzo è la loro \textbf{non interpretabilità}.
+\item
+  \textbf{Classificatore lineare} \(Wx+b\) + \textbf{softmax} + \textbf{cross-entropy} + discesa del gradiente = \textbf{regressione logistica}. La softmax definisce probabilità del modello, senza garantirne la calibrazione.
+\item
+  \textbf{Neurone artificiale} = mappa affine seguita da un'attivazione; il caso sigmoide corrisponde al modello logistico binario.
+
+  \begin{itemize}
+  \tightlist
+  \item
+    La sigmoide satura (\(\sigma' = \sigma(1-\sigma) \le 0.25\)) e non è centrata.
+  \item
+    La tanh (\(= 2\sigma(2x)-1\)) è centrata ma satura.
+  \item
+    La \textbf{ReLU} non satura per \(x>0\) ed è economica.
+  \end{itemize}
+\item
+  \textbf{Senza non linearità} qualunque rete collassa in un singolo strato lineare (\(W = W_2W_1\)).
+\item
+  \textbf{MLP}: strati fully connected, \(W \in \mathbb{R}^{\text{out}\times\text{in}}\), e \textbf{ogni neurone ha un bias} (6-4-3-1 → 47 parametri). La \textbf{forward propagation} è una composizione di funzioni: la rete è un\textquotesingle equazione esplicita.
+\item
+  \textbf{Approssimazione universale}: in teoria basta un hidden layer per qualunque funzione continua; in pratica, per la discretizzazione, reti più grandi e profonde sono più espressive. Rappresentare non significa saper imparare.
+\item
+  \textbf{Funzione obiettivo} \(= \frac1N\sum_i L_i + \lambda\Omega(\theta)\).
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{Loss:} hinge (margine 1, assorbibile nella scala dei pesi), softmax/cross-entropy (gradiente \(= \text{softmax} - \text{one-hot}\)), MSE.
+  \item
+    \textbf{Regolarizzatori:} \(L_2\) (pesi piccoli, \emph{weight decay}) e \(L_1\) (pesi nulli).
+  \end{itemize}
+\item
+  \textbf{Backpropagation}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    regola della catena applicata \textbf{dall\textquotesingle uscita verso l\textquotesingle ingresso};
+  \item
+    ogni strato calcola solo \(\partial h_{i+1}/\partial W_{i+1}\) ("preleva l\textquotesingle ingresso") e \(\partial h_{i+1}/\partial h_i\) ("preleva il peso");
+  \item
+    il gradiente rispetto alle attivazioni viene \textbf{riusato} strato dopo strato;
+  \item
+    funziona per qualunque strato di cui si sappiano scrivere le due derivate ed è invariata dal 1986.
+  \end{itemize}
+\item
+  \textbf{Inizializzazione}: pesi piccoli, a media zero e \textbf{diversi} (rottura della simmetria), scalati con il fan-in; bias a zero.
+\item
+  \textbf{Regolarizzazione implicita}:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \textbf{dropout}: spegne neuroni a caso in training, mai in test;
+  \item
+    \textbf{data augmentation}: varianti con la stessa etichetta;
+  \item
+    \textbf{early stopping}: si ferma quando la loss di validazione sale, con una \emph{patience}.
+  \end{itemize}
+\end{enumerate}
+% END F01-B0389
+
+% BEGIN F01-B0390
+\begin{quote}
+\textbf{Riepilogo errata delle slide}
+\end{quote}
+% END F01-B0390
+
+% BEGIN F01-B0391
+\begin{quote}
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Slide 15}: \(s_{ship} = 60.75\), non 61.95 (manca il bias).
+\item
+  \textbf{Slide 18}: denominatore della softmax \(\sum_k e^{z_k}\).
+\item
+  \textbf{Slide 19}: manca il segno meno nella cross-entropy.
+\item
+  \textbf{Slide 25}: \(\tanh(x) = 2\sigma(2x) - 1\).
+\item
+  \textbf{Slide 30}: \(W_2 \in \mathbb{R}^{3\times4}\), \(W_3 \in \mathbb{R}^{1\times3}\).
+\end{itemize}
+\end{quote}
+% END F01-B0391

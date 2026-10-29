@@ -1,0 +1,7 @@
+flowchart TD
+ A["Immagine: N × 3 × H × W"] --> B["Convoluzioni, attivazioni, pooling locali"]
+ B --> C["Ultime mappe: N × C × h × w"]
+ C --> D["Adaptive average pooling a 1 × 1"]
+ D --> E["N × C × 1 × 1"]
+ E --> F["Flatten: N × C"]
+ F --> G["MLP: N × numero classi"]

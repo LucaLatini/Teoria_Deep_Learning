@@ -1,0 +1,6 @@
+flowchart LR
+ X["Ingresso x"] --> F["Ramo F: convoluzioni e attivazioni"]
+ X --> I["Shortcut identità"]
+ F --> S(("+"))
+ I --> S
+ S --> Y["x + F(x)"]

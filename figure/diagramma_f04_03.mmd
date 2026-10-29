@@ -1,0 +1,7 @@
+flowchart TD
+ Q["Query: cosa cerco"] --> S["Confronto con ogni key"]
+ K["Key: rappresentazioni confrontabili"] --> S
+ S --> A["Softmax degli score: pesi scalari"]
+ A --> M["Somma pesata dei value"]
+ V["Value: contenuti da recuperare"] --> M
+ M --> Z["Nuova rappresentazione del token"]

@@ -1,0 +1,2685 @@
+% BEGIN F02-B0001
+\chapter{CNN - Reti neurali convoluzionali}\label{fonte02}
+% END F02-B0001
+
+% BEGIN F02-B0002
+\begin{indiceargomento}
+\item \hyperref[f02-r47]{Rappresentazione Digitale delle Immagini nel Calcolatore (slide 3--6)}
+\item \hyperref[f02-r110]{Paradigmi di Computer Vision ed Evoluzione Storica (slide 7--11)}
+\item \hyperref[f02-r157]{Limiti del Multilayer Perceptron per Dati Visivi (slide 12--18)}
+\item \hyperref[f02-r232]{Principi Architetturali e Ispirazione Biologica (slide 19--23)}
+\item \hyperref[f02-r269]{Operatori su Immagini e Sistemi Lineari Traslazione-Invarianti (LSI) (slide 24--34)}
+\item \hyperref[f02-r388]{Il Nucleo della Convoluzione nel Deep Learning (slide 35--39)}
+\item \hyperref[f02-r483]{Convoluzione Multicanale e Feature Maps (slide 40--42)}
+\item \hyperref[f02-r541]{Iperparametri del Livello Convoluzionale: Kernel, Stride e Padding (slide 43--46)}
+\item \hyperref[f02-r618]{Calcolo dei Parametri Apprendibili (slide 47)}
+\item \hyperref[f02-r657]{Visualizzazione dei Filtri e Gerarchia delle Rappresentazioni (slide 48--51)}
+\item \hyperref[f02-r711]{Funzioni di Attivazione e Superamento della ReLU Standard (slide 52--54)}
+\item \hyperref[f02-r802]{Livelli di pooling: aggregazione locale e riduzione spaziale (slide 55--58)}
+\item \hyperref[f02-r891]{Dalle feature al classificatore: pooling adattivo (slide 59)}
+\item \hyperref[f02-r941]{LeNet e AlexNet: evoluzione delle CNN (slide 60--62)}
+\item \hyperref[f02-r974]{VGG: distribuire la capacità lungo la profondità (slide 63--68)}
+\item \hyperref[f02-r1063]{Profondità e residual learning: ResNet (slide 69--75)}
+\item \hyperref[f02-r1134]{Batch Normalization: statistiche e trasformazione appresa (slide 76--86)}
+\item \hyperref[f02-r1273]{Riepilogo Formule Operative}
+\item \hyperref[f02-r1299]{Errata e precisazioni principali}
+\end{indiceargomento}
+% END F02-B0002
+
+% BEGIN F02-B0003
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f02_01.pdf}}
+% END F02-B0003
+
+% BEGIN F02-B0004
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F02-B0004
+
+% BEGIN F02-B0005
+\section{Rappresentazione Digitale delle Immagini nel Calcolatore (slide 3--6)}\label{f02-r47}
+% END F02-B0005
+
+% BEGIN F02-B0006
+Un\textquotesingle immagine reale è la manifestazione visibile di un fenomeno fisico continuo: la luce riflessa dagli elementi di una scena tridimensionale attraversa il sistema ottico di una fotocamera e incide su una superficie fotosensibile bidimensionale. Il calcolatore, tuttavia, è un dispositivo discreto sia nello spazio sia nei valori numerici che può memorizzare. Il passaggio da un segnale ottico continuo alla sua rappresentazione binaria interna esige pertanto due trasformazioni fondamentali, formalizzate nella Slide 4:
+% END F02-B0006
+
+% BEGIN F02-B0007
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Campionamento spaziale (Sampling)}: la scena continua viene discretizzata spazialmente proiettandola su una griglia bidimensionale uniforme composta da \(H \times W\) campioni discreti chiamati \textbf{pixel} (\emph{picture elements}), dove \(H\) denota l\textquotesingle altezza (numero di righe) e \(W\) la larghezza (numero di colonne).
+\item
+  \textbf{Quantizzazione (Quantization)}: l\textquotesingle intensità luminosa continua misurata da ciascun fotosensore in corrispondenza del singolo pixel viene approssimata e mappata su un insieme discreto di \(2^m\) livelli numerici, corrispondenti a una codifica su \(m\) bit per campione.
+\end{enumerate}
+% END F02-B0007
+
+% BEGIN F02-B0008
+Nella quasi totalità delle applicazioni digitali standard si adotta una profondità di quantizzazione pari a \(m = 8\) bit per canale. Lo spazio dei valori discreti associabili a ogni campione comprende dunque \(2^8 = 256\) intensità distinte, convenzionalmente indicizzate nell\textquotesingle intervallo chiuso:
+% END F02-B0008
+
+% BEGIN F02-B0009
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\mathcal{I} \in \{0, 1, 2, \dots, 255\}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0009
+
+% BEGIN F02-B0010
+dove il valore \(0\) corrisponde all\textquotesingle assenza totale di segnale luminoso (nero assoluto) e il valore \(255\) corrisponde alla massima intensità di saturazione del sensore (bianco assoluto).
+% END F02-B0010
+
+% BEGIN F02-B0011
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_88296c28495d02db.png}}
+\caption{Slide 4 -- How Does a Computer Represent an Image?}
+\end{figure}
+% END F02-B0011
+
+% BEGIN F02-B0012
+\subsection{Immagini in Scala di Grigi (Grayscale)}\label{f02-r64}
+% END F02-B0012
+
+% BEGIN F02-B0013
+Nel caso di un\textquotesingle immagine monocromatica (in scala di grigi), ciascun pixel memorizza unicamente l\textquotesingle intensità scalare della radianza luminosa. Un\textquotesingle immagine in scala di grigi di risoluzione \(H \times W\) è a tutti gli effetti una matrice numerica:
+% END F02-B0013
+
+% BEGIN F02-B0014
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{I \in \{0, 1, \dots, 255\}^{H \times W}}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0014
+
+% BEGIN F02-B0015
+in cui l\textquotesingle elemento \(I(i, j)\) rappresenta il livello di grigio del pixel posizionato alla riga \(i\) (con \(1 \le i \le H\)) e alla colonna \(j\) (con \(1 \le j \le W\)). La Slide 5 illustra questo concetto mostrando una porzione rettangolare (patch) di \(6 \times 8\) pixel estratta da una fotografia di un gatto: ciò che l\textquotesingle occhio umano percepisce come contorni morbidi e sfumature di pelo corrisponde, per la memoria del calcolatore, a una pura tabella bidimensionale di interi compresi tra 0 e 255.
+% END F02-B0015
+
+% BEGIN F02-B0016
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_22f0ae8bd20af6e4.png}}
+\caption{Slide 5 -- A Grayscale Image Is a Matrix of Numbers}
+\end{figure}
+% END F02-B0016
+
+% BEGIN F02-B0017
+\subsection{Immagini a Colori: Canali e Spazio RGB}\label{f02-r76}
+% END F02-B0017
+
+% BEGIN F02-B0018
+La percezione cromatica umana è tricromatica: la retina dispone di tre tipologie distinte di coni fotosensibili, sintonizzati su differenti lunghezze d\textquotesingle onda dello spettro visibile. Nel calcolatore, la sintesi del colore viene implementata attraverso lo spazio \textbf{RGB (Red, Green, Blue)}, basato sul principio della sintesi additiva della luce.
+% END F02-B0018
+
+% BEGIN F02-B0019
+A differenza della sintesi sottrattiva tipica delle miscele di pigmenti materiali (dove i colori primari tradizionali insegnati nella scuola dell\textquotesingle infanzia sono rosso, giallo e blu), i dispositivi digitali generano immagini emettendo radiazione luminosa direttamente da pixel composti da fosfori o LED colorati. La sovrapposizione delle tre lunghezze d\textquotesingle onda primarie alla massima intensità genera il bianco puro:
+% END F02-B0019
+
+% BEGIN F02-B0020
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+(R, G, B) = (255, 255, 255)
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0020
+
+% BEGIN F02-B0021
+mentre l\textquotesingle azzeramento di tutte le sorgenti produce il nero:
+% END F02-B0021
+
+% BEGIN F02-B0022
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+(R, G, B) = (0, 0, 0)
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0022
+
+% BEGIN F02-B0023
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_1e8ae7db40c977b5.png}}
+\caption{Slide 6 -- Color Images: Channels and RGB}
+\end{figure}
+% END F02-B0023
+
+% BEGIN F02-B0024
+Un\textquotesingle immagine a colori non può essere descritta da una singola matrice bidimensionale: essa si articola in \textbf{tre matrici spaziali parallele sovrapposte}, denominate \textbf{canali} (\emph{channels}), ciascuna di dimensioni \(H \times W\), che registrano individualmente il contributo di intensità del rispettivo spettro cromatico nell\textquotesingle intervallo \([0, 255]\). Ciascun pixel è identificato da una terna ordinata \((R, G, B)\).
+% END F02-B0024
+
+% BEGIN F02-B0025
+Nel framework formale del Deep Learning e in librerie come PyTorch, un\textquotesingle immagine RGB viene rappresentata mediante un \textbf{tensore tridimensionale} di dimensioni:
+% END F02-B0025
+
+% BEGIN F02-B0026
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{X \in \mathbb{R}^{C \times H \times W}}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0026
+
+% BEGIN F02-B0027
+dove \(C = 3\) indica il numero di canali, \(H\) l\textquotesingle altezza e \(W\) la larghezza (notazione \emph{channels-first}, standard per PyTorch, a differenza della convenzione \emph{channels-last} \(H \times W \times C\) utilizzata storicamente da altre librerie). Ad esempio, una minuscola immagine RGB di dimensioni \(32 \times 32\) (come quelle del benchmark CIFAR-10) è formata da:
+% END F02-B0027
+
+% BEGIN F02-B0028
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+3 \times 32 \times 32 = 3072 \text{ valori scalari}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0028
+
+% BEGIN F02-B0029
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F02-B0029
+
+% BEGIN F02-B0030
+\section{Paradigmi di Computer Vision ed Evoluzione Storica (slide 7--11)}\label{f02-r110}
+% END F02-B0030
+
+% BEGIN F02-B0031
+La disciplina della \textbf{Computer Vision (CV)} si colloca all\textquotesingle intersezione tra l\textquotesingle analisi del segnale e l\textquotesingle intelligenza artificiale, ponendosi l\textquotesingle obiettivo formale di estrarre conoscenza e descrizioni semantiche esplicite a partire da flussi visivi ("elaborare immagini per ottenere dati comprensibili e decisioni operative").
+% END F02-B0031
+
+% BEGIN F02-B0032
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_652c53cda8fe133d.png}}
+\caption{Slide 8 -- Computer Vision}
+\end{figure}
+% END F02-B0032
+
+% BEGIN F02-B0033
+Nella tassonomia accademica dei sistemi visivi si distingue rigorosamente tra due livelli gerarchici di elaborazione:
+% END F02-B0033
+
+% BEGIN F02-B0034
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Image Processing (Elaborazione delle immagini)}: trasforma immagini di ingresso in altre immagini modificate o raffinate (ad esempio aumentando il contrasto, sopprimendo il rumore di acquisizione o correggendo aberrazioni cromatiche). Opera sui pixel trattandoli come entità numeriche astratte, senza comprendere in alcun modo il significato semantico degli oggetti rappresentati o la geometria tridimensionale della scena.
+\item
+  \textbf{Computer Vision propriamente detta}: opera a un livello di astrazione semantica superiore. Il suo fine non è alterare i pixel, bensì interpretare cosa quei valori numerici rappresentino nel mondo reale (compiti di riconoscimento, misurazione volumetrica, guida di veicoli autonomi, videosorveglianza e controllo qualità industriale).
+\end{itemize}
+% END F02-B0034
+
+% BEGIN F02-B0035
+\subsection{La Scomposizione Classica in Due Stadi (slide 9)}\label{f02-r121}
+% END F02-B0035
+
+% BEGIN F02-B0036
+Poiché lo spazio delle configurazioni di pixel grezzi presenta una dimensionalità astronomica, la visione artificiale classica ha storicamente frammentato il problema in due stadi sequenziali disaccoppiati:
+% END F02-B0036
+
+% BEGIN F02-B0037
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f02_02.pdf}}
+% END F02-B0037
+
+% BEGIN F02-B0038
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Feature Extraction (Estrazione delle caratteristiche)}: riduce la dimensionalità grezza dell\textquotesingle immagine calcolando una rappresentazione compatta ed espressiva (il vettore di \emph{feature}), progettata per trattenere le informazioni salienti per lo specifico compito (es. profili dei contorni, orientamento dei gradienti, consistenza della trama) scartando le variazioni irrilevanti (come cambi di luminosità globale).
+\item
+  \textbf{Decision Rule (Regola decisionale)}: prende in ingresso il vettore di feature compatto e formula il verdetto finale (assegnazione della classe, regressione delle coordinate o stima di parametri).
+\end{enumerate}
+% END F02-B0038
+
+% BEGIN F02-B0039
+\subsection{Le Tre Ere Paradigmatiche della Visione Artificiale (slide 10--11)}\label{f02-r136}
+% END F02-B0039
+
+% BEGIN F02-B0040
+L\textquotesingle evoluzione della Computer Vision dagli anni \textquotesingle70 a oggi è scandita da tre paradigmi metodologici:
+% END F02-B0040
+
+% BEGIN F02-B0041
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_28b47cf024ee150a.png}}
+\caption{Slide 10 -- Evolving Paradigms}
+\end{figure}
+% END F02-B0041
+
+% BEGIN F02-B0042
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Periodo Storico
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Feature Extraction
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Decision Rule
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Caratteristiche del Modello
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Fino al 2000} & Progettata a mano (\emph{Handcrafted}) & Progettata a mano (\emph{Handcrafted}) & Regole euristiche basate su soglie fisse, allineamento di maschere rigide e modelli geometrici analitici formulati dall\textquotesingle esperto umano. \\
+\textbf{Anni 2000 -- 2012} & Progettata a mano (\emph{Handcrafted}) & Appresa statisticamente (\emph{Learned}) & Descrittori ingegnerizzati complessi (es. SIFT, HOG, SURF) combinati con classificatori statistici di Machine Learning (SVM, Random Forest, AdaBoost). \\
+\textbf{2012 -- Oggi} & \textbf{Appresa congiuntamente dai dati} & \textbf{Appresa congiuntamente dai dati} & \textbf{Deep Learning End-to-End}: reti neurali convoluzionali profonde (spartiacque storico: \textbf{AlexNet}, 2012). Estrazione delle feature e classificazione sono unificate e ottimizzate simultaneamente mediante differenziazione automatica. \\
+\end{longtable}
+% END F02-B0042
+
+% BEGIN F02-B0043
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_e8accdee14bba428.png}}
+\caption{Slide 11 -- Example: People Detection}
+\end{figure}
+% END F02-B0043
+
+% BEGIN F02-B0044
+L\textquotesingle esempio emblematico mostrato nella Slide 11 riguarda il compito di \textbf{rilevamento di pedoni (People Detection)}: * \textbf{Prima del 2000}: si disegnavano a mano delle sagome geometriche standard (\emph{template} stilizzati del corpo umano) e le si faceva scorrere sull\textquotesingle immagine, verificando mediante correlazione visiva se la sovrapposizione superava una certa soglia arbitraria. * \textbf{Negli anni 2000}: si calcolavano i descrittori \textbf{HOG (Histogram of Oriented Gradients)} per catturare le direzioni dominanti dei gradienti lungo la silhouette della persona, e si addestrava un classificatore Support Vector Machine (SVM) per discriminare tra la classe pedone e lo sfondo. * \textbf{Con l\textquotesingle avvento di AlexNet nel 2012}: si alimenta l\textquotesingle immagine direttamente a una rete convoluzionale profonda; il modello apprende dai dati grezzi sia i filtri per riconoscere la sagoma sia i pesi per la classificazione finale, superando nettamente ogni prestazione manuale precedente.
+% END F02-B0044
+
+% BEGIN F02-B0045
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F02-B0045
+
+% BEGIN F02-B0046
+\section{Limiti del Multilayer Perceptron per Dati Visivi (slide 12--18)}\label{f02-r157}
+% END F02-B0046
+
+% BEGIN F02-B0047
+Le reti neurali convoluzionali non ripudiano la matematica del Multilayer Perceptron (\hyperref[fonte01]{Multilayer Perceptron}), bensì ne condividono l\textquotesingle impalcatura teorica fondamentale (Slide 13):
+% END F02-B0047
+
+% BEGIN F02-B0048
+\begin{itemize}
+\tightlist
+\item
+  Sono costituite da strati di neuroni artificiali dotati di pesi e bias apprendibili.
+\item
+  Ciascun neurone calcola una trasformazione lineare (prodotto scalare tra pesi e input) seguita da una funzione di attivazione non lineare.
+\item
+  L\textquotesingle intera architettura definisce una \textbf{funzione continua e differenziabile a tratti}, addestrabile end-to-end tramite l\textquotesingle algoritmo di retropropagazione del gradiente (\textbf{Backpropagation}).
+\end{itemize}
+% END F02-B0048
+
+% BEGIN F02-B0049
+Tuttavia, l\textquotesingle applicazione diretta di un MLP alle immagini svela immediatamente limiti rilevanti, sia di natura computazionale sia di compatibilità geometrica.
+% END F02-B0049
+
+% BEGIN F02-B0050
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_8e5f42de7af09f0f.png}} \pandocbounded{\includegraphics[keepaspectratio]{figure/fig_a00db1b9d9871c04.png}}
+% END F02-B0050
+
+% BEGIN F02-B0051
+\subsection{Esplosione Parametrica e Inefficienza Computazionale (slide 14--16)}\label{f02-r170}
+% END F02-B0051
+
+% BEGIN F02-B0052
+Nelle slide 14 e 15 vengono poste due domande fondamentali:
+% END F02-B0052
+
+% BEGIN F02-B0053
+\begin{quote}
+\textbf{Domanda 1:} Come rappresentiamo un\textquotesingle immagine in modo da poterla fornire in ingresso a un MLP?\\
+\textbf{Domanda 2:} Di quanti parametri ha bisogno l\textquotesingle MLP per elaborarla?
+\end{quote}
+% END F02-B0053
+
+% BEGIN F02-B0054
+La risposta alla Domanda 1 impone l\textquotesingle operazione di \textbf{appiattimento (Flattening)}: poiché i neuroni di uno strato denso (Fully Connected) accettano unicamente ingressi monodimensionali, la matrice o il tensore dell\textquotesingle immagine deve essere "srotolato" in un unico vettore colonna \(x \in \mathbb{R}^D\). Per una matrice RGB \(32 \times 32\):
+% END F02-B0054
+
+% BEGIN F02-B0055
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+x \in \mathbb{R}^{3 \cdot 32 \cdot 32} = \mathbb{R}^{3072}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0055
+
+% BEGIN F02-B0056
+La risposta alla Domanda 2 svela la drammatica esplosione del numero di parametri. Consideriamo un MLP dotato di un singolo strato nascosto estremamente modesto, composto da soli \(M = 512\) neuroni:
+% END F02-B0056
+
+% BEGIN F02-B0057
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_80cfb03b700de293.png}}
+\caption{Slide 16 -- MLP on Images: Counting the Parameters}
+\end{figure}
+% END F02-B0057
+
+% BEGIN F02-B0058
+La matrice dei pesi dello strato è \(W \in \mathbb{R}^{512 \times 3072}\) e il vettore dei bias è \(b \in \mathbb{R}^{512}\). Il conteggio esatto dei parametri liberi risulta:
+% END F02-B0058
+
+% BEGIN F02-B0059
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\text{Parametri} = (512 \times 3072) + 512 = 1.572.864 + 512 = \mathbf{1.573.376}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0059
+
+% BEGIN F02-B0060
+Oltre un milione e mezzo di parametri per un\textquotesingle immagine giocattolo di appena \(32 \times 32\) pixel! Se consideriamo una risoluzione comune per la visione artificiale moderna (come lo standard ImageNet da \(224 \times 224\) pixel RGB), il vettore di ingresso contiene:
+% END F02-B0060
+
+% BEGIN F02-B0061
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+D = 3 \times 224 \times 224 = 150.528 \text{ componenti}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0061
+
+% BEGIN F02-B0062
+Collegando questo ingresso agli stessi 512 neuroni nascosti, il numero di parametri lievita a:
+% END F02-B0062
+
+% BEGIN F02-B0063
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\text{Parametri} = (512 \times 150.528) + 512 = 77.070.336 + 512 = \mathbf{77.070.848}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0063
+
+% BEGIN F02-B0064
+Uno strato singolo richiede oltre \textbf{77 milioni di pesi}. Per un\textquotesingle immagine ad alta definizione (\(1000 \times 1000\) pixel) e uno strato nascosto proporzionato, si supererebbe ampiamente il miliardo di parametri per un solo livello. Questa mole di pesi ha un costo elevato di calcolo e memoria e può rendere più difficile generalizzare con pochi dati; il numero dei pesi da solo non dimostra overfitting.
+% END F02-B0064
+
+% BEGIN F02-B0065
+\subsection{Criticità Strutturali dell\textquotesingle MLP sulle Immagini (slide 17)}\label{f02-r207}
+% END F02-B0065
+
+% BEGIN F02-B0066
+Al di là del costo computazionale, l\textquotesingle MLP denso non incorpora esplicitamente la struttura geometrica intrinseca dei dati visivi:
+% END F02-B0066
+
+% BEGIN F02-B0067
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_f907e401d7aababd.png}}
+\caption{Slide 17 -- MLP on Images: What Else Goes Wrong?}
+\end{figure}
+% END F02-B0067
+
+% BEGIN F02-B0068
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Perdita della struttura topologica spaziale (\emph{Loss of spatial information})}: Lo srotolamento è invertibile e non elimina i valori dei pixel; è il livello denso a non imporre esplicitamente la geometria della griglia. In un vettore piatto, la distanza tra il pixel \((0, 0)\) e il suo vicino adiacente \((0, 1)\) è trattata con la medesima neutralità della distanza tra il pixel \((0, 0)\) e l\textquotesingle angolo opposto \((31, 31)\). Se applicassimo a tutte le immagini di addestramento una permutazione casuale fissa di pixel, l\textquotesingle immagine risulterebbe incomprensibile per un essere umano, ma la capacità di apprendimento di un MLP rimarrebbe esattamente invariata.
+\item
+  \textbf{Mancanza di invarianza/equivarianza alla traslazione (\emph{No translation robustness})}: in un MLP, a ogni indice del vettore di ingresso corrisponde un peso distinto. Se un pattern visivo (ad esempio il volto di un gatto) si sposta dall\textquotesingle angolo superiore sinistro a quello inferiore destro dell\textquotesingle immagine, esso attiverà componenti del vettore e pesi completamente diversi. L\textquotesingle MLP non impone la condivisione spaziale dei pesi: apprendere lo stesso pattern in posizioni diverse può richiedere più esempi.
+\item
+  \textbf{Assenza di una gerarchia locale imposta dall'architettura}: il mondo visivo naturale è strutturato secondo una gerarchia compositiva (i pixel formano contorni, i contorni si combinano in forme geometriche, le forme compongono parti di oggetti e le parti formano l\textquotesingle oggetto intero). La connettività densa e uniforme di un MLP non fornisce alcun vincolo architetturale che guidi la rete verso questa progressiva astrazione.
+\end{enumerate}
+% END F02-B0068
+
+% BEGIN F02-B0069
+\subsection{Le Proprietà Fisiche delle Immagini e l\textquotesingle Inductive Bias (slide 18)}\label{f02-r217}
+% END F02-B0069
+
+% BEGIN F02-B0070
+I dati visivi naturali possiedono due regolarità utili in molti compiti:
+% END F02-B0070
+
+% BEGIN F02-B0071
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Proprietà del segnale: Località e Continuità Spaziale (\emph{Spatial Locality})}: la luce riflessa dagli oggetti del mondo fisico varia nello spazio in modo continuo. Di conseguenza, i pixel spazialmente vicini presentano una \textbf{fortissima correlazione statistica}: il valore di intensità di un pixel \(I(x, y)\) fornisce un\textquotesingle enorme quantità di informazione sul valore del pixel contiguo \(I(x+1, y)\), mentre pixel a grande distanza hanno correlazione via via decrescente.
+\item
+  \textbf{Proprietà semantica: Indipendenza del contenuto dalla posizione (\emph{Translation Invariance})}: l\textquotesingle identità semantica di un oggetto è invariante rispetto alla sua collocazione nel fotogramma. Un\textquotesingle automobile rimane un\textquotesingle automobile sia che si trovi al centro, a destra o a sinistra dell\textquotesingle inquadratura.
+\end{enumerate}
+% END F02-B0071
+
+% BEGIN F02-B0072
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_3f2731566306d237.png}}
+\caption{Slide 18 -- Spatial Locality}
+\end{figure}
+% END F02-B0072
+
+% BEGIN F02-B0073
+Il grafico mostrato nella Slide 18 traccia la correlazione empirica tra \(I(x, y)\) e \(I(x+d, y)\) in funzione della distanza euclidea \(d\) in pixel: per distanze minime (\(d \to 0\)) la correlazione è quasi unitaria, per poi decadere rapidamente al crescere di \(d\).
+% END F02-B0073
+
+% BEGIN F02-B0074
+L\textquotesingle integrazione di queste due evidenze nella struttura di una rete neurale costituisce un potente \textbf{Inductive Bias} (bias induttivo): anziché costringere l\textquotesingle algoritmo a cercare una funzione predittiva nell\textquotesingle intero e sterminato spazio di tutte le funzioni astratte possibili (spazio delle ipotesi dell\textquotesingle MLP), restringiamo a priori l\textquotesingle architettura alle sole funzioni che rispettano la località spaziale e l\textquotesingle invarianza traslazionale. Ciò abbatte la complessità di calcolo e può favorire la generalizzazione quando queste ipotesi sono appropriate.
+% END F02-B0074
+
+% BEGIN F02-B0075
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F02-B0075
+
+% BEGIN F02-B0076
+\section{Principi Architetturali e Ispirazione Biologica (slide 19--23)}\label{f02-r232}
+% END F02-B0076
+
+% BEGIN F02-B0077
+Le CNN riprendono un\textquotesingle intuizione della visione biologica: combinare risposte locali in rappresentazioni via via più complesse. Il campo recettivo descrive la porzione di ingresso che può influenzare un\textquotesingle unità. L\textquotesingle analogia fra elaborazione locale e riconoscimento globale motiva l\textquotesingle architettura, ma non significa che la rete riproduca esattamente il sistema visivo.
+% END F02-B0077
+
+% BEGIN F02-B0078
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_1a4c9fb2bbf3f2dc.png}}
+\caption{Slide 19 -- Un approccio locale e gerarchico}
+\end{figure}
+% END F02-B0078
+
+% BEGIN F02-B0079
+\subsection{I Tre Blocchi Costruttivi della CNN (slide 20--22)}\label{f02-r238}
+% END F02-B0079
+
+% BEGIN F02-B0080
+Per emulare artificialmente questo principio di calcolo, una rete convoluzionale standard combina tre blocchi architetturali (Slide 21):
+% END F02-B0080
+
+% BEGIN F02-B0081
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Livelli Convoluzionali (Convolutional Layers)}: applicano banchi di filtri locali lineari che scorrono sull\textquotesingle immagine per estrarre mappe di feature, sfruttando la connettività sparsa e la condivisione dei parametri.
+\item
+  \textbf{Funzioni di Attivazione (Activation Functions)}: introducono non linearità puntuali indispensabili per impedire il collasso algebrico degli strati e consentire l\textquotesingle apprendimento di funzioni complesse.
+\item
+  \textbf{Livelli di Pooling (Pooling Layers)}: operano un sottocampionamento spaziale progressivo, riducendo la risoluzione geometrica delle mappe e allargando il campo recettivo per gli strati successivi.
+\end{enumerate}
+% END F02-B0081
+
+% BEGIN F02-B0082
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_085569bebb2d4f0a.png}}
+\caption{Slide 22 -- Architectural Overview}
+\end{figure}
+% END F02-B0082
+
+% BEGIN F02-B0083
+Lo schema complessivo di una classica architettura convoluzionale (Slide 22) si struttura secondo la seguente sequenza:
+% END F02-B0083
+
+% BEGIN F02-B0084
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f02_03.pdf}}
+% END F02-B0084
+
+% BEGIN F02-B0085
+Un tensore di ingresso (es. \(32 \times 32 \times 3\)) viene elaborato dal primo strato convoluzionale: le dimensioni spaziali rimangono controllate mentre il numero di canali viene espanso (es. a 32 canali). Il livello di pooling dimezza la risoluzione spaziale (portandola a \(16 \times 16\)), mantenendo inalterata la profondità dei canali. Una seconda convoluzione rielabora i canali (portandoli a 16), e un successivo pooling riduce la griglia a \(8 \times 8 \times 16\).
+% END F02-B0085
+
+% BEGIN F02-B0086
+Al termine dello stadio estrattivo, il volume compatto risultante viene appiattito in un vettore monodimensionale di feature ad alto livello (\(8 \times 8 \times 16 = 1024\) elementi), che viene infine classificato da uno strato denso standard (MLP). \textbf{Il sistema è continuo e differenziabile a tratti}: il gradiente della funzione di perdita fluisce a ritroso lungo tutti i livelli, aggiornando simultaneamente sia i pesi del classificatore sia i parametri di ciascun filtro convoluzionale.
+% END F02-B0086
+
+% BEGIN F02-B0087
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F02-B0087
+
+% BEGIN F02-B0088
+\section{Operatori su Immagini e Sistemi Lineari Traslazione-Invarianti (LSI) (slide 24--34)}\label{f02-r269}
+% END F02-B0088
+
+% BEGIN F02-B0089
+Per formalizzare matematicamente il funzionamento del livello convoluzionale occorre comprendere la natura degli operatori bidimensionali del processamento numerico dei segnali visivi (Slide 24):
+% END F02-B0089
+
+% BEGIN F02-B0090
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Operatori puntuali (Point operators)}: il valore del pixel di uscita \(o(x, y)\) dipende esclusivamente dal valore assunto dal pixel di ingresso nella medesima coordinata \(i(x, y)\). Esempi tipici sono la correzione di contrasto/luminosità e la correzione gamma con parametri fissati.
+\item
+  \textbf{Operatori locali o filtri spaziali (Local operators)}: il valore del pixel di uscita \(o(x, y)\) viene determinato elaborando congiuntamente un insieme compatto di pixel appartenenti a un intorno geometrico (un vicinato locale) circostante la coordinata \((x, y)\).
+\end{itemize}
+% END F02-B0090
+
+% BEGIN F02-B0091
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_cf3c8b044f550533.png}}
+\caption{Slide 25 -- LSI Operators}
+\end{figure}
+% END F02-B0091
+
+% BEGIN F02-B0092
+Una classe fondamentale di operatori locali è costituita dagli \textbf{operatori lineari e invarianti alla traslazione} (\textbf{LSI - Linear Shift-Invariant operators}, Slide 25). Un operatore locale \(\mathcal{T}\) si dice LSI se soddisfa due condizioni: 1. \textbf{Linearità}: \(\mathcal T(aX+bY)=a\mathcal T(X)+b\mathcal T(Y)\). L\textquotesingle annotazione della slide 25 che collega «linear» al movimento lungo righe e colonne non è corretta: la linearità riguarda la sovrapposizione dei segnali. Un filtro massimo scorre allo stesso modo ma non è lineare. Un bias non nullo rende la trasformazione affine. 2. \textbf{Invarianza alla traslazione (Shift-Invariance)}: applica \textbf{la medesima identica funzione} a ogni posizione spaziale dell\textquotesingle immagine, indipendentemente dalla posizione della finestra.
+% END F02-B0092
+
+% BEGIN F02-B0093
+Applicare un operatore LSI a un\textquotesingle immagine equivale algebricamente a eseguire la \textbf{convoluzione} tra l\textquotesingle immagine e la risposta impulsiva dell\textquotesingle operatore, denominata \textbf{kernel} (o filtro).
+% END F02-B0093
+
+% BEGIN F02-B0094
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_32595760ed9de60f.png}}
+\caption{Slide 26 -- LSI Operators: Examples}
+\end{figure}
+% END F02-B0094
+
+% BEGIN F02-B0095
+Tra gli operatori LSI classici ampiamente impiegati nella Computer Vision pre-deep learning figurano (Slide 26): * \textbf{Filtro di media (Mean filtering)}: calcola la media aritmetica non pesata dei pixel nel vicinato, producendo un effetto di sfocatura (\emph{smoothing}). * \textbf{Filtro gaussiano (Gaussian filtering)}: assegna pesi decrescenti a campana gaussiana in base alla distanza dal centro, riducendo il rumore ad alta frequenza preservando meglio i contorni. * \textbf{Filtri derivativi (es. Sobel, Prewitt)}: calcolano le differenze discrete di intensità tra pixel adiacenti. Poiché la derivata prima spaziale evidenzia le discontinuità repentine di intensità, questi filtri estraggono i contorni (\emph{edges}) degli oggetti.
+% END F02-B0095
+
+% BEGIN F02-B0096
+\subsection{\texorpdfstring{Esempio Calcolato a Mano: Filtro di Media \(3 \times 3\) (slide 27--31)}{Esempio Calcolato a Mano: Filtro di Media 3 \textbackslash times 3 (slide 27--31)}}\label{f02-r291}
+% END F02-B0096
+
+% BEGIN F02-B0097
+Nelle slide 27--31 viene illustrata l\textquotesingle applicazione di un filtro di media con kernel \(3 \times 3\) su una porzione di immagine reale in scala di grigi.
+% END F02-B0097
+
+% BEGIN F02-B0098
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_f50ee7901473242e.png}}
+\caption{Slide 27 -- Sliding a Filter Over an Image: 3 × 3 Mean Filter}
+\end{figure}
+% END F02-B0098
+
+% BEGIN F02-B0099
+Il kernel del filtro di media è una matrice quadrata \(3 \times 3\) i cui coefficienti sommano a 1:
+% END F02-B0099
+
+% BEGIN F02-B0100
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+K = \begin{bmatrix}
+1/9 & 1/9 & 1/9 \\
+1/9 & 1/9 & 1/9 \\
+1/9 & 1/9 & 1/9
+\end{bmatrix}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0100
+
+% BEGIN F02-B0101
+Alla coordinata spaziale iniziale \((x_0, y_0) = (13, 10)\), i pixel dell\textquotesingle immagine coperti dalla finestra del filtro sono:
+% END F02-B0101
+
+% BEGIN F02-B0102
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+P_{(13, 10)} = \begin{bmatrix}
+147 & 77 & 44 \\
+110 & 128 & 135 \\
+112 & 116 & 115
+\end{bmatrix}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0102
+
+% BEGIN F02-B0103
+L\textquotesingle operazione locale consiste nel moltiplicare elemento per elemento ciascun pixel per il corrispondente coefficiente del kernel e sommare i 9 prodotti risultanti:
+% END F02-B0103
+
+% BEGIN F02-B0104
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+\text{Output} &= \frac{1}{9}(147) + \frac{1}{9}(77) + \frac{1}{9}(44) + \frac{1}{9}(110) + \frac{1}{9}(128) + \frac{1}{9}(135) + \frac{1}{9}(112) + \frac{1}{9}(116) + \frac{1}{9}(115) \\
+&= \frac{147 + 77 + 44 + 110 + 128 + 135 + 112 + 116 + 115}{9} \\
+&= \frac{984}{9} \approx 109.33 \longrightarrow 109
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0104
+
+% BEGIN F02-B0105
+Il valore scalare risultante (109) viene trascritto nella mappa di uscita. Il filtro viene quindi traslato linearmente di un pixel verso destra lungo la riga:
+% END F02-B0105
+
+% BEGIN F02-B0106
+\begin{itemize}
+\tightlist
+\item
+  Alla coordinata \((14, 10)\) (Slide 28): la finestra copre un nuovo set di pixel con somma 895, producendo un\textquotesingle uscita di \(\frac{895}{9} \approx 99.4 \to \mathbf{99}\).
+\item
+  Alla coordinata \((15, 10)\) (Slide 29): la finestra copre il nuovo vicinato con somma 867, producendo \(\frac{867}{9} \approx \mathbf{96}\).
+\item
+  Alla coordinata \((16, 10)\) (Slide 30): la finestra copre il vicinato con somma 998, producendo \(\frac{998}{9} \approx \mathbf{111}\).
+\end{itemize}
+% END F02-B0106
+
+% BEGIN F02-B0107
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_841268a2f8180203.png}} \pandocbounded{\includegraphics[keepaspectratio]{figure/fig_945718f1e47f39ff.png}}
+% END F02-B0107
+
+% BEGIN F02-B0108
+Ripetendo l\textquotesingle operazione per tutte le coordinate si ottiene la mappa filtrata (Slide 31). In assenza di accorgimenti per i bordi, l\textquotesingle immagine risultante subisce una lieve riduzione di dimensioni (da \(32 \times 24\) a \(30 \times 22\)).
+% END F02-B0108
+
+% BEGIN F02-B0109
+\subsection{Chiarimento Didattico: Dove Viene Collocato il Valore Calcolato?}\label{f02-r338}
+% END F02-B0109
+
+% BEGIN F02-B0110
+Durante la spiegazione dell\textquotesingle operatore a finestra mobile emergono spesso dubbi sul significato dell\textquotesingle uscita e sul suo posizionamento:
+% END F02-B0110
+
+% BEGIN F02-B0111
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  \textbf{Un filtro locale modifica l\textquotesingle immagine sovrascrivendo i pixel coperti?}\\
+  No. L\textquotesingle immagine di uscita è inizialmente una matrice vuota. L\textquotesingle applicazione del kernel su un\textquotesingle intera finestra di \(3 \times 3\) pixel non produce 9 valori, bensì \textbf{un singolo valore scalare}. Questo valore viene inserito in una coordinata specifica della nuova immagine di output, mentre i pixel originali rimangono intatti per i calcoli successivi.
+\item
+  \textbf{In quale cella dell\textquotesingle output viene inserito lo scalare calcolato?}\\
+  Dipende dalla convenzione adottata per il sistema di coordinate del filtro: La scelta del centro o dell\textquotesingle angolo superiore sinistro è una convenzione di indicizzazione. Non distingue convoluzione e correlazione: la convoluzione ribalta il kernel lungo entrambi gli assi, mentre la correlazione lo applica senza ribaltarlo. Per un kernel simmetrico i risultati coincidono. Con patch \([1,2]\) e pesi \([3,4]\), la correlazione dà \(1\cdot3+2\cdot4=11\), l\textquotesingle applicazione ribaltata dà \(1\cdot4+2\cdot3=10\). Limiti interi inclusivi da \(-3\) a \(3\) comprendono \textbf{7}, non 6, posizioni.
+\item
+  \textbf{Quante volte viene utilizzato ciascun pixel dell\textquotesingle input?}\\
+  Un pixel interno viene condiviso e riutilizzato tante volte quante sono le posizioni del filtro che lo includono all\textquotesingle interno della propria finestra. Per un kernel \(3 \times 3\) con passo unitario, ogni pixel interno entra nel calcolo di \textbf{9 finestre distinte}, garantendo un\textquotesingle altissima ridondanza e coerenza spaziale nel segnale estratto.
+\end{enumerate}
+% END F02-B0111
+
+% BEGIN F02-B0112
+\subsection{Formalizzazione Matematica dell\textquotesingle Operatore LSI (slide 32--34)}\label{f02-r351}
+% END F02-B0112
+
+% BEGIN F02-B0113
+Data un\textquotesingle immagine discreta di ingresso \(i(x, y)\), l\textquotesingle uscita \(o(x, y)\) prodotta da un operatore LSI \(\mathcal{T}\) con kernel discreto \(K(x, y)\) è formalmente definita da una doppia sommatoria (Slide 32):
+% END F02-B0113
+
+% BEGIN F02-B0114
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{o(x, y) = \mathcal{T}\{i\}(x, y) = \sum_{m} \sum_{n} i(m, n) \cdot K(x - m, y - n)}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0114
+
+% BEGIN F02-B0115
+dove \(K(x, y) = \mathcal{T}\{\delta\}(x, y)\) rappresenta la \textbf{risposta all\textquotesingle impulso} dell\textquotesingle operatore applicato alla delta di Kronecker bidimensionale \(\delta(x, y)\).
+% END F02-B0115
+
+% BEGIN F02-B0116
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_77cac5b1f31f104c.png}} \pandocbounded{\includegraphics[keepaspectratio]{figure/fig_9bdd95a5fa59678a.png}}
+% END F02-B0116
+
+% BEGIN F02-B0117
+Le due proprietà algebriche fondamentali enunciate nella Slide 34 sono:
+% END F02-B0117
+
+% BEGIN F02-B0118
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Linearità}: \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+  \mathcal{T}\{a \cdot i_1 + b \cdot i_2\} = a \cdot \mathcal{T}\{i_1\} + b \cdot \mathcal{T}\{i_2\}, \quad \forall a, b \in \mathbb{R}
+  $
+\end{adjustbox}
+\end{center}
+\item
+  \textbf{Invarianza alla traslazione (Shift-Invariance / Translation Equivariance)}:\\
+  Sia \(S_{(x_0, y_0)}\) l\textquotesingle operatore di traslazione spaziale definito da \((S i)(x, y) = i(x - x_0, y - y_0)\). Allora: \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+  \boxed{\mathcal{T}\{S i\} = S \mathcal{T}\{i\}}
+  $
+\end{adjustbox}
+\end{center}
+\end{enumerate}
+% END F02-B0118
+
+% BEGIN F02-B0119
+In termini discorsivi: \textbf{traslare l\textquotesingle immagine e poi applicare il filtro produce lo stesso identico risultato che applicare il filtro e successivamente traslare la mappa di uscita}.
+% END F02-B0119
+
+% BEGIN F02-B0120
+\subsubsection{L\textquotesingle Intuizione Fisica: Risposta Massima e Sovrapposizione di Forme}\label{f02-r378}
+% END F02-B0120
+
+% BEGIN F02-B0121
+Il significato profondo del prodotto di convoluzione tra un segnale e un kernel può essere compreso analizzando la risposta in 1D o 2D: il valore di uscita misura il grado di somiglianza locale (allineamento per prodotto scalare) tra il profilo del filtro e la porzione di segnale sottostante.
+% END F02-B0121
+
+% BEGIN F02-B0122
+L'analogia delle forme a incastro aiuta a interpretare un filtro come rilevatore di pattern. Un buon allineamento può produrre una risposta alta, ma il prodotto scalare dipende anche dall'intensità e dai segni: non è una misura normalizzata di somiglianza e non genera in generale un unico impulso con zero altrove. La delta di Kronecker definisce invece l'impulso usato per identificare la risposta del sistema.
+% END F02-B0122
+
+% BEGIN F02-B0123
+Se il pattern si sposta all\textquotesingle interno dell\textquotesingle immagine, la proprietà di shift-invariance garantisce che anche il picco della risposta si sposterà esattamente della medesima quantità, senza alterare la propria intensità o conformazione.
+% END F02-B0123
+
+% BEGIN F02-B0124
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F02-B0124
+
+% BEGIN F02-B0125
+\section{Il Nucleo della Convoluzione nel Deep Learning (slide 35--39)}\label{f02-r388}
+% END F02-B0125
+
+% BEGIN F02-B0126
+Il passaggio rivoluzionario dalla Computer Vision classica al Deep Learning risiede in un cambio di paradigma fondamentale (Slide 35): \textbf{i coefficienti del kernel non vengono più progettati a mano da un esperto umano, ma vengono trattati come parametri liberi da apprendere direttamente dai dati mediante Backpropagation}.
+% END F02-B0126
+
+% BEGIN F02-B0127
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_0d11516aaea9fd48.png}}
+\caption{Slide 35 -- From LSI Operators to CNNs}
+\end{figure}
+% END F02-B0127
+
+% BEGIN F02-B0128
+\subsection{La Convoluzione 2D come Percettrone Locale Scorrevole (slide 36)}\label{f02-r394}
+% END F02-B0128
+
+% BEGIN F02-B0129
+Si consideri l\textquotesingle operazione di filtraggio locale su una porzione di matrice \(3 \times 3\) con un filtro \(2 \times 2\) (Slide 36):
+% END F02-B0129
+
+% BEGIN F02-B0130
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_b00eef0a3e4b7555.png}}
+\caption{Slide 36 -- What Is Convolution? - In Detail}
+\end{figure}
+% END F02-B0130
+
+% BEGIN F02-B0131
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\text{Input} = \begin{bmatrix} a & b & c \\ d & e & f \\ g & h & i \end{bmatrix}, \qquad \text{Filtro} = \begin{bmatrix} w & x \\ y & z \end{bmatrix}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0131
+
+% BEGIN F02-B0132
+L\textquotesingle uscita nelle quattro posizioni spaziali è:
+% END F02-B0132
+
+% BEGIN F02-B0133
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\text{Output} = \begin{bmatrix}
+a \cdot w + b \cdot x + d \cdot y + e \cdot z & b \cdot w + c \cdot x + e \cdot y + f \cdot z \\
+d \cdot w + e \cdot x + g \cdot y + h \cdot z & e \cdot w + f \cdot x + h \cdot y + i \cdot z
+\end{bmatrix}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0133
+
+% BEGIN F02-B0134
+Se appiattiamo i 4 coefficienti del filtro in un vettore pesi \(w = [w, x, y, z]^T \in \mathbb{R}^4\) e i 4 pixel della prima finestra locale in un vettore \(x_{(1)} = [a, b, d, e]^T \in \mathbb{R}^4\), l\textquotesingle operazione calcolata coincide con:
+% END F02-B0134
+
+% BEGIN F02-B0135
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\text{Out}_{(1, 1)} = w^T x_{(1)} + b
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0135
+
+% BEGIN F02-B0136
+Questa formulazione dimostra che \textbf{un\textquotesingle operazione convoluzionale non è altro che un piccolo percettrone lineare (un micro-MLP) dotato di pochissimi pesi, che viene fatto scorrere linearmente su tutte le coordinate dell\textquotesingle immagine}.
+% END F02-B0136
+
+% BEGIN F02-B0137
+\subsection{I Due Principi Fondamentali: Connettività Sparsa e Condivisione dei Pesi (slide 37--39)}\label{f02-r421}
+% END F02-B0137
+
+% BEGIN F02-B0138
+Le CNN modificano radicalmente l\textquotesingle approccio dell\textquotesingle MLP densamente connesso attraverso due regole di progettazione (Slide 37):
+% END F02-B0138
+
+% BEGIN F02-B0139
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_634e937fa66a3153.png}}
+\caption{Slide 37 -- From LSI Operators to CNNs: Two Key Principles}
+\end{figure}
+% END F02-B0139
+
+% BEGIN F02-B0140
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Connettività Sparsa (Sparse Connectivity, Slide 38)}: ogni neurone dello strato convoluzionale non è connesso a tutti i pixel dell\textquotesingle immagine di ingresso, ma interagisce unicamente con una piccola regione spaziale locale e contigua. Questa regione delimitata costituisce il \textbf{Receptive Field} (campo recettivo) del neurone.
+\item
+  \textbf{Condivisione dei Pesi (Weight Sharing / Parameter Sharing, Slide 39)}: il medesimo insieme di coefficienti numerici (il kernel) e lo stesso termine di bias vengono riutilizzati per calcolare le risposte in \textbf{tutte} le posizioni spaziali dell\textquotesingle immagine. Tutti i neuroni che concorrono alla generazione di una specifica mappa di feature condividono identici pesi.
+\end{enumerate}
+% END F02-B0140
+
+% BEGIN F02-B0141
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_fcd676334826a71d.png}} \pandocbounded{\includegraphics[keepaspectratio]{figure/fig_b0723d836b57c579.png}}
+% END F02-B0141
+
+% BEGIN F02-B0142
+\subsection{Risoluzione del Punto Aperto: Il Concetto e la Crescita del Receptive Field (slide 38)}\label{f02-r433}
+% END F02-B0142
+
+% BEGIN F02-B0143
+Nella slide 38 compare una riflessione didattica lasciata aperta:
+% END F02-B0143
+
+% BEGIN F02-B0144
+\begin{quote}
+\emph{"Questo è importante: più mi sposto in profondità, maggiore è ... "}
+\end{quote}
+% END F02-B0144
+
+% BEGIN F02-B0145
+La risposta analitica e concettuale è: \textbf{il Receptive Field (campo recettivo teorico) cresce progressivamente all\textquotesingle aumentare della profondità della rete}.
+% END F02-B0145
+
+% BEGIN F02-B0146
+Si analizzi la meccanica di composizione su più strati successivi: * Un neurone appartenente alla prima mappa di feature possiede un campo recettivo limitato, pari all\textquotesingle estensione spaziale del primo filtro (ad esempio \(3 \times 3\) pixel dell\textquotesingle immagine di input). * Un neurone del secondo strato convoluzionale elabora una finestra \(3 \times 3\) della mappa di feature prodotta dal primo strato. Ciascuno di questi 9 elementi, a sua volta, sintetizza l\textquotesingle informazione di una propria finestra \(3 \times 3\) sull\textquotesingle immagine originaria. * Attraverso la sovrapposizione geometrica delle finestre, il singolo neurone del secondo strato "vede" indirettamente un\textquotesingle area considerevolmente più ampia dell\textquotesingle immagine originale (un patch di \(5 \times 5\) pixel). * Procedendo verso strati via via più profondi (specialmente in presenza di stride o pooling), il campo recettivo teorico si espande a ventaglio fino a coprire decine o centinaia di pixel, arrivando a comprendere l\textquotesingle intero fotogramma.
+% END F02-B0146
+
+% BEGIN F02-B0147
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f02_04.pdf}}
+% END F02-B0147
+
+% BEGIN F02-B0148
+Questa proprietà risolve un dilemma fondamentale: come può una rete neurale riconoscere oggetti di grandi dimensioni (come un\textquotesingle intera automobile o un volto umano) se i suoi filtri elementari sono minuscoli matrici \(3 \times 3\)? La risposta risiede proprio nella \textbf{crescita del campo recettivo}: non è necessario costruire filtri giganteschi (che comporterebbero troppi parametri), ma basta impilare strati con filtri piccoli per comporre gerarchicamente le informazioni locali in rappresentazioni globali.
+% END F02-B0148
+
+% BEGIN F02-B0149
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F02-B0149
+
+% BEGIN F02-B0150
+\subsection{Crescita del campo recettivo: risposta al dubbio della slide 38}\label{f02-r473}
+% END F02-B0150
+
+% BEGIN F02-B0151
+Il campo recettivo teorico è l\textquotesingle insieme delle posizioni dell\textquotesingle immagine che possono influenzare un\textquotesingle uscita. Non coincide con l\textquotesingle importanza effettiva di ciascun pixel, che dipende dai pesi. Indicando con \(r_\ell\) la sua ampiezza e con \(j_\ell\) la distanza fra due uscite adiacenti misurata sull\textquotesingle immagine iniziale, per kernel di ampiezza \(k_\ell\) e stride \(s_\ell\), senza dilatazione: \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{r_\ell=r_{\ell-1}+(k_\ell-1)j_{\ell-1},\qquad j_\ell=s_\ell j_{\ell-1}.}
+$
+\end{adjustbox}
+\end{center} Si parte da \(r_0=j_0=1\). Una finestra unisce \(k_\ell\) campi del livello precedente, i cui centri sono distanti \(j_{\ell-1}\): dal primo all\textquotesingle ultimo si aggiungono \(k_\ell-1\) intervalli. Con due convoluzioni \(3\times3\) a stride 1 si ottiene \(r_1=3\), \(r_2=5\).
+% END F02-B0151
+
+% BEGIN F02-B0152
+L\textquotesingle esempio orale parte da una griglia \(4\times4\). Un kernel \(2\times2\) a stride 2 produce una griglia \(2\times2\): ogni uscita riassume quattro pixel. Un altro kernel \(2\times2\) unisce le quattro uscite in un solo valore: \(r_2=2+(2-1)\cdot2=4\), quindi può dipendere dall\textquotesingle intera immagine. Si compongono pattern piccoli in pattern estesi senza apprendere fin dall\textquotesingle inizio un filtro grande quanto l\textquotesingle immagine. Non si può concludere che un filtro grande diretto sia più preciso: i modelli hanno parametrizzazioni differenti e, con attivazioni intermedie, non sono equivalenti.
+% END F02-B0152
+
+% BEGIN F02-B0153
+\section{Convoluzione Multicanale e Feature Maps (slide 40--42)}\label{f02-r483}
+% END F02-B0153
+
+% BEGIN F02-B0154
+Nelle applicazioni reali le immagini di ingresso non sono scalari monodimensionali (possiedono \(C_{in} = 3\) canali cromatici RGB), e gli strati intermedi operano su volumi composti da decine o centinaia di canali di feature.
+% END F02-B0154
+
+% BEGIN F02-B0155
+\subsection{\texorpdfstring{Il Filtro Tridimensionale (\(C_{in} > 1\), slide 40)}{Il Filtro Tridimensionale (C\_\{in\} \textgreater{} 1, slide 40)}}\label{f02-r487}
+% END F02-B0155
+
+% BEGIN F02-B0156
+Quando il volume di ingresso ha forma \(H \times W \times C_{in}\), un filtro convoluzionale \textbf{non è una matrice bidimensionale, bensì un volume tridimensionale (un parallelepipedo parametrico)} di dimensioni:
+% END F02-B0156
+
+% BEGIN F02-B0157
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{K \times K \times C_{in}}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0157
+
+% BEGIN F02-B0158
+Il filtro si estende per l\textquotesingle intera profondità dei canali di ingresso. Esso è composto da una pila di \(C_{in}\) fette bidimensionali distinte di parametri, ciascuna di dimensione \(K \times K\):
+% END F02-B0158
+
+% BEGIN F02-B0159
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+(K_1, K_2, \dots, K_{C_{in}})
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0159
+
+% BEGIN F02-B0160
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_6266defdbcc45253.png}}
+\caption{Slide 40 -- Convolution Over Multiple Input Channels}
+\end{figure}
+% END F02-B0160
+
+% BEGIN F02-B0161
+La formula formale per il calcolo del valore nella mappa di feature \(F(i, j)\) alla coordinata spaziale \((i, j)\) è (Slide 40):
+% END F02-B0161
+
+% BEGIN F02-B0162
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{F(i, j) = b + \sum_{c=1}^{C_{in}} \sum_{m} \sum_{n} I(i + m, j + n, c) \cdot K_c(m, n)}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0162
+
+% BEGIN F02-B0163
+dove \(I(i+m, j+n, c)\) denota il pixel dell\textquotesingle input nel canale \(c\), \(K_c(m, n)\) rappresenta il peso corrispondente nella fetta \(c\) del filtro, e \(b \in \mathbb{R}\) è l\textquotesingle unico termine scalare di bias associato al filtro.
+% END F02-B0163
+
+% BEGIN F02-B0164
+Il calcolo procede dunque secondo tre passi: 1. Si calcola la convoluzione 2D tra il canale di ingresso \(c\) e la rispettiva fetta di kernel \(K_c\). 2. Si sommano i contributi scalari ottenuti attraverso \textbf{tutti} i \(C_{in}\) canali di ingresso. 3. Si aggiunge il bias scalare \(b\).
+% END F02-B0164
+
+% BEGIN F02-B0165
+Il risultato dell\textquotesingle applicazione di questo filtro tridimensionale \(K \times K \times C_{in}\) è \textbf{una e una sola mappa di feature bidimensionale} di dimensioni \(H' \times W'\).
+% END F02-B0165
+
+% BEGIN F02-B0166
+\subsection{\texorpdfstring{Generazione di Più Canali di Uscita (\(C_{out} > 1\), slide 41)}{Generazione di Più Canali di Uscita (C\_\{out\} \textgreater{} 1, slide 41)}}\label{f02-r518}
+% END F02-B0166
+
+% BEGIN F02-B0167
+Se un singolo filtro tridimensionale produce sempre un\textquotesingle unica mappa 2D, come è possibile espandere la profondità del tensore (ad esempio trasformare un ingresso \(32 \times 32 \times 3\) in un volume \(32 \times 32 \times 32\), come visto nella Slide 22)?
+% END F02-B0167
+
+% BEGIN F02-B0168
+A questo proposito è utile richiamare una metafora didattica efficace: se un pescatore prende una trota ogni volta che getta la canna da pesca, per ottenere 32 trote non può pretendere che una sola canna catturi magicamente 32 pesci insieme: deve compiere l\textquotesingle azione di pesca 32 volte distinte.
+% END F02-B0168
+
+% BEGIN F02-B0169
+Allo stesso modo, \textbf{per ottenere \(C_{out}\) mappe di feature distinte dobbiamo applicare \(C_{out}\) filtri tridimensionali indipendenti}:
+% END F02-B0169
+
+% BEGIN F02-B0170
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_65b2598d36400200.png}}
+\caption{Slide 41 -- Delving Deeper: From Filters to Feature Maps}
+\end{figure}
+% END F02-B0170
+
+% BEGIN F02-B0171
+Ciascuno dei \(C_{out}\) filtri possiede un proprio set esclusivo di pesi di dimensione \(K \times K \times C_{in}\) e un proprio bias \(b_k\). Ciascun filtro scorre sull\textquotesingle intero volume di ingresso e genera la propria mappa bidimensionale \(H' \times W'\). Impilando (\emph{stacking}) le \(C_{out}\) mappe di attivazione lungo l\textquotesingle asse della profondità si ottiene il volume di uscita:
+% END F02-B0171
+
+% BEGIN F02-B0172
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{Y \in \mathbb{R}^{H' \times W' \times C_{out}}}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0172
+
+% BEGIN F02-B0173
+Ad esempio, nell\textquotesingle illustrazione della Slide 41: * Ingresso: \(32 \times 32 \times 3\) (\(C_{in} = 3\)). * Strato convoluzionale: \(C_{out} = 6\) filtri indipendenti di dimensione \(5 \times 5 \times 3\). * Uscita: volume di 6 mappe di feature di dimensione \(28 \times 28\), ovvero forma complessiva \(28 \times 28 \times 6\).
+% END F02-B0173
+
+% BEGIN F02-B0174
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F02-B0174
+
+% BEGIN F02-B0175
+\section{Iperparametri del Livello Convoluzionale: Kernel, Stride e Padding (slide 43--46)}\label{f02-r541}
+% END F02-B0175
+
+% BEGIN F02-B0176
+La configurazione operativa di uno strato convoluzionale è governata da quattro iperparametri cardinali (Slide 43--44):
+% END F02-B0176
+
+% BEGIN F02-B0177
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Numero di filtri (\(C_{out}\))}: determina la profondità del volume di uscita, ovvero quante feature maps distinte vengono estratte in parallelo.
+\item
+  \textbf{Dimensione spaziale del kernel (\(K \times K\))}: l\textquotesingle ampiezza geometrica del campo di vista locale dei filtri (generalmente quadrati e dispari: \(3 \times 3\), \(5 \times 5\), \(7 \times 7\)). La terza dimensione coincide per definizione con il numero di canali di ingresso \(C_{in}\).
+\item
+  \textbf{Passo di scorrimento (Stride \(S\))}: il numero di pixel di cui la finestra del filtro si sposta a ogni passo lungo l\textquotesingle asse orizzontale e verticale.
+\item
+  \textbf{Padding spaziale (\(P\))}: il numero di pixel fittizi aggiunti attorno al perimetro dell\textquotesingle immagine di ingresso.
+\end{enumerate}
+% END F02-B0177
+
+% BEGIN F02-B0178
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_14c48838a6c748f3.png}}
+\caption{Slide 44 -- Convolutional Layer Hyperparameters (II)}
+\end{figure}
+% END F02-B0178
+
+% BEGIN F02-B0179
+\subsection{\texorpdfstring{L\textquotesingle Effetto dello Stride (\(S\))}{L\textquotesingle Effetto dello Stride (S)}}\label{f02-r552}
+% END F02-B0179
+
+% BEGIN F02-B0180
+\begin{itemize}
+\tightlist
+\item
+  Con \textbf{\(S = 1\)}, il filtro trasla di una singola unità di pixel adiacente alla volta, scandendo capillarmente ogni coordinata.
+\item
+  Con \textbf{\(S > 1\)} (tipicamente \(S = 2\)), il filtro salta pixel intermedi. L\textquotesingle effetto immediato è una decisa riduzione spaziale delle dimensioni della mappa prodotta (un sottocampionamento diretto): con \(S = 2\) le dimensioni spaziali dell\textquotesingle uscita risultano approssimativamente dimezzate rispetto all\textquotesingle ingresso.
+\end{itemize}
+% END F02-B0180
+
+% BEGIN F02-B0181
+La Slide 44 mostra un input \(7 \times 7\) elaborato con filtro \(3 \times 3\): * Con \(S = 1\) e nessun padding: il filtro trasla di 1 pixel producendo una griglia \(5 \times 5\). * Con \(S = 2\) e nessun padding: il filtro compie salti di 2 pixel (posizioni alle coordinate 1, 3, 5), generando una mappa ridotta \(3 \times 3\).
+% END F02-B0181
+
+% BEGIN F02-B0182
+\subsection{\texorpdfstring{Il Fenomeno dell\textquotesingle Erosione dei Bordi e il Ruolo del Padding (\(P\))}{Il Fenomeno dell\textquotesingle Erosione dei Bordi e il Ruolo del Padding (P)}}\label{f02-r561}
+% END F02-B0182
+
+% BEGIN F02-B0183
+Quando un kernel di ampiezza \(K \times K\) scorre su un\textquotesingle immagine senza uscire dai bordi, le coordinate periferiche non dispongono di un numero sufficiente di vicini per centrare il filtro. Questo comporta due gravi inconvenienti: 1. \textbf{Erosione spaziale (\emph{Border eating phenomenon})}: a ogni strato convoluzionale privo di padding le dimensioni dell\textquotesingle immagine si restringono forzatamente. In reti profonde con decine di livelli, le dimensioni spaziali collasserebbero a \(1 \times 1\) dopo pochissimi strati. 2. \textbf{Sotto-rappresentazione dei bordi}: i pixel situati sugli angoli e lungo le cornici dell\textquotesingle immagine vengono inclusi in un numero di finestre molto inferiore rispetto ai pixel centrali, subendo una perdita ingiustificata di informazione.
+% END F02-B0183
+
+% BEGIN F02-B0184
+Per ovviare a questo problema si introduce il \textbf{Padding (\(P\))}, ovvero una cornice di pixel sintetici aggiunta attorno all\textquotesingle immagine prima del filtraggio (Slide 45--46).
+% END F02-B0184
+
+% BEGIN F02-B0185
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_4bbe8f808d039366.png}}
+\caption{Slide 46 -- Padding: Which Values Do We Add?}
+\end{figure}
+% END F02-B0185
+
+% BEGIN F02-B0186
+Le modalità principali di padding sono: * \textbf{Zero Padding (Constant Padding)}: i pixel di bordo vengono impostati a zero. Rappresenta la scelta di gran lunga prevalente e predefinita nel Deep Learning per via della sua semplicità computazionale. * \textbf{Reflect Padding}: i valori di bordo vengono riempiti specchiando specularmente i pixel interni verso l\textquotesingle esterno, attenuando la formazione di discontinuità artificiali ad alto contrasto sui bordi. * \textbf{Replicate Padding}: copia e ripete l\textquotesingle ultimo valore valido di riga o colonna fino al limite del bordo. * \textbf{Circular Padding}: assume una topologia toroidale periodica, ricopiando il margine opposto dell\textquotesingle immagine.
+% END F02-B0186
+
+% BEGIN F02-B0187
+\subsubsection{Le Convenzioni "Valid" e "Same"}\label{f02-r577}
+% END F02-B0187
+
+% BEGIN F02-B0188
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Padding "valid"}: corrisponde a \(P = 0\). Il filtro elabora unicamente posizioni in cui è interamente contenuto nell\textquotesingle immagine originaria; la mappa di uscita risulta più piccola dell\textquotesingle ingresso.
+\item
+  \textbf{Padding "same"}: dimensiona \(P\) in modo tale che, impostando uno stride unitario (\(S = 1\)), \textbf{le dimensioni spaziali della mappa di uscita siano esattamente identiche a quelle dell\textquotesingle ingresso} (\(H' = H, W' = W\)). Per un kernel quadrato di lato dispari \(K\), la quantità di padding necessaria per ciascun lato è determinata analiticamente da:
+\end{itemize}
+% END F02-B0188
+
+% BEGIN F02-B0189
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{P = \frac{K - 1}{2}}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0189
+
+% BEGIN F02-B0190
+\begin{itemize}
+\tightlist
+\item
+  Per kernel \(3 \times 3 \implies P = \frac{3 - 1}{2} = 1\) pixel di zero-padding su tutti e quattro i lati.
+\item
+  Per kernel \(5 \times 5 \implies P = \frac{5 - 1}{2} = 2\) pixel di padding per lato.
+\item
+  Per kernel \(7 \times 7 \implies P = \frac{7 - 1}{2} = 3\) pixel di padding per lato.
+\end{itemize}
+% END F02-B0190
+
+% BEGIN F02-B0191
+\subsection{Formula Universale per le Dimensioni dell\textquotesingle Uscita}\label{f02-r590}
+% END F02-B0191
+
+% BEGIN F02-B0192
+Dato un volume di ingresso di dimensioni spaziali \(H \times W\), elaborato con kernel \(K \times K\), padding simmetrico \(P\) e stride \(S\), le dimensioni della mappa di feature di uscita \((H', W')\) sono rigorosamente date da:
+% END F02-B0192
+
+% BEGIN F02-B0193
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{H' = \left\lfloor \frac{H - K + 2P}{S} \right\rfloor + 1, \qquad W' = \left\lfloor \frac{W - K + 2P}{S} \right\rfloor + 1}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0193
+
+% BEGIN F02-B0194
+dove \(\lfloor \cdot \rfloor\) denota la funzione parte intera inferiore (\emph{floor}).
+% END F02-B0194
+
+% BEGIN F02-B0195
+\textbf{Verifiche analitiche:} 1. \emph{Esempio Slide 41:} Input \(32 \times 32\), kernel \(5 \times 5\), \(P = 0\), \(S = 1\): \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+   H' = \frac{32 - 5 + 0}{1} + 1 = 27 + 1 = 28 \implies \mathbf{28 \times 28}
+   $
+\end{adjustbox}
+\end{center} 2. \emph{Esempio Slide 44 (S=1):} Input \(7 \times 7\), kernel \(3 \times 3\), \(P = 0\), \(S = 1\): \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+   H' = \frac{7 - 3 + 0}{1} + 1 = 4 + 1 = 5 \implies \mathbf{5 \times 5}
+   $
+\end{adjustbox}
+\end{center} 3. \emph{Esempio Slide 44 (S=2):} Input \(7 \times 7\), kernel \(3 \times 3\), \(P = 0\), \(S = 2\): \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+   H' = \left\lfloor \frac{7 - 3 + 0}{2} \right\rfloor + 1 = \frac{4}{2} + 1 = 3 \implies \mathbf{3 \times 3}
+   $
+\end{adjustbox}
+\end{center}
+% END F02-B0195
+
+% BEGIN F02-B0196
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F02-B0196
+
+% BEGIN F02-B0197
+Per ricavare la dimensione dell\textquotesingle uscita, si considera una sola direzione: l\textquotesingle input con padding ha \(H+2P\) posizioni. Una finestra di ampiezza \(K\) che parte in \(qS\) entra interamente se \(qS+K\leq H+2P\). Il massimo indice è \(q_{\max}=\lfloor(H+2P-K)/S\rfloor\); contando anche l\textquotesingle indice zero si ottiene \(H'=q_{\max}+1\). La stessa derivazione vale per la larghezza. Occorre che la finestra sia compatibile con l\textquotesingle input padded; si assume dilatazione 1.
+% END F02-B0197
+
+% BEGIN F02-B0198
+\section{Calcolo dei Parametri Apprendibili (slide 47)}\label{f02-r618}
+% END F02-B0198
+
+% BEGIN F02-B0199
+L\textquotesingle estrema efficienza delle reti convoluzionali rispetto agli strati densamente connessi emerge con evidenza dal calcolo formale dei parametri apprendibili di uno strato convoluzionale (Slide 47).
+% END F02-B0199
+
+% BEGIN F02-B0200
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_afd3fc828762fcef.png}}
+\caption{Slide 47 -- Number of Learnable Parameters}
+\end{figure}
+% END F02-B0200
+
+% BEGIN F02-B0201
+Dato un volume di ingresso di forma \(H \times W \times C_{in}\) e uno strato convoluzionale definito da \(C_{out}\) filtri di dimensione \(K \times K\), il numero totale di parametri apprendibili è:
+% END F02-B0201
+
+% BEGIN F02-B0202
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\text{Parametri} = (K \times K \times C_{in}) \times C_{out} + C_{out} = C_{out} \cdot (K^2 \cdot C_{in} + 1)}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0202
+
+% BEGIN F02-B0203
+\subsection{Dimostrazione e Scomposizione}\label{f02-r630}
+% END F02-B0203
+
+% BEGIN F02-B0204
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Ciascun filtro tridimensionale possiede dimensione spaziale \(K \times K\) ed estensione in profondità pari a \(C_{in}\). Il numero di coefficienti moltiplicativi (pesi) per ogni singolo filtro è quindi: \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+  \text{Pesi per filtro} = K \times K \times C_{in}
+  $
+\end{adjustbox}
+\end{center}
+\item
+  Essendo presenti \(C_{out}\) filtri distinti, il numero complessivo di pesi moltiplicativi ammonta a: \begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+  (K \times K \times C_{in}) \times C_{out}
+  $
+\end{adjustbox}
+\end{center}
+\item
+  Ciascuno dei \(C_{out}\) filtri dispone di un proprio termine di \textbf{bias additivo scalare} \(b_k \in \mathbb{R}\), condiviso su tutte le coordinate della mappa \(H' \times W'\). Si hanno pertanto esattamente \(C_{out}\) bias apprendibili.
+\item
+  Sommando pesi e bias si ottiene la formula finale.
+\end{enumerate}
+% END F02-B0204
+
+% BEGIN F02-B0205
+\subsection{Il Risultato Chiave: Indipendenza dalla Risoluzione dell\textquotesingle Immagine}\label{f02-r643}
+% END F02-B0205
+
+% BEGIN F02-B0206
+La proprietà teorica e computazionale più straordinaria di questa formula è che \textbf{il numero di parametri apprendibili di uno strato convoluzionale è totalmente indipendente dalle dimensioni spaziali dell\textquotesingle immagine (\(H\) e \(W\))}.
+% END F02-B0206
+
+% BEGIN F02-B0207
+Si consideri un livello convoluzionale con filtri standard \(3 \times 3\), \(C_{in} = 32\) canali in ingresso e \(C_{out} = 64\) filtri in uscita:
+% END F02-B0207
+
+% BEGIN F02-B0208
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\text{Parametri} = (3 \times 3 \times 32) \times 64 + 64 = 288 \times 64 + 64 = 18.432 + 64 = \mathbf{18.496}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0208
+
+% BEGIN F02-B0209
+Che l\textquotesingle immagine di ingresso misuri \(32 \times 32\) pixel, oppure \(1000 \times 1000\) pixel, il numero di parametri liberi dello strato rimane rigorosamente \textbf{18.496} (nell\textquotesingle ordine delle decine di migliaia). Al contrario, come dimostrato nella Sezione \ref{f02-r170}, un MLP per immagini da \(1000 \times 1000\) pixel richiederebbe centinaia di milioni o miliardi di parametri. L\textquotesingle aumento della risoluzione dell\textquotesingle immagine incrementa il numero di operazioni aritmetiche nel forward pass, ma \textbf{non modifica il numero di pesi di quel livello}; non permette però di concludere che il rischio di overfitting dell'intero modello resti invariato.
+% END F02-B0209
+
+% BEGIN F02-B0210
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F02-B0210
+
+% BEGIN F02-B0211
+\section{Visualizzazione dei Filtri e Gerarchia delle Rappresentazioni (slide 48--51)}\label{f02-r657}
+% END F02-B0211
+
+% BEGIN F02-B0212
+Uno dei contributi scientifici più rilevanti dell\textquotesingle architettura \textbf{AlexNet} (Krizhevsky et al., 2012) è consistito nella possibilità di ispezionare visivamente i parametri appresi dal primo strato convoluzionale.
+% END F02-B0212
+
+% BEGIN F02-B0213
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_f416645b624d9f00.png}} \pandocbounded{\includegraphics[keepaspectratio]{figure/fig_a6d4306da3563700.png}}
+% END F02-B0213
+
+% BEGIN F02-B0214
+Il primo strato di AlexNet riceveva immagini RGB (\(C_{in} = 3\)) ed era composto da \(C_{out} = 96\) filtri con dimensione \(11 \times 11\). Poiché ciascun filtro ha dimensione \(11 \times 11 \times 3\), esso può essere direttamente convertito e renderizzato come una minuscola immagine a colori di \(11 \times 11\) pixel (Slide 49).
+% END F02-B0214
+
+% BEGIN F02-B0215
+L\textquotesingle ispezione dei 96 filtri svela pattern regolari e significativi: * Molti filtri apprendono risposte a \textbf{bordi orientati (oriented edge detectors)} ad angolazioni specifiche (orizzontali, verticali, diagonali), con bande alternate di luce e buio. * Altri filtri mostrano selettività cromatica, manifestando gradienti netti o chiazze di colore opposte (\emph{color blobs}, ad esempio transizioni dal rosso al ciano o dal giallo al blu). * Altri ancora assomigliano a filtri di Gabor su diverse frequenze spaziali.
+% END F02-B0215
+
+% BEGIN F02-B0216
+I filtri visualizzati emergono dall'addestramento: alcuni rilevano bordi orientati, contrasti di colore o texture. L'analogia con la visione biologica è qualitativa e non dimostra identità dei meccanismi.
+% END F02-B0216
+
+% BEGIN F02-B0217
+\subsubsection{\texorpdfstring{Forma vs Texture (\emph{Shape over Texture})}{Forma vs Texture (Shape over Texture)}}\label{f02-r673}
+% END F02-B0217
+
+% BEGIN F02-B0218
+Bordi, forme e texture possono contribuire al riconoscimento. Le visualizzazioni mostrano feature locali utili, ma non stabiliscono una priorità universale della forma sulla texture: il risultato dipende dal compito e dall'addestramento.
+% END F02-B0218
+
+% BEGIN F02-B0219
+\subsection{Le Mappe di Attivazione (Activation Maps, slide 50)}\label{f02-r677}
+% END F02-B0219
+
+% BEGIN F02-B0220
+Mentre i filtri rappresentano i parametri statici appresi dalla rete, le \textbf{mappe di attivazione (Activation Maps)} rappresentano le risposte dinamiche dei neuroni a una specifica immagine di ingresso.
+% END F02-B0220
+
+% BEGIN F02-B0221
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_6c2af1f43f562e1b.png}}
+\caption{Slide 50 -- Visualizing Activation Maps}
+\end{figure}
+% END F02-B0221
+
+% BEGIN F02-B0222
+Come mostrato nella Slide 50 (in cui le mappe vengono ricampionate alle dimensioni dell\textquotesingle immagine originale per renderle interpretabili): * Nei primi strati, le mappe si accendono in corrispondenza di singoli pixel o linee sottili che presentano l\textquotesingle orientamento o il colore ricercato dal filtro. * Negli strati intermedi e profondi, le mappe di attivazione non rispondono più a singoli pixel, ma si concentrano su intere regioni coerenti della scena (il muso di un animale, le ruote di un veicolo, una figura umana), evidenziando le aree semantiche su cui la rete focalizza la propria attenzione decisionale.
+% END F02-B0222
+
+% BEGIN F02-B0223
+\subsection{La Gerarchia dei Concetti e il Transfer Learning (slide 51)}\label{f02-r687}
+% END F02-B0223
+
+% BEGIN F02-B0224
+L\textquotesingle impilamento sequenziale di strati convoluzionali realizza una transizione graduale dal segnale grezzo all\textquotesingle astrazione semantica (Slide 51):
+% END F02-B0224
+
+% BEGIN F02-B0225
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_895e1872a6f60602.png}}
+\caption{Slide 51 -- Stacking Layers: A Hierarchy of Concepts}
+\end{figure}
+% END F02-B0225
+
+% BEGIN F02-B0226
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f02_05.pdf}}
+% END F02-B0226
+
+% BEGIN F02-B0227
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Strato 1}: rileva bordi, linee e variazioni elementari di contrasto.
+\item
+  \textbf{Strato 2}: combina linearmente i bordi intercettando angoli (\emph{corners}), incroci a T, archi e trame tessili.
+\item
+  \textbf{Strato 3}: combina le forme geometriche per assemblare parti anatomiche o meccaniche riconoscibili (occhi, nasi, ruote di automobile).
+\item
+  \textbf{Strati profondi}: assemblano le parti per identificare l\textquotesingle oggetto intero nella sua configurazione globale.
+\end{enumerate}
+% END F02-B0227
+
+% BEGIN F02-B0228
+\subsubsection{Implicazioni per il Transfer Learning e il Fine-Tuning}\label{f02-r705}
+% END F02-B0228
+
+% BEGIN F02-B0229
+\begin{itemize}
+\tightlist
+\item
+  Le feature iniziali, come bordi e contrasti, possono essere riutilizzabili fra compiti e domini diversi. La trasferibilità non è universale: dipende dalla compatibilità fra le immagini di partenza e quelle del nuovo problema.
+\end{itemize}
+% END F02-B0229
+
+% BEGIN F02-B0230
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F02-B0230
+
+% BEGIN F02-B0231
+\section{Funzioni di Attivazione e Superamento della ReLU Standard (slide 52--54)}\label{f02-r711}
+% END F02-B0231
+
+% BEGIN F02-B0232
+\subsection{La Necessità Fondamentale della Non-Linearità (slide 53)}\label{f02-r713}
+% END F02-B0232
+
+% BEGIN F02-B0233
+Uno strato convoluzionale puro calcola unicamente una combinazione lineare dei pixel coperti dal kernel. Perché è tassativo interporre una funzione di attivazione non lineare tra livelli convoluzionali successivi?
+% END F02-B0233
+
+% BEGIN F02-B0234
+Si considerino due trasformazioni convoluzionali lineari applicate in cascata:
+% END F02-B0234
+
+% BEGIN F02-B0235
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+y = \mathcal{T}_2(\mathcal{T}_1(x)) = W_2 * (W_1 * x)
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0235
+
+% BEGIN F02-B0236
+Per la proprietà associativa dell\textquotesingle operatore di convoluzione, la composizione di due convoluzioni lineari equivale a un\textquotesingle unica convoluzione con un kernel equivalente \(W_{eq}\):
+% END F02-B0236
+
+% BEGIN F02-B0237
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+W_2 * (W_1 * x) = (W_2 * W_1) * x = W_{eq} * x
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0237
+
+% BEGIN F02-B0238
+\textbf{In assenza di funzioni di attivazione non lineari, una rete profonda composta da cento strati convoluzionali collasserebbe algebricamente in un unico, banale strato convoluzionale lineare}. La profondità non apporterebbe alcun incremento di capacità espressiva. L\textquotesingle inserimento di una non-linearità puntuale rompe questa equivalenza algebrica e conferisce alla rete la capacità di approssimare varietà decisionali complesse.
+% END F02-B0238
+
+% BEGIN F02-B0239
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_805f927f4b8485ec.png}} \pandocbounded{\includegraphics[keepaspectratio]{figure/fig_6c08c2ce08dc0745.png}}
+% END F02-B0239
+
+% BEGIN F02-B0240
+\subsection{Dai Limiti di Sigmoide e Tanh al Successo della ReLU (slide 52--53)}\label{f02-r734}
+% END F02-B0240
+
+% BEGIN F02-B0241
+Storicamente, le prime reti neurali impiegavano come attivazioni la \textbf{Sigmoide} o la \textbf{Tangente Iperbolica (Tanh)} (Slide 52):
+% END F02-B0241
+
+% BEGIN F02-B0242
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\sigma(x) = \frac{1}{1 + e^{-x}}, \qquad \tanh(x) = \frac{e^x - e^{-x}}{e^x + e^{-x}} = \frac{e^{2x} - 1}{e^{2x} + 1}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0242
+
+% BEGIN F02-B0243
+Entrambe queste funzioni presentano due gravi svantaggi nell\textquotesingle addestramento di reti profonde: 1. \textbf{Saturazione e scomparsa del gradiente (\emph{Vanishing Gradient})}: per valori di ingresso elevati (positivi o negativi), la curva si appiattisce asintoticamente. La derivata prima tende esponenzialmente a zero (\(\sigma'(x) \approx 0\)). Durante la retropropagazione, moltiplicando gradienti vicini allo zero lungo molti strati, il segnale di errore si annulla prima di raggiungere gli strati iniziali, bloccando l\textquotesingle apprendimento dei filtri. 2. \textbf{Costo computazionale elevato}: il calcolo degli esponenziali (\(e^{-x}\)) è operativamente dispendioso rispetto a operazioni aritmetiche elementari.
+% END F02-B0243
+
+% BEGIN F02-B0244
+La \textbf{ReLU (Rectified Linear Unit)}, introdotta sistematicamente su larga scala proprio con AlexNet (Slide 53), definisce una semplice sogliatura a zero:
+% END F02-B0244
+
+% BEGIN F02-B0245
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{f(x) = \max(0, x)}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0245
+
+% BEGIN F02-B0246
+La ReLU garantisce vantaggi decisivi: * \textbf{Accelerazione drammatica della convergenza}: per tutti i valori positivi (\(x > 0\)), la derivata è costante e pari a 1 (\(\frac{df}{dx} = 1\)). Il gradiente non è attenuato dal solo fattore derivativo della ReLU sul semiasse positivo; rimangono gli effetti dei pesi e degli altri strati, consentendo alla discesa stocastica del gradiente (SGD) di convergere molto più rapidamente. * \textbf{Efficienza di calcolo estrema}: richiede una banale operazione di confronto logico a livello di registri hardware, senza esponenziali né divisioni.
+% END F02-B0246
+
+% BEGIN F02-B0247
+\subsection{La Patologia del Dying ReLU e le Attivazioni Avanzate: Leaky ReLU ed ELU (slide 54)}\label{f02-r756}
+% END F02-B0247
+
+% BEGIN F02-B0248
+Nonostante i suoi benefici, la ReLU standard manifesta una debolezza intrinseca, evidenziata dall\textquotesingle annotazione presente sulla Slide 54:
+% END F02-B0248
+
+% BEGIN F02-B0249
+\begin{quote}
+\emph{"Nella ReLU normale qualsiasi valore negativo viene tagliato a 0 e questo ferma l\textquotesingle apprendimento del modello."}
+\end{quote}
+% END F02-B0249
+
+% BEGIN F02-B0250
+\begin{itemize}
+\tightlist
+\item
+  Un\textquotesingle attivazione negativa annulla il gradiente \textbf{attraverso quella posizione}, non l\textquotesingle apprendimento dell\textquotesingle intero modello. Un filtro condiviso può ricevere contributi da altre posizioni o esempi dove è attivo. Il problema del \emph{dying ReLU} riguarda unità che rimangono inattive su tutti o quasi tutti gli input rilevanti; non segue da un solo valore negativo e non è necessariamente irreversibile.
+\end{itemize}
+% END F02-B0250
+
+% BEGIN F02-B0251
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_1afffea582f4d35e.png}}
+\caption{Slide 54 -- Beyond ReLU: Leaky ReLU and ELU}
+\end{figure}
+% END F02-B0251
+
+% BEGIN F02-B0252
+Per sanare questa criticità sono state sviluppate due estensioni fondamentali (Slide 54):
+% END F02-B0252
+
+% BEGIN F02-B0253
+\subsubsection{Leaky ReLU}\label{f02-r768}
+% END F02-B0253
+
+% BEGIN F02-B0254
+La \textbf{Leaky ReLU} introduce una piccola pendenza lineare per la regione dei valori negativi, impedendo al gradiente di azzerarsi:
+% END F02-B0254
+
+% BEGIN F02-B0255
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{f(x) = \max(x, \alpha x) = \begin{cases} x & \text{se } x \ge 0 \\ \alpha x & \text{se } x < 0 \end{cases}}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0255
+
+% BEGIN F02-B0256
+dove \(\alpha\) è un iperparametro positivo molto piccolo (tipicamente fissato a \(\alpha = 0.01\); nella figura della Slide 54 è tracciato con \(\alpha = 0.1\) a scopo di visibilità grafica).
+% END F02-B0256
+
+% BEGIN F02-B0257
+La derivata della Leaky ReLU vale:
+% END F02-B0257
+
+% BEGIN F02-B0258
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+f'(x) = \begin{cases} 1 & \text{se } x > 0 \\ \alpha & \text{se } x < 0 \end{cases}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0258
+
+% BEGIN F02-B0259
+Poiché per \(x < 0\) la derivata vale \(\alpha \ne 0\), \textbf{il gradiente rimane vivo anche per attivazioni negative}, consentendo ai pesi del filtro di continuare a ricevere correzioni e di riattivarsi nelle iterazioni successive.
+% END F02-B0259
+
+% BEGIN F02-B0260
+\subsubsection{ELU (Exponential Linear Unit)}\label{f02-r786}
+% END F02-B0260
+
+% BEGIN F02-B0261
+L\textquotesingle{}\textbf{ELU (Exponential Linear Unit)} sostituisce la retta spezzata con un andamento esponenziale asintotico liscio nella semiretta negativa:
+% END F02-B0261
+
+% BEGIN F02-B0262
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{f(x) = \begin{cases} x & \text{se } x > 0 \\ \alpha (e^x - 1) & \text{se } x \le 0 \end{cases}}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0262
+
+% BEGIN F02-B0263
+(tipicamente impostata con \(\alpha = 1\)).
+% END F02-B0263
+
+% BEGIN F02-B0264
+L\textquotesingle ELU è continua per ogni \(\alpha>0\). Le derivate laterali in zero sono \(\alpha\) e 1, quindi è differenziabile in zero \textbf{soltanto se \(\alpha=1\)}. Per \(x<0\) la derivata è \(\alpha e^x\): è positiva ma tende a zero per ingressi molto negativi. L\textquotesingle uscita tende a \(-\alpha\) e i valori negativi possono avvicinare la media delle attivazioni a zero, senza garantirne l\textquotesingle annullamento.
+% END F02-B0264
+
+% BEGIN F02-B0265
+Con \(x=-2\), ReLU dà \(0\) e derivata \(0\); Leaky ReLU con \(\alpha=0.01\) dà \(-0.02\) e derivata \(0.01\); ELU con \(\alpha=1\) dà \(e^{-2}-1\approx-0.8647\) e derivata \(e^{-2}\approx0.1353\). Questi sono calcoli scalari applicati indipendentemente a ciascuna componente del tensore, senza cambiarne le dimensioni.
+% END F02-B0265
+
+% BEGIN F02-B0266
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F02-B0266
+
+% BEGIN F02-B0267
+\section{Livelli di pooling: aggregazione locale e riduzione spaziale (slide 55--58)}\label{f02-r802}
+% END F02-B0267
+
+% BEGIN F02-B0268
+Una convoluzione produce mappe di attivazione che descrivono pattern in posizioni diverse. Conservare tutte le posizioni a ogni profondità ha un costo di memoria e mantiene dettagli talvolta superflui per classificare. Il \textbf{pooling} riassume una finestra in un solo valore, riducendo la risoluzione quando lo stride è maggiore di uno.
+% END F02-B0268
+
+% BEGIN F02-B0269
+L\textquotesingle operazione si applica \textbf{separatamente a ogni canale}: se entrano 16 mappe, ne escono 16. Il «kernel» indica qui la finestra di aggregazione, non pesi apprendibili. Dimensione della finestra, stride e funzione di aggregazione sono iperparametri; max e average pooling ordinari hanno \textbf{zero parametri apprendibili}, come annotato nella slide 55.
+% END F02-B0269
+
+% BEGIN F02-B0270
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_939ba149b22549ce.png}}
+\caption{Slide 55 -- Finestra di max pooling e annotazione sui parametri}
+\end{figure}
+% END F02-B0270
+
+% BEGIN F02-B0271
+\subsection{Formule e dimensioni (slide 55--56)}\label{f02-r810}
+% END F02-B0271
+
+% BEGIN F02-B0272
+Si usa \(X\in\mathbb{R}^{N\times C\times H\times W}\): batch \(N\), canali \(C\), altezza \(H\) e larghezza \(W\). Con finestra quadrata \(K\times K\), stride \(S\), nessun padding né dilatazione e indici spaziali da zero:
+% END F02-B0272
+
+% BEGIN F02-B0273
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\begin{aligned}
+Y^{\max}_{n,c,i,j}&=\max_{0\leq u,v<K}X_{n,c,iS+u,jS+v},\\
+Y^{\mathrm{avg}}_{n,c,i,j}&=\frac1{K^2}\sum_{u=0}^{K-1}\sum_{v=0}^{K-1}X_{n,c,iS+u,jS+v}.
+\end{aligned}}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0273
+
+% BEGIN F02-B0274
+Ogni uscita è uno scalare: il massimo seleziona il valore più alto fra i \(K^2\) elementi, la media ne somma i contributi e divide per il loro numero. Il massimo privilegia una risposta forte anche isolata; la media misura l\textquotesingle attivazione complessiva della regione. Un\textquotesingle attivazione non è necessariamente una probabilità: un valore 100 può essere semplicemente uno score.
+% END F02-B0274
+
+% BEGIN F02-B0275
+La finestra di indice \(i\) parte dalla riga \(iS\) e deve soddisfare \(iS+K\leq H\). Quindi
+% END F02-B0275
+
+% BEGIN F02-B0276
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+i&\leq(H-K)/S,\\
+i_{\max}&=\lfloor(H-K)/S\rfloor,\\
+\boxed{H'}&=\boxed{\lfloor(H-K)/S\rfloor+1},\qquad
+\boxed{W'}=\boxed{\lfloor(W-K)/S\rfloor+1}.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0276
+
+% BEGIN F02-B0277
+L\textquotesingle uscita è \(Y\in\mathbb{R}^{N\times C\times H'\times W'}\). Con \(K=S=2\) e dimensioni pari, entrambi gli assi si dimezzano e le attivazioni diventano un quarto. Batch e canali restano invariati. Con \(S=1\), invece, una griglia \(4\times4\) diventa \(3\times3\). Le finestre sono non sovrapposte per \(S=K\).
+% END F02-B0277
+
+% BEGIN F02-B0278
+\begin{quote}
+\textbf{Stride e riduzione}
+\end{quote}
+% END F02-B0278
+
+% BEGIN F02-B0279
+\begin{quote}
+Il riferimento orale isolato a una configurazione usuale \(K=2,S=1\) contrasta con l\textquotesingle esempio e con la slide 57. La configurazione che dimezza entrambi gli assi è \(K=2,S=2\).
+\end{quote}
+% END F02-B0279
+
+% BEGIN F02-B0280
+\subsection{Esempio completo della slide 55 (slide 55--56)}\label{f02-r839}
+% END F02-B0280
+
+% BEGIN F02-B0281
+Per un esempio e un canale:
+% END F02-B0281
+
+% BEGIN F02-B0282
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+X=\begin{bmatrix}1&1&2&4\\5&6&7&8\\3&2&1&0\\1&2&3&4\end{bmatrix}\in\mathbb{R}^{4\times4}.
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0282
+
+% BEGIN F02-B0283
+Con \(K=S=2\) si ottengono quattro finestre:
+% END F02-B0283
+
+% BEGIN F02-B0284
+\begin{longtable}[]{@{}llrr@{}}
+\toprule\noalign{}
+Uscita & Valori & Massimo & Media \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\((0,0)\) & \(1,1,5,6\) & 6 & \(13/4=3.25\) \\
+\((0,1)\) & \(2,4,7,8\) & 8 & \(21/4=5.25\) \\
+\((1,0)\) & \(3,2,1,2\) & 3 & \(8/4=2\) \\
+\((1,1)\) & \(1,0,3,4\) & 4 & \(8/4=2\) \\
+\end{longtable}
+% END F02-B0284
+
+% BEGIN F02-B0285
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{Y^{\max}=\begin{bmatrix}6&8\\3&4\end{bmatrix}},\qquad
+\boxed{Y^{\mathrm{avg}}=\begin{bmatrix}3.25&5.25\\2&2\end{bmatrix}}.
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0285
+
+% BEGIN F02-B0286
+Le forme tornano: \(H'=W'=\lfloor(4-2)/2\rfloor+1=2\). La riduzione degli scalari è \((16-4)/16=75\%\). Un input \(N\times16\times8\times8\) diventa \(N\times16\times4\times4\): la medesima operazione viene ripetuta sui canali senza apprendere 16 nuovi filtri.
+% END F02-B0286
+
+% BEGIN F02-B0287
+Zero parametri non significa assenza di backpropagation. Con massimo unico, la derivata rispetto agli elementi della finestra vale 1 nella posizione selezionata e 0 nelle altre; per la media vale \(1/K^2\) in ogni posizione. Sono le derivate delle due funzioni scalari. Se il gradiente in arrivo sulla prima uscita è 2, il massimo lo invia al valore 6; la media invia \(2/4=0.5\) a ciascun valore. Con massimi uguali occorre una convenzione per il sottogradiente; con finestre sovrapposte i contributi alla stessa posizione si sommano.
+% END F02-B0287
+
+% BEGIN F02-B0288
+\subsection{Robustezza locale, gerarchia e campo recettivo (slide 57)}\label{f02-r865}
+% END F02-B0288
+
+% BEGIN F02-B0289
+Il massimo di \((100,2,4,3)\) rimane 100 qualunque sia la posizione del 100 \textbf{entro la finestra}. Se il canale rileva un cerchio, interessa sapere che una forte risposta esiste nella regione, anche perdendone la coordinata precisa. La media è invece \(109/4=27.25\): una risposta isolata viene attenuata dai valori piccoli circostanti. Questa è la motivazione intuitiva per usare spesso il massimo negli stadi locali e la media per una descrizione complessiva; non dimostra che il max pooling sia sempre superiore.
+% END F02-B0289
+
+% BEGIN F02-B0290
+La robustezza è limitata: se il 100 attraversa il confine fra due finestre cambia l\textquotesingle uscita. Pooling e stride non garantiscono invarianza a qualunque traslazione dell\textquotesingle immagine.
+% END F02-B0290
+
+% BEGIN F02-B0291
+L\textquotesingle annotazione «gerarchia di concetti» si riferisce alla composizione progressiva delle rappresentazioni: i primi filtri descrivono bordi e contrasti, i successivi combinano risposte su regioni più estese. Eliminare dettagli di posizione può favorire l\textquotesingle astrazione, ma il pooling non produce da solo significati semantici: questi dipendono dai filtri appresi e dal compito.
+% END F02-B0291
+
+% BEGIN F02-B0292
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_5e1ba8eca2281d23.png}}
+\caption{Slide 57 -- Vantaggi del pooling e gerarchia}
+\end{figure}
+% END F02-B0292
+
+% BEGIN F02-B0293
+Con campo recettivo \(r\) e distanza \(j\) fra uscite adiacenti, misurata sull\textquotesingle immagine iniziale:
+% END F02-B0293
+
+% BEGIN F02-B0294
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{r_{\mathrm{out}}=r_{\mathrm{in}}+(K-1)j_{\mathrm{in}},\qquad j_{\mathrm{out}}=S j_{\mathrm{in}}.}$
+\end{adjustbox}
+\end{center}
+% END F02-B0294
+
+% BEGIN F02-B0295
+La prima formula unisce \(K\) campi i cui centri distano \(j_{\mathrm{in}}\); la seconda esprime il salto di \(S\) posizioni. Dopo una convoluzione \(3\times3\) a stride 1 si ha \(r=3,j=1\). Un pooling \(2\times2\) a stride 2 dà \(r=4,j=2\); un\textquotesingle altra convoluzione \(3\times3\) dà \(r=4+2\cdot2=8\). L\textquotesingle uscita può dipendere da una regione \(8\times8\) dell\textquotesingle input originale. Si tratta del campo recettivo potenziale, distinto dalle posizioni effettivamente selezionate dal massimo.
+% END F02-B0295
+
+% BEGIN F02-B0296
+Il pooling riduce la memoria delle attivazioni e il lavoro successivo. La perdita di dettagli può limitare dipendenze da peculiarità del training set, ma non garantisce l\textquotesingle assenza di overfitting.
+% END F02-B0296
+
+% BEGIN F02-B0297
+\subsection{Il limite: perdita di localizzazione (slide 58)}\label{f02-r883}
+% END F02-B0297
+
+% BEGIN F02-B0298
+Nella classificazione può bastare sapere che un oggetto è presente; nella segmentazione semantica occorre assegnare una classe a ogni pixel. Una riduzione aggressiva della risoluzione può cancellare confini e oggetti piccoli.
+% END F02-B0298
+
+% BEGIN F02-B0299
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_b31108d56dc62dd7.png}}
+\caption{Slide 58 -- Risoluzione e segmentazione}
+\end{figure}
+% END F02-B0299
+
+% BEGIN F02-B0300
+Il pooling va scelto in funzione del compito. Questo non implica che ogni modello di segmentazione debba escluderlo, ma che la gestione della risoluzione richieda attenzione. Le alternative architetturali non vengono sviluppate qui.
+% END F02-B0300
+
+% BEGIN F02-B0301
+\section{Dalle feature al classificatore: pooling adattivo (slide 59)}\label{f02-r891}
+% END F02-B0301
+
+% BEGIN F02-B0302
+L\textquotesingle estrattore produce \(X\in\mathbb{R}^{N\times C\times h\times w}\). Un livello denso richiede un numero fisso di ingressi, perché la sua matrice dei pesi ha un numero fisso di colonne. Occorre quindi rendere compatibile una griglia dipendente dalla risoluzione con un classificatore di forma fissata.
+% END F02-B0302
+
+% BEGIN F02-B0303
+\subsection{Flattening e risoluzione dell\textquotesingle ingresso (slide 59)}\label{f02-r895}
+% END F02-B0303
+
+% BEGIN F02-B0304
+Il flattening riordina gli elementi senza aggregarli:
+% END F02-B0304
+
+% BEGIN F02-B0305
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{N\times C\times h\times w\ \longrightarrow\ N\times D,\qquad D=Chw.}$
+\end{adjustbox}
+\end{center}
+% END F02-B0305
+
+% BEGIN F02-B0306
+Da \(16\times8\times8\) si ottengono 1024 elementi. Se un\textquotesingle immagine più grande produce \(16\times12\times12\), diventano 2304: una matrice \(W\in\mathbb{R}^{q\times1024}\) non può moltiplicare un vettore di lunghezza 2304. La flessibilità spaziale della convoluzione non rende automaticamente flessibile la testa densa.
+% END F02-B0306
+
+% BEGIN F02-B0307
+Se la risoluzione è fissa, il flattening diretto è valido e conserva tutte le attivazioni. Non è necessariamente migliore: richiede più pesi e impone quella forma. Ridimensionare preventivamente le immagini è possibile, ma introduce interpolazione e, se si altera il rapporto degli assi, deformazione geometrica.
+% END F02-B0307
+
+% BEGIN F02-B0308
+\subsection{Global average pooling e posizione esatta nella rete (slide 59)}\label{f02-r905}
+% END F02-B0308
+
+% BEGIN F02-B0309
+La media globale sostituisce ciascun canale con un solo scalare:
+% END F02-B0309
+
+% BEGIN F02-B0310
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{z_{n,c}=\frac1{hw}\sum_{i=0}^{h-1}\sum_{j=0}^{w-1}X_{n,c,i,j}.}$
+\end{adjustbox}
+\end{center}
+% END F02-B0310
+
+% BEGIN F02-B0311
+È l\textquotesingle average pooling con una finestra estesa a tutta la mappa: si sommano \(hw\) elementi e si divide per il loro numero. Il volume diventa \(N\times C\times1\times1\) e un successivo flattening produce \(N\times C\), indipendentemente da \(h,w\).
+% END F02-B0311
+
+% BEGIN F02-B0312
+Per due canali
+% END F02-B0312
+
+% BEGIN F02-B0313
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle X_1=\begin{bmatrix}1&3\\5&7\end{bmatrix},\qquad X_2=\begin{bmatrix}2&2\\6&10\end{bmatrix},$
+\end{adjustbox}
+\end{center}
+% END F02-B0313
+
+% BEGIN F02-B0314
+si ottiene \(z=[16/4,20/4]^T=[4,5]^T\in\mathbb{R}^2\). Un classificatore con \(q\) uscite impiega \(W\in\mathbb{R}^{q\times C}\), \(b\in\mathbb{R}^q\):
+% END F02-B0314
+
+% BEGIN F02-B0315
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{s=Wz+b\in\mathbb{R}^q,\qquad P=qC+q=q(C+1).}$
+\end{adjustbox}
+\end{center}
+% END F02-B0315
+
+% BEGIN F02-B0316
+Con \(q=3\), \(W=\begin{bmatrix}1&0\\0&1\\1&-1\end{bmatrix}\) e \(b=0\), gli score sono \([4,5,-1]^T\). I sei pesi e tre bias danno nove parametri: sono del classificatore, non del pooling. Una softmax finale può convertirli in probabilità del modello.
+% END F02-B0316
+
+% BEGIN F02-B0317
+Il dubbio «solo nell\textquotesingle ultimo layer: dove?» si risolve localizzando l\textquotesingle interfaccia: \textbf{dopo le ultime mappe dell\textquotesingle estrattore convoluzionale, prima del flattening e dell\textquotesingle MLP}, non dopo gli score finali.
+% END F02-B0317
+
+% BEGIN F02-B0318
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f02_06.pdf}}
+% END F02-B0318
+
+% BEGIN F02-B0319
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_2feaa48e46e8677b.png}}
+\caption{Slide 59 -- Collegamento fra estrattore e MLP}
+\end{figure}
+% END F02-B0319
+
+% BEGIN F02-B0320
+Il pooling \textbf{adattivo} fissa la dimensione di uscita adattando le regioni di aggregazione all\textquotesingle ingresso. L\textquotesingle uscita \(1\times1\) coincide con la media globale; una griglia fissa \(o\times o\), come \(7\times7\) nella slide, produce \(Co^2\) ingressi per l\textquotesingle MLP. Non si elimina il flattening: lo si applica dopo aver fissato la forma. Questa collocazione è il disegno discusso, non un divieto matematico di usare pooling adattivo altrove.
+% END F02-B0320
+
+% BEGIN F02-B0321
+Con \(C=16,q=10\), il flattening diretto di \(8\times8\) richiede \(10(1024+1)=10250\) parametri; la media globale richiede \(10(16+1)=170\). Si risparmiano pesi perdendo disposizione spaziale. Più canali possono arricchire la descrizione, ma non ricostruiscono automaticamente le posizioni eliminate.
+% END F02-B0321
+
+% BEGIN F02-B0322
+\section{LeNet e AlexNet: evoluzione delle CNN (slide 60--62)}\label{f02-r941}
+% END F02-B0322
+
+% BEGIN F02-B0323
+Le architetture condividono convoluzioni, attivazioni, riduzione spaziale e classificazione, ma differiscono per profondità, kernel e canali. Queste scelte determinano campo recettivo e costo.
+% END F02-B0323
+
+% BEGIN F02-B0324
+\subsection{LeNet: riconoscimento di cifre (slide 61)}\label{f02-r945}
+% END F02-B0324
+
+% BEGIN F02-B0325
+LeNet mostra una pipeline completa per caratteri manoscritti: un\textquotesingle immagine a un canale \(32\times32\) attraversa filtri \(5\times5\) e sottocampionamenti. Il modello storico usa non linearità sigmoidi e sottocampionamento basato su medie; non va reinterpretato come una rete con ReLU e max pooling in ogni blocco.
+% END F02-B0325
+
+% BEGIN F02-B0326
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_90e9546e7e5d9991.png}}
+\caption{Slide 61 -- LeNet}
+\end{figure}
+% END F02-B0326
+
+% BEGIN F02-B0327
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f02_07.pdf}}
+% END F02-B0327
+
+% BEGIN F02-B0328
+Senza padding, \(32-5+1=28\); il sottocampionamento dimezza a 14. La convoluzione successiva dà \(14-5+1=10\) e il pooling porta a 5. Una finestra \(5\times5\) sull\textquotesingle ultima mappa copre tutta la sua estensione e dà un valore per filtro. La figura riporta connessioni gaussiane all\textquotesingle uscita, non una moderna softmax. Il conteggio zero dei parametri del pooling puro non va esteso automaticamente a ogni variante storica di sottocampionamento.
+% END F02-B0328
+
+% BEGIN F02-B0329
+\subsection{AlexNet: scala computazionale e ReLU (slide 62)}\label{f02-r964}
+% END F02-B0329
+
+% BEGIN F02-B0330
+AlexNet è associata al risultato ImageNet del 2012. Contiene \textbf{otto livelli con parametri}, cinque convoluzionali e tre fully connected; il conteggio non include separatamente ReLU e pooling. Utilizza un kernel iniziale \(11\times11\), ReLU e addestramento su due GPU nella realizzazione illustrata.
+% END F02-B0330
+
+% BEGIN F02-B0331
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_8ebd502982112089.png}}
+\caption{Slide 62 -- AlexNet}
+\end{figure}
+% END F02-B0331
+
+% BEGIN F02-B0332
+Un kernel ampio aumenta rapidamente il campo recettivo quando ci sono pochi stadi convoluzionali, pagando più pesi. A canali fissati, passare da \(3\times3\) a \(11\times11\) moltiplica i pesi per \(121/9\approx13.44\). Il kernel grande non riduce da solo la risoluzione di un fattore fissato: contano anche stride e padding.
+% END F02-B0332
+
+% BEGIN F02-B0333
+La GPU ha reso praticabile l\textquotesingle addestramento su larga scala; la ReLU evita la saturazione sul semiasse positivo. Non ne segue che AlexNet sia la prima rete profonda in assoluto o che due GPU siano necessarie per ogni CNN. Le indicazioni storiche esitanti nella trascrizione non vengono trasformate in fatti aggiuntivi.
+% END F02-B0333
+
+% BEGIN F02-B0334
+\section{VGG: distribuire la capacità lungo la profondità (slide 63--68)}\label{f02-r974}
+% END F02-B0334
+
+% BEGIN F02-B0335
+VGG, dal nome \textbf{Visual Geometry Group}, usa sequenze regolari di piccole convoluzioni \(3\times3\). L\textquotesingle elaborazione è distribuita lungo la profondità, costruendo gradualmente rappresentazioni più ampie. I pesi preaddestrati hanno inoltre favorito il trasferimento delle rappresentazioni fra compiti.
+% END F02-B0335
+
+% BEGIN F02-B0336
+\subsection{Piccoli kernel e campo recettivo (slide 63--64)}\label{f02-r978}
+% END F02-B0336
+
+% BEGIN F02-B0337
+A stride 1 e senza dilatazione, ogni convoluzione \(3\times3\) aggiunge due posizioni per asse:
+% END F02-B0337
+
+% BEGIN F02-B0338
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{r_L=1+\sum_{\ell=1}^L(3-1)=1+2L.}$
+\end{adjustbox}
+\end{center}
+% END F02-B0338
+
+% BEGIN F02-B0339
+Due livelli hanno campo recettivo \(5\times5\), tre \(7\times7\). Non sono però equivalenti a un solo filtro grande: le attivazioni intermedie introducono ulteriori non linearità.
+% END F02-B0339
+
+% BEGIN F02-B0340
+Supponendo \textbf{\(C\) canali in ingresso, in uscita e in tutti gli strati intermedi}, ogni coppia di canali possiede \(K^2\) pesi. Pertanto:
+% END F02-B0340
+
+% BEGIN F02-B0341
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\begin{aligned}
+P_{7\times7}&=49C^2,& P_{3\times(3\times3)}&=27C^2,\\
+P_{5\times5}&=25C^2,& P_{2\times(3\times3)}&=18C^2.
+\end{aligned}}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0341
+
+% BEGIN F02-B0342
+Nel primo confronto il risparmio è \(22/49\approx44.90\%\). Con \(C=64\), si passa da \(200704\) a \(110592\) pesi. Includendo i bias, sono \(200768\) contro \(110784\), perché tre strati hanno tre vettori di bias. La sequenza offre tre ReLU invece di una. Con canali intermedi diversi il conteggio va rifatto: il risparmio non vale per qualunque architettura.
+% END F02-B0342
+
+% BEGIN F02-B0343
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_897b43cf81048614.png}}
+\caption{Slide 64 -- Kernel grande e sequenza di kernel piccoli}
+\end{figure}
+% END F02-B0343
+
+% BEGIN F02-B0344
+Una costruzione graduale lascia spazio alla condivisione di feature fra classi: bordi e texture possono contribuire a categorie diverse prima di essere combinati in parti specifiche. È una motivazione progettuale, non una garanzia che aggiungere livelli migliori sempre l\textquotesingle accuratezza.
+% END F02-B0344
+
+% BEGIN F02-B0345
+\subsection{VGG16: percorso delle dimensioni (slide 65--66)}\label{f02-r1001}
+% END F02-B0345
+
+% BEGIN F02-B0346
+VGG16 contiene 13 convoluzioni e 3 livelli densi: \textbf{16 livelli con pesi}. Le convoluzioni \(3\times3\) hanno stride 1 e padding 1, mentre cinque max pooling \(2\times2\) a stride 2 dimezzano progressivamente gli assi dell\textquotesingle ingresso RGB \(224\times224\).
+% END F02-B0346
+
+% BEGIN F02-B0347
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Blocco
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Successione dei canali
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Forma dopo le convoluzioni, senza batch
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Forma dopo il pooling
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & \(3\to64\to64\) & \(64\times224\times224\) & \(64\times112\times112\) \\
+2 & \(64\to128\to128\) & \(128\times112\times112\) & \(128\times56\times56\) \\
+3 & \(128\to256\to256\to256\) & \(256\times56\times56\) & \(256\times28\times28\) \\
+4 & \(256\to512\to512\to512\) & \(512\times28\times28\) & \(512\times14\times14\) \\
+5 & \(512\to512\to512\to512\) & \(512\times14\times14\) & \(512\times7\times7\) \\
+\end{longtable}
+% END F02-B0347
+
+% BEGIN F02-B0348
+Le forme derivano da \((H-3+2)+1=H\) per le convoluzioni e \(H/2\) per i pooling su dimensioni pari. La catena spaziale è \(224\to112\to56\to28\to14\to7\). Il flattening produce \(512\cdot7\cdot7=25088\) ingressi per i livelli \(4096\to4096\to1000\).
+% END F02-B0348
+
+% BEGIN F02-B0349
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f02_08.pdf}}
+% END F02-B0349
+
+% BEGIN F02-B0350
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_efe9830d74d66fbe.png}} \pandocbounded{\includegraphics[keepaspectratio]{figure/fig_542d643edce8713b.png}}
+% END F02-B0350
+
+% BEGIN F02-B0351
+La sottrazione della media all\textquotesingle ingresso è pre-processamento, distinto dalla Batch Normalization. Le ReLU seguono convoluzioni e livelli densi nascosti; gli score finali alimentano la softmax. L\textquotesingle espressione «dopo ogni fully connected» della slide 65 va letta insieme alla slide 66, che distingue l\textquotesingle uscita di classificazione.
+% END F02-B0351
+
+% BEGIN F02-B0352
+\subsection{Dove sono i 138 milioni di parametri? (slide 67--68)}\label{f02-r1031}
+% END F02-B0352
+
+% BEGIN F02-B0353
+Un livello denso ha un peso per ogni coppia ingresso--uscita e un bias per uscita:
+% END F02-B0353
+
+% BEGIN F02-B0354
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{P_{\mathrm{dense}}=d_{\mathrm{out}}d_{\mathrm{in}}+d_{\mathrm{out}}.}$
+\end{adjustbox}
+\end{center}
+% END F02-B0354
+
+% BEGIN F02-B0355
+La domanda della slide 67 riguarda il \textbf{primo fully connected}, che riceve tutti i 25088 elementi:
+% END F02-B0355
+
+% BEGIN F02-B0356
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+P_{\mathrm{FC1}}&=25088\cdot4096+4096=102764544,\\
+P_{\mathrm{FC2}}&=4096\cdot4096+4096=16781312,\\
+P_{\mathrm{FC3}}&=4096\cdot1000+1000=4097000,\\
+P_{\mathrm{FC}}&=123642856.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0356
+
+% BEGIN F02-B0357
+Per le convoluzioni si applica \(P=C_{\mathrm{out}}(9C_{\mathrm{in}}+1)\):
+% END F02-B0357
+
+% BEGIN F02-B0358
+\begin{longtable}[]{@{}llr@{}}
+\toprule\noalign{}
+Blocco & Calcolo, bias inclusi & Totale \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & \(64(9\cdot3+1)+64(9\cdot64+1)\) & 38720 \\
+2 & \(128(9\cdot64+1)+128(9\cdot128+1)\) & 221440 \\
+3 & \(256(9\cdot128+1)+2\cdot256(9\cdot256+1)\) & 1475328 \\
+4 & \(512(9\cdot256+1)+2\cdot512(9\cdot512+1)\) & 5899776 \\
+5 & \(3\cdot512(9\cdot512+1)\) & 7079424 \\
+Totale convoluzioni & somma dei cinque blocchi & \textbf{14714688} \\
+\end{longtable}
+% END F02-B0358
+
+% BEGIN F02-B0359
+Il totale è \(14714688+123642856=138357544\), circa 138 milioni. La parte densa contiene l\textquotesingle89.36\% dei parametri. Le cifre della slide 68 sono arrotondate in milioni e rappresentano soprattutto i pesi, perciò differiscono leggermente dai conti con bias. La percentuale dei pesi non coincide con quella del tempo di calcolo: una convoluzione riutilizza ciascun peso in molte posizioni.
+% END F02-B0359
+
+% BEGIN F02-B0360
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_fa679b7b4b0dd4aa.png}}
+\caption{Slide 68 -- Distribuzione dei parametri VGG16}
+\end{figure}
+% END F02-B0360
+
+% BEGIN F02-B0361
+\section{Profondità e residual learning: ResNet (slide 69--75)}\label{f02-r1063}
+% END F02-B0361
+
+% BEGIN F02-B0362
+\subsection{Il problema della degradazione (slide 69--72)}\label{f02-r1065}
+% END F02-B0362
+
+% BEGIN F02-B0363
+Aggiungere livelli a una rete tradizionale può peggiorare \textbf{sia training sia test}. Questo caso non è spiegato semplicemente dall\textquotesingle overfitting: una rete che memorizza meglio il training avrebbe tipicamente un errore di training inferiore; qui peggiora già l\textquotesingle ottimizzazione sui dati noti.
+% END F02-B0363
+
+% BEGIN F02-B0364
+In linea di principio la rete più profonda potrebbe riprodurre quella corta facendo calcolare l\textquotesingle identità ai livelli aggiuntivi. La difficoltà è trovare quella configurazione durante l\textquotesingle addestramento: maggiore capacità non implica automaticamente maggiore facilità di ottimizzazione.
+% END F02-B0364
+
+% BEGIN F02-B0365
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_d8b838549cce650a.png}} \pandocbounded{\includegraphics[keepaspectratio]{figure/fig_5d14ccdd6bd8b5d2.png}}
+% END F02-B0365
+
+% BEGIN F02-B0366
+Per la catena scalare \(h_\ell=f_\ell(h_{\ell-1})\), applicando ripetutamente la regola della catena:
+% END F02-B0366
+
+% BEGIN F02-B0367
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{\frac{\partial\mathcal L}{\partial h_0}=\frac{\partial\mathcal L}{\partial h_L}\prod_{\ell=1}^{L}f'_\ell(h_{\ell-1}).}$
+\end{adjustbox}
+\end{center}
+% END F02-B0367
+
+% BEGIN F02-B0368
+Ogni passo introduce un fattore: \(\partial\mathcal L/\partial h_{\ell-1}=(\partial\mathcal L/\partial h_\ell)f'_\ell\). Venti fattori 0.5 danno \(9.54\cdot10^{-7}\); venti fattori 2 danno 1048576. Sono esempi di gradiente che svanisce o esplode. Nel caso vettoriale compaiono prodotti di Jacobiane. L\textquotesingle instabilità è una difficoltà importante, ma non dimostra di esaurire ogni causa della degradazione.
+% END F02-B0368
+
+% BEGIN F02-B0369
+\subsection{Blocco residuo e significato della shortcut (slide 71--74)}\label{f02-r1080}
+% END F02-B0369
+
+% BEGIN F02-B0370
+Invece di apprendere direttamente \(H(x)\), si apprende la correzione rispetto all\textquotesingle ingresso:
+% END F02-B0370
+
+% BEGIN F02-B0371
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{F(x;\theta)=H(x)-x,\qquad H(x)=x+F(x;\theta).}$
+\end{adjustbox}
+\end{center}
+% END F02-B0371
+
+% BEGIN F02-B0372
+La relazione si ricava isolando la differenza fra uscita e ingresso. Per \(x\in\mathbb{R}^{N\times C\times H\times W}\), il ramo \(F\) deve avere la stessa forma: la somma è elemento per elemento. Per rappresentare l\textquotesingle identità basta porre \(F(x)=0\).
+% END F02-B0372
+
+% BEGIN F02-B0373
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f02_09.pdf}}
+% END F02-B0373
+
+% BEGIN F02-B0374
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_7b8f968adf2a5a58.png}} \pandocbounded{\includegraphics[keepaspectratio]{figure/fig_231b0a71661aabe3.png}}
+% END F02-B0374
+
+% BEGIN F02-B0375
+\textbf{Entrambi i rami sono calcolati e poi sommati.} Non si evita fisicamente l\textquotesingle esecuzione di un ramo, non si confrontano i risultati per scegliere il migliore e non si scarta il ramo meno utile. «Ignorare il blocco» significa che il suo contributo appreso può essere vicino a zero, pur rimanendo il costo del calcolo.
+% END F02-B0375
+
+% BEGIN F02-B0376
+Con \(x=[2,-1]^T\) e \(F(x)=0.25x\), il ramo produce \([0.5,-0.25]^T\) e la somma è \([2.5,-1.25]^T\). Se il coefficiente diventa zero, l\textquotesingle uscita è \(x\). La stessa funzione può produrre correzioni diverse per input diversi senza un selettore esterno di percorsi.
+% END F02-B0376
+
+% BEGIN F02-B0377
+L\textquotesingle annotazione «nessuna trasformazione, identità» vale quando le forme coincidono. La figura 74 mostra anche una convoluzione \(1\times1\) sulla shortcut, necessaria quando cambiano canali o risoluzione. In tal caso
+% END F02-B0377
+
+% BEGIN F02-B0378
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{H(x)=P(x)+F(x)}$
+\end{adjustbox}
+\end{center}
+% END F02-B0378
+
+% BEGIN F02-B0379
+con \(P(x)\) e \(F(x)\) della stessa forma, ma \(P\) non più identità. Per \(64\times8\times8\to128\times4\times4\), una convoluzione \(1\times1\) a stride 2 può adattare la shortcut. Ha \(128\cdot64=8192\) pesi, oppure \(128(64+1)=8320\) parametri includendo il bias. È il vincolo di compatibilità illustrato dalla figura, non un nuovo tipo di architettura.
+% END F02-B0379
+
+% BEGIN F02-B0380
+\subsection{Backpropagation: i gradienti si sommano (slide 73--74)}\label{f02-r1110}
+% END F02-B0380
+
+% BEGIN F02-B0381
+Rappresentando il tensore come vettore \(x\in\mathbb{R}^d\), siano \(J_F\in\mathbb{R}^{d\times d}\) la Jacobiana e \(g=\nabla_H\mathcal L\in\mathbb{R}^d\) il gradiente in arrivo. Si deriva la somma componente per componente:
+% END F02-B0381
+
+% BEGIN F02-B0382
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+\frac{\partial H_i}{\partial x_j}&=\delta_{ij}+\frac{\partial F_i}{\partial x_j},\\
+\frac{\partial\mathcal L}{\partial x_j}&=\sum_i\frac{\partial\mathcal L}{\partial H_i}\left(\delta_{ij}+\frac{\partial F_i}{\partial x_j}\right),\\
+\boxed{\nabla_x\mathcal L}&=\boxed{g+J_F^Tg.}
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0382
+
+% BEGIN F02-B0383
+Il termine \(g\) attraversa l\textquotesingle identità senza moltiplicazioni per pesi o attivazioni interne a \(F\); \(J_F^Tg\) attraversa il ramo trasformato. \textbf{Non si sceglie il gradiente più grande: si sommano tutti i contributi.} Questo risponde al dubbio sui percorsi multipli nel backward.
+% END F02-B0383
+
+% BEGIN F02-B0384
+Con \(F(x)=0.25x\) e \(g=[3,-2]^T\), i contributi sono \([3,-2]^T\) e \([0.75,-0.5]^T\): il risultato è \([3.75,-2.5]^T\). Con \(F=0\) e Jacobiana nulla, ritorna \(g\).
+% END F02-B0384
+
+% BEGIN F02-B0385
+L\textquotesingle identità facilita la propagazione, ma non conserva necessariamente la norma del gradiente \textbf{totale}: i contributi possono amplificarsi o cancellarsi. Con \(J_F=-I\) la somma sarebbe zero. La figura contiene inoltre una ReLU dopo la somma: se \(y=\operatorname{ReLU}(H)\), prima si calcola \(g=\nabla_y\mathcal L\odot\mathbf1[H>0]\), poi si applica la formula. Con shortcut proiettata, il termine diretto è invece \(J_P^Tg\).
+% END F02-B0385
+
+% BEGIN F02-B0386
+\subsection{Conseguenze architetturali (slide 75)}\label{f02-r1128}
+% END F02-B0386
+
+% BEGIN F02-B0387
+Le connessioni residue rendono più praticabile l\textquotesingle ottimizzazione di reti profonde, fra cui ResNet-50, ResNet-101 e ResNet-152. La novità è il grafo delle connessioni: l\textquotesingle informazione può raggiungere un livello oltrepassando più trasformazioni. Il principio è riutilizzato in altre famiglie, senza svilupparle qui.
+% END F02-B0387
+
+% BEGIN F02-B0388
+La possibilità di una correzione nulla non garantisce un miglioramento delle prestazioni a ogni livello aggiunto. I riferimenti orali a ipotetiche «VGG34» e «VGG100» illustrano l\textquotesingle aumento di profondità, non definiscono nuove varianti canoniche da aggiungere al programma.
+% END F02-B0388
+
+% BEGIN F02-B0389
+\section{Batch Normalization: statistiche e trasformazione appresa (slide 76--86)}\label{f02-r1134}
+% END F02-B0389
+
+% BEGIN F02-B0390
+\subsection{Perché normalizzare fra due livelli (slide 76--80)}\label{f02-r1136}
+% END F02-B0390
+
+% BEGIN F02-B0391
+Aggiornare un livello modifica le sue attivazioni, cioè gli ingressi dei livelli successivi. Un livello che riceveva valori soprattutto fra 0.5 e 2 può trovarsi davanti a una scala diversa dopo gli aggiornamenti a monte. La variazione delle distribuzioni interne durante il training è descritta nelle slide come \textbf{internal covariate shift}.
+% END F02-B0391
+
+% BEGIN F02-B0392
+Si introduce quindi una trasformazione che controlli posizione e scala delle attivazioni. Non esistono due aggiornamenti distinti, uno «per la loss» e uno «per inseguire il livello precedente»: rimane un unico gradiente della funzione obiettivo. L\textquotesingle analogia descrive l\textquotesingle accoppiamento fra trasformazioni apprese.
+% END F02-B0392
+
+% BEGIN F02-B0393
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_17875897a86c2eda.png}} \pandocbounded{\includegraphics[keepaspectratio]{figure/fig_3598f417f405b2f8.png}}
+% END F02-B0393
+
+% BEGIN F02-B0394
+La \textbf{Batch Normalization} standardizza con statistiche del mini-batch, poi applica scala e traslazione apprendibili. Nel blocco illustrato l\textquotesingle ordine è convoluzione → BatchNorm → ReLU. La stabilità delle distribuzioni è una motivazione: la trasformazione non rende immutabile l\textquotesingle intera distribuzione, indipendenti i livelli o gaussiani i valori.
+% END F02-B0394
+
+% BEGIN F02-B0395
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f02_10.pdf}}
+% END F02-B0395
+
+% BEGIN F02-B0396
+\subsection{Formule e assi di aggregazione (slide 81--84)}\label{f02-r1155}
+% END F02-B0396
+
+% BEGIN F02-B0397
+Sia \(X\in\mathbb{R}^{N\times C\times H\times W}\). Nelle CNN le statistiche sono calcolate \textbf{per canale}, aggregando batch e posizioni spaziali. Per ogni canale ci sono \(M=NHW\) valori. Media e varianza sono vettori in \(\mathbb{R}^C\), non una sola statistica per l\textquotesingle intero volume.
+% END F02-B0397
+
+% BEGIN F02-B0398
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\begin{aligned}
+\mu_{B,c}&=\frac1M\sum_{n=1}^N\sum_{h=1}^H\sum_{w=1}^W X_{n,c,h,w},\\
+v_{B,c}&=\frac1M\sum_{n=1}^N\sum_{h=1}^H\sum_{w=1}^W(X_{n,c,h,w}-\mu_{B,c})^2,\\
+\widehat X_{n,c,h,w}&=\frac{X_{n,c,h,w}-\mu_{B,c}}{\sqrt{v_{B,c}+\epsilon}},\\
+Y_{n,c,h,w}&=\gamma_c\widehat X_{n,c,h,w}+\beta_c.
+\end{aligned}}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0398
+
+% BEGIN F02-B0399
+\(\epsilon>0\) è una costante di stabilità; \(\gamma,\beta\in\mathbb{R}^C\) sono apprendibili. \(X,\widehat X,Y\) hanno la stessa forma. Le statistiche e i parametri vengono applicati mediante broadcasting a tutte le posizioni del rispettivo canale. Per un input denso \(N\times d\) si considera separatamente ogni feature, aggregando i \(N\) esempi.
+% END F02-B0399
+
+% BEGIN F02-B0400
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_46e256c70ec88988.png}}
+\caption{Slide 84 -- Quattro passaggi della Batch Normalization}
+\end{figure}
+% END F02-B0400
+
+% BEGIN F02-B0401
+La media è il centro aritmetico; sottrarla produce scarti con somma zero. La varianza è la media dei quadrati degli scarti e ha unità al quadrato. Per questo si divide per \textbf{la radice della varianza}, cioè la deviazione standard stabilizzata, non per la varianza.
+% END F02-B0401
+
+% BEGIN F02-B0402
+Indicizzando i valori di un canale con \(a\):
+% END F02-B0402
+
+% BEGIN F02-B0403
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+\frac1M\sum_a(X_a-\mu_B)&=\frac1M\sum_aX_a-\mu_B=0,\\
+\frac1M\sum_a\widehat X_a&=\frac{0}{\sqrt{v_B+\epsilon}}=0,\\
+\frac1M\sum_a\widehat X_a^2&=\frac{\frac1M\sum_a(X_a-\mu_B)^2}{v_B+\epsilon}
+=\frac{v_B}{v_B+\epsilon}.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0403
+
+% BEGIN F02-B0404
+La media normalizzata è zero; la varianza è vicina a 1 per \(v_B\gg\epsilon\), non esattamente 1. Se tutti i valori coincidono, \(v_B=0\) e le uscite normalizzate sono zero. Controllare questi due momenti non azzera le covarianze fra canali e non rende gaussiana la distribuzione.
+% END F02-B0404
+
+% BEGIN F02-B0405
+\subsection{Esempio numerico completo (slide 81--85)}\label{f02-r1187}
+% END F02-B0405
+
+% BEGIN F02-B0406
+Si prendano \(N=2,C=1,H=1,W=2\), quindi \(M=4\): le due mappe sono \([1,3]\) e \([5,7]\).
+% END F02-B0406
+
+% BEGIN F02-B0407
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+\mu_B&=(1+3+5+7)/4=4,\\
+v_B&=\frac{(1-4)^2+(3-4)^2+(5-4)^2+(7-4)^2}{4}\\
+&=(9+1+1+9)/4=5.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F02-B0407
+
+% BEGIN F02-B0408
+Con \(\epsilon=10^{-5}\), il denominatore è \(\sqrt{5.00001}\approx2.23607\) e
+% END F02-B0408
+
+% BEGIN F02-B0409
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \widehat X\approx(-1.34164,-0.44721,0.44721,1.34164).$
+\end{adjustbox}
+\end{center}
+% END F02-B0409
+
+% BEGIN F02-B0410
+La varianza vale \(5/5.00001\approx0.999998\). Con \(\gamma=2,\beta=1\):
+% END F02-B0410
+
+% BEGIN F02-B0411
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{Y\approx(-1.68328,0.10557,1.89443,3.68328).}$
+\end{adjustbox}
+\end{center}
+% END F02-B0411
+
+% BEGIN F02-B0412
+La forma rimane \(2\times1\times1\times2\). La media finale è 1, la varianza circa 4: la trasformazione affine non mantiene obbligatoriamente media zero e varianza unitaria.
+% END F02-B0412
+
+% BEGIN F02-B0413
+\subsection{Perché apprendere gamma e beta? (slide 85)}\label{f02-r1209}
+% END F02-B0413
+
+% BEGIN F02-B0414
+Una scala imposta permanentemente può limitare la rappresentazione. La normalizzazione fornisce una base controllata; \(\gamma_c\) e \(\beta_c\) scelgono scala e offset utili al compito.
+% END F02-B0414
+
+% BEGIN F02-B0415
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{\operatorname{media}_B(Y_c)=\beta_c,\qquad\operatorname{var}_B(Y_c)=\gamma_c^2\frac{v_{B,c}}{v_{B,c}+\epsilon}.}$
+\end{adjustbox}
+\end{center}
+% END F02-B0415
+
+% BEGIN F02-B0416
+La prima relazione segue dalla linearità della media. La seconda deriva dal fatto che la traslazione non modifica gli scarti, mentre la moltiplicazione per \(\gamma\) ne moltiplica i quadrati per \(\gamma^2\). L\textquotesingle esempio con \(\gamma=2,\beta=1\) verifica entrambe.
+% END F02-B0416
+
+% BEGIN F02-B0417
+A statistiche fissate, scegliere \(\gamma=\sqrt{v_B+\epsilon}\) e \(\beta=\mu_B\) ricostruisce l\textquotesingle ingresso:
+% END F02-B0417
+
+% BEGIN F02-B0418
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \gamma\frac{x-\mu_B}{\sqrt{v_B+\epsilon}}+\beta=(x-\mu_B)+\mu_B=x.$
+\end{adjustbox}
+\end{center}
+% END F02-B0418
+
+% BEGIN F02-B0419
+Questo mostra la capacità di ripristinare la scala originale; due parametri fissi non invertono però esattamente ogni mini-batch se le sue statistiche cambiano.
+% END F02-B0419
+
+% BEGIN F02-B0420
+Il numero dei parametri è
+% END F02-B0420
+
+% BEGIN F02-B0421
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{P_{\mathrm{BN}}=C+C=2C.}$
+\end{adjustbox}
+\end{center}
+% END F02-B0421
+
+% BEGIN F02-B0422
+Con 64 canali si apprendono 128 scalari. Le statistiche mobili sono \textbf{stato del livello}, non parametri ottimizzati tramite gradient descent. Ponendo \(g_a=\partial\mathcal L/\partial Y_a\), la catena applicata a \(Y_a=\gamma\widehat X_a+\beta\) dà
+% END F02-B0422
+
+% BEGIN F02-B0423
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{\frac{\partial\mathcal L}{\partial\beta}=\sum_a g_a,\qquad\frac{\partial\mathcal L}{\partial\gamma}=\sum_a g_a\widehat X_a.}$
+\end{adjustbox}
+\end{center}
+% END F02-B0423
+
+% BEGIN F02-B0424
+Si sommano i contributi perché gli stessi parametri sono condivisi dalle posizioni del canale. Con \(g=(1,0,0,0)\) nell\textquotesingle esempio, i gradienti sono 1 e circa \(-1.34164\).
+% END F02-B0424
+
+% BEGIN F02-B0425
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_6c10410bff92bcbe.png}}
+\caption{Slide 85 -- Parametri apprendibili gamma e beta}
+\end{figure}
+% END F02-B0425
+
+% BEGIN F02-B0426
+\subsection{Inferenza con statistiche memorizzate (slide 86)}\label{f02-r1235}
+% END F02-B0426
+
+% BEGIN F02-B0427
+In training è disponibile un mini-batch; in inferenza può arrivare una sola immagine o un elemento di un flusso. Ricalcolare le statistiche renderebbe inoltre la predizione dipendente dagli altri esempi presenti nel batch di valutazione. Si conservano quindi statistiche durante il training e si riutilizzano dopo.
+% END F02-B0427
+
+% BEGIN F02-B0428
+Con medie e varianze memorizzate \(\bar\mu,\bar v\in\mathbb{R}^C\):
+% END F02-B0428
+
+% BEGIN F02-B0429
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{Y_{n,c,h,w}=\gamma_c\frac{X_{n,c,h,w}-\bar\mu_c}{\sqrt{\bar v_c+\epsilon}}+\beta_c.}$
+\end{adjustbox}
+\end{center}
+% END F02-B0429
+
+% BEGIN F02-B0430
+Si sostituiscono le statistiche correnti con quelle fissate dopo il training. A modello e ingresso fissati, questo livello non dipende dalla composizione del batch di inferenza. Con \(x=7\), \(\bar\mu=4\), \(\bar v=5\), \(\gamma=2\), \(\beta=1\) ed \(\epsilon=10^{-5}\), l\textquotesingle uscita è circa \(3.68328\).
+% END F02-B0430
+
+% BEGIN F02-B0431
+Una media mobile esponenziale può aggiornare lo stato secondo
+% END F02-B0431
+
+% BEGIN F02-B0432
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{\begin{aligned}
+\bar\mu_{t+1}&=(1-\rho)\bar\mu_t+\rho\mu_{B,t},\\
+\bar v_{t+1}&=(1-\rho)\bar v_t+\rho\widetilde v_{B,t}.
+\end{aligned}}$
+\end{adjustbox}
+\end{center}
+% END F02-B0432
+
+% BEGIN F02-B0433
+\(0<\rho\leq1\) pesa la nuova osservazione e \(\widetilde v_B\) è la stima scelta per l\textquotesingle accumulatore. È una media pesata con coefficienti che sommano a 1. Con \(\rho=0.1\), media vecchia 2 e nuova osservazione 4 si ottiene \(0.9\cdot2+0.1\cdot4=2.2\). Con varianza vecchia 3 e nuova stima 5 si ottiene 3.2. La convenzione esatta dipende dall\textquotesingle implementazione: una media di varianze non coincide con il quadrato della media delle deviazioni standard.
+% END F02-B0433
+
+% BEGIN F02-B0434
+\textbf{Un solo esempio non significa sempre un solo valore.} Per un unico scalare la varianza empirica con divisore 1 è definita e vale zero; quella corretta con divisore \(M-1\) non è definita per \(M=1\). Manca comunque informazione sulla dispersione della popolazione. Nella BatchNorm convoluzionale si aggregano \(M=NHW\) valori: anche con \(N=1\) possono esserci molti elementi spaziali. Usare statistiche fisse resta la procedura di inferenza discussa, ma non si giustifica affermando che ogni immagine singola abbia necessariamente varianza nulla.
+% END F02-B0434
+
+% BEGIN F02-B0435
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_94728445c14605cb.png}}
+\caption{Slide 86 -- Batch Normalization in inferenza}
+\end{figure}
+% END F02-B0435
+
+% BEGIN F02-B0436
+\subsection{Modalità training ed evaluation (slide 86 e chiusura della trascrizione)}\label{f02-r1258}
+% END F02-B0436
+
+% BEGIN F02-B0437
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Livello
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Training
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Evaluation/inferenza
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+BatchNorm con statistiche mobili & Usa il batch corrente e aggiorna lo stato & Usa le statistiche memorizzate \\
+Dropout ordinario & Campiona una maschera che azzera alcune attivazioni & Non elimina casualmente le attivazioni \\
+\end{longtable}
+% END F02-B0437
+
+% BEGIN F02-B0438
+In PyTorch si usano \texttt{net.train()} e \texttt{net.eval()}. \texttt{net.training} è lo stato booleano, non la chiamata per impostarlo. Queste modalità governano i livelli; \texttt{eval()} non disabilita da solo il calcolo dei gradienti. Impostare correttamente la modalità è quindi necessario per valutare il comportamento previsto del modello.
+% END F02-B0438
+
+% BEGIN F02-B0439
+\begin{quote}
+\textbf{Stop-line verificata --- 08/10/2026}
+\end{quote}
+% END F02-B0439
+
+% BEGIN F02-B0440
+\begin{quote}
+La trattazione termina alla \textbf{pagina PDF 86 di \texttt{03\_conv.pdf}}, ``Batch Normalization During Inference'', numerata \textbf{79/86} nel piè di pagina. La trascrizione si chiude con le statistiche di inferenza e il confronto BatchNorm/dropout nelle modalità training/eval. La successiva pagina PDF 87, ``Benefits of Batch Normalization'', non risulta spiegata nella registrazione e non viene sviluppata. Titoli e nomi delle immagini usano le pagine fisiche del PDF.
+\end{quote}
+% END F02-B0440
+
+% BEGIN F02-B0441
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+% END F02-B0441
+
+% BEGIN F02-B0442
+\section{Riepilogo Formule Operative}\label{f02-r1273}
+% END F02-B0442
+
+% BEGIN F02-B0443
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Concetto
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Formula Matematica
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Significato e Vincoli
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Tensore Immagine RGB} & \(X \in \mathbb{R}^{C \times H \times W}\) & Standard PyTorch: \(C=3\) canali, \(H\) altezza, \(W\) larghezza \\
+\textbf{Operatore LSI Discreto} & \(o(x, y) = \sum_m \sum_n i(m, n) K(x-m, y-n)\) & Convoluzione 2D con risposta all\textquotesingle impulso \(K\) \\
+\textbf{Mappa di Feature Multicanale} & \(F(i, j) = b + \sum_{c=1}^{C_{in}} \sum_m \sum_n I(i+m, j+n, c) K_c(m, n)\) & Somma attraverso tutti i \(C_{in}\) canali di ingresso più bias scalare \(b\) \\
+\textbf{Dimensioni Spaziali Uscita} & \(H' = \left\lfloor \frac{H - K + 2P}{S} \right\rfloor + 1, \; W' = \left\lfloor \frac{W - K + 2P}{S} \right\rfloor + 1\) & \(K\): kernel, \(P\): padding, \(S\): stride, \(\lfloor \cdot \rfloor\): floor \\
+\textbf{Padding per Dimensione Costante ("same")} & \(P = \frac{K - 1}{2}\) & Valido per kernel dispari \(K\) con stride unitario \(S = 1\) \\
+\textbf{Parametri Apprendibili Strato Conv} & \(\text{Parametri} = C_{out} \cdot (K^2 \cdot C_{in} + 1)\) & Completamente indipendente dalla risoluzione spaziale \(H \times W\) \\
+\textbf{Attivazione ReLU} & \(f(x) = \max(0, x)\) & Gradiente 1 per \(x>0\); gradiente 0 per \(x<0\) (rischio dying ReLU) \\
+\textbf{Attivazione Leaky ReLU} & \(f(x) = \max(x, \alpha x)\) & Pendenza \(\alpha \approx 0.01\) per \(x<0\) (mantiene vivo il gradiente) \\
+\textbf{Attivazione ELU} & \(f(x) = x \text{ se } x>0, \; \alpha(e^x - 1) \text{ se } x \le 0\) & Asintoto a \(-\alpha\) per \(x \to -\infty\); media attivazioni vicina a 0 \\
+\textbf{Pooling: forma, senza padding} & \(H'=\lfloor(H-K)/S\rfloor+1\), \(W'=\lfloor(W-K)/S\rfloor+1\) & \(N,C\) invariati; dilatazione 1, finestre compatibili \\
+\textbf{Max pooling} & \(Y_{n,c,i,j}=\max_{u,v}X_{n,c,iS+u,jS+v}\) & \(0\leq u,v<K\); zero parametri apprendibili \\
+\textbf{Average pooling} & \(Y_{n,c,i,j}=K^{-2}\sum_{u,v}X_{n,c,iS+u,jS+v}\) & Media sulla finestra; zero parametri apprendibili \\
+\textbf{Global average pooling} & \(z_{n,c}=(hw)^{-1}\sum_{i,j}X_{n,c,i,j}\) & \(N\times C\times h\times w\to N\times C\times1\times1\) \\
+\textbf{Pool adattivo a griglia fissa} & \(N\times C\times h\times w\to N\times C\times o\times o\) & Dopo flatten: \(Co^2\) ingressi per esempio \\
+\textbf{Campo recettivo} & \(r_\ell=r_{\ell-1}+(k_\ell-1)j_{\ell-1}\), \(j_\ell=s_\ell j_{\ell-1}\) & \(r_0=j_0=1\), senza dilatazione \\
+\textbf{Parametri dense} & \(d_{\mathrm{out}}(d_{\mathrm{in}}+1)\) & Bias incluso \\
+\textbf{Blocco residuo} & \(H=x+F(x)\) & Stesse forme; entrambi i rami calcolati \\
+\textbf{Gradiente residuo} & \(\nabla_x\mathcal L=g+J_F^Tg\) & Somma, non selezione, dei contributi \\
+\textbf{BN: media e varianza} & \(\mu_{B,c}=M^{-1}\sum_aX_{a,c}\), \(v_{B,c}=M^{-1}\sum_a(X_{a,c}-\mu_{B,c})^2\) & \(M=NHW\), una coppia per canale \\
+\textbf{BN: training} & \(Y_c=\gamma_c(X_c-\mu_{B,c})/\sqrt{v_{B,c}+\epsilon}+\beta_c\) & Forma invariata; \(2C\) parametri apprendibili \\
+\textbf{BN: inferenza} & \(Y_c=\gamma_c(X_c-\bar\mu_c)/\sqrt{\bar v_c+\epsilon}+\beta_c\) & Statistiche memorizzate; nessun nuovo calcolo sul batch \\
+\end{longtable}
+% END F02-B0443
+
+% BEGIN F02-B0444
+\section{Errata e precisazioni principali}\label{f02-r1299}
+% END F02-B0444
+
+% BEGIN F02-B0445
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Riferimento
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Precisazione
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Slide 25 & Linearità significa sovrapposizione dei segnali, non movimento rettilineo della finestra. \\
+Slide 32 e spiegazione orale & Convoluzione e correlazione differiscono per il ribaltamento del kernel, non per la scelta del centro dell\textquotesingle uscita. \\
+Slide 38 & Il campo recettivo teorico cresce componendo regioni; due kernel \(3\times3\) a stride 1 danno \(5\times5\). \\
+Slide 54 & Una ReLU negativa non blocca l\textquotesingle intero modello; ELU è differenziabile in zero solo per \(\alpha=1\). \\
+Slide 55--57 & Il dimezzamento dei due assi richiede \(K=S=2\) nell\textquotesingle esempio; pooling non cambia i canali. \\
+Slide 59 & Il pooling adattivo precede flattening e MLP; non li sostituisce entrambi. \\
+Slide 65--66 & Le ReLU dei livelli nascosti sono distinte dall\textquotesingle uscita finale di classificazione. \\
+Slide 71--74 & Shortcut identità solo a forme coincidenti; i rami e i gradienti vengono sommati. \\
+Slide 80--85 & BN non impone gaussianità né decorrelazione; con \(\epsilon>0\) la varianza normalizzata non è esattamente 1. \\
+Slide 86 & Nelle CNN \(N=1\) non implica \(NHW=1\); \texttt{train()}/\texttt{eval()} cambiano la modalità dei livelli. \\
+\end{longtable}
+% END F02-B0445

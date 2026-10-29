@@ -1,0 +1,5 @@
+flowchart TD
+ A["Fotogrammi del video"] --> B["CNN applicata a ogni fotogramma"]
+ B --> C["Sequenza di vettori di feature"]
+ C --> D["RNN: stato aggiornato lungo il video"]
+ D --> E["Predizione del compito"]

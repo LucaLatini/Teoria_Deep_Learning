@@ -1,0 +1,8 @@
+flowchart TD
+ A["3 × 224 × 224"] --> B["Blocco 1 + pool: 64 × 112 × 112"]
+ B --> C["Blocco 2 + pool: 128 × 56 × 56"]
+ C --> D["Blocco 3 + pool: 256 × 28 × 28"]
+ D --> E["Blocco 4 + pool: 512 × 14 × 14"]
+ E --> F["Blocco 5 + pool: 512 × 7 × 7"]
+ F --> G["Flatten: 25088"]
+ G --> H["Dense 4096 → 4096 → 1000"]
