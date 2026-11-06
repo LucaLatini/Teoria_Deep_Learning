@@ -1,0 +1,68 @@
+{
+  "esito": "PASS",
+  "gcn_tre_nodi_prima_relu": [
+    [
+      2.132993161855452,
+      0.3164965809277259
+    ],
+    [
+      2.9663264951887856,
+      -0.9663264951887854
+    ],
+    [
+      3.1329931618554525,
+      -0.6835034190722744
+    ]
+  ],
+  "gcn_tre_nodi_dopo_relu": [
+    [
+      2.132993161855452,
+      0.3164965809277259
+    ],
+    [
+      2.9663264951887856,
+      0.0
+    ],
+    [
+      3.1329931618554525,
+      0.0
+    ]
+  ],
+  "somma_prima_riga": 0.9082482904638631,
+  "spettro_due_nodi": [
+    0,
+    2
+  ],
+  "trasformata": [
+    2.82842712474619,
+    1.414213562373095
+  ],
+  "filtro_bassa_frequenza": [
+    1.9999999999999996,
+    1.9999999999999996
+  ],
+  "ricorrenza_chebyshev": [
+    [
+      3.0,
+      1.0
+    ],
+    [
+      -1.0,
+      -3.0
+    ],
+    [
+      3.0,
+      1.0
+    ]
+  ],
+  "verifiche": [
+    "dimensioni",
+    "associativita",
+    "equivarianza alla permutazione",
+    "autovalori e autovettori",
+    "trasformata e ricostruzione",
+    "filtro spettrale vs polinomiale",
+    "ricorrenza e identita di Chebyshev",
+    "rinormalizzazione distinta da I+S"
+  ]
+}

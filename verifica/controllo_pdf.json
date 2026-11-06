@@ -1,6 +1,6 @@
 {
-  "pagine": 183,
-  "argomenti": [
+  "pagine": 217,
+  "capitoli": [
     [
       1,
       "1 MLP - Multilayer Perceptron",
@@ -9,26 +9,64 @@
     [
       1,
       "2 CNN - Reti neurali convoluzionali",
-      45
+      44
     ],
     [
       1,
       "3 RNN - Reti neurali ricorrenti",
-      113
+      110
     ],
     [
       1,
       "4 TCN - Temporal Convolutional Networks",
-      147
+      142
     ],
     [
       1,
       "5 Transformer",
-      159
+      154
+    ],
+    [
+      1,
+      "6 GNN - Graph Neural Networks",
+      177
     ]
   ],
-  "elementi_fuori_area": [],
-  "sha256_pdf": "6c6b67a4e47064daa995dd8e85cdde66e0f8cc6006ef6fc055cf08574e224812",
-  "navigazione": "Indice generale per argomento e indici locali con collegamenti alle sezioni",
-  "verifica_visiva": "Ispezionate le dieci tavole di contatto e le aperture dei cinque argomenti; etichette finali uniformate."
+  "pagine_GNN": [
+    177,
+    217
+  ],
+  "pagine_precedenti_immutate": 176,
+  "differenze_testo_pre_GNN": [],
+  "fuori_area": [],
+  "sezioni": {
+    "Un vettore di score per ciascun nodo": [
+      199
+    ],
+    "Pooling con attenzione": [
+      204
+    ],
+    "Somma pesata e nuova rappresentazione": [
+      212
+    ],
+    "GraphCast: geometria": [
+      177,
+      215
+    ]
+  },
+  "tabella_GAT": [
+    212
+  ],
+  "dettagli_renderizzati": [
+    177,
+    199,
+    201,
+    204,
+    212,
+    215,
+    217
+  ],
+  "sha256_pdf": "2b85a55f7a37c1c301c09c085ee32fa7ff6e77dd822a93a662356c366dfad193",
+  "esito": "PASS",
+  "controllo_visivo": "Tutte le 41 pagine GNN renderizzate e ispezionate in tre tavole di contatto; dettagli di classificazione, pooling, note sulle fonti, GAT e GraphCast; ricontrollo dopo la disposizione delle derivazioni su righe separate."
 }

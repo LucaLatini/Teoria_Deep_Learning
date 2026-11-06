@@ -1,8 +1,8 @@
 [
   {
     "file": "mlp_appunti_completi.md",
-    "formule_verificate": 496,
-    "parole_verificate": 7896,
+    "formule_verificate": 479,
+    "parole_verificate": 7608,
     "immagini_verificate": 27,
     "tabelle_verificate": 13,
     "differenze_parole": {},
@@ -20,10 +20,10 @@
   },
   {
     "file": "03_CNN.md",
-    "formule_verificate": 580,
-    "parole_verificate": 9981,
+    "formule_verificate": 523,
+    "parole_verificate": 9660,
     "immagini_verificate": 66,
-    "tabelle_verificate": 7,
+    "tabelle_verificate": 5,
     "differenze_parole": {},
     "numeri_testuali_interpretati_diversamente_dal_reader": {
       "4": 1,
@@ -34,10 +34,10 @@
   },
   {
     "file": "04_RNN.md",
-    "formule_verificate": 431,
-    "parole_verificate": 6645,
+    "formule_verificate": 386,
+    "parole_verificate": 6087,
     "immagini_verificate": 17,
-    "tabelle_verificate": 13,
+    "tabelle_verificate": 11,
     "differenze_parole": {},
     "numeri_testuali_interpretati_diversamente_dal_reader": {
       "3": 1,
@@ -48,12 +48,31 @@
   },
   {
     "file": "05_Transformer.md",
-    "formule_verificate": 378,
-    "parole_verificate": 7622,
+    "formule_verificate": 342,
+    "parole_verificate": 6923,
     "immagini_verificate": 17,
-    "tabelle_verificate": 10,
+    "tabelle_verificate": 8,
     "differenze_parole": {},
     "numeri_testuali_interpretati_diversamente_dal_reader": {},
+    "esito": "PASS"
+  },
+  {
+    "file": "06_GNN.md",
+    "formule_verificate": 473,
+    "parole_verificate": 10098,
+    "immagini_verificate": 21,
+    "tabelle_verificate": 5,
+    "differenze_parole": {},
+    "numeri_testuali_interpretati_diversamente_dal_reader": {
+      "1": 2,
+      "3": 3,
+      "2": 4,
+      "132993": 2,
+      "0": 3,
+      "316497": 1,
+      "966326": 2,
+      "683503": 1
+    },
     "esito": "PASS"
   }
 ]

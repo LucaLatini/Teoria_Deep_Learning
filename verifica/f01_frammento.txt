@@ -14,7 +14,6 @@
 \item \hyperref[f01-r727]{Backpropagation (slide 39--50)}
 \item \hyperref[f01-r922]{Inizializzazione dei pesi (slide 51)}
 \item \hyperref[f01-r969]{Regolarizzazione nelle reti profonde (slide 52--56)}
-\item \hyperref[f01-r1062]{Riepilogo}
 \end{indiceargomento}
 % END F01-B0002
 
@@ -429,7 +428,7 @@ Il pixel 2 (231) è molto chiaro: la riga "cane" gli assegna un peso positivo al
 
 % BEGIN F01-B0064
 \begin{quote}
-\textbf{Errata slide 15}
+\textbf{Nota sulla slide 15}
 \end{quote}
 % END F01-B0064
 
@@ -584,7 +583,7 @@ dove \(y^{true}\) è la distribuzione vera (un vettore \textbf{one-hot} che sele
 
 % BEGIN F01-B0089
 \begin{quote}
-\textbf{Errata slide 18--19}
+\textbf{Nota sulle slide 18--19}
 \end{quote}
 % END F01-B0089
 
@@ -894,7 +893,7 @@ L\textquotesingle uscita è \textbf{centrata sullo zero}, ma la funzione \textbf
 
 % BEGIN F01-B0134
 \begin{quote}
-\textbf{Errata slide 25}
+\textbf{Nota sulla slide 25}
 \end{quote}
 % END F01-B0134
 
@@ -1127,7 +1126,7 @@ Passo & Calcolo & Forma \\
 
 % BEGIN F01-B0169
 \begin{quote}
-\textbf{Errata slide 30}
+\textbf{Nota sulla slide 30}
 \end{quote}
 % END F01-B0169
 
@@ -2557,102 +2556,3 @@ Se la loss di training continua a scendere mentre quella di validazione \textbf{
 % BEGIN F01-B0386
 \textbf{La patience.} Non si decide in base a una sola misura, che potrebbe essere una fluttuazione. Si fissa un numero \(n\) di valutazioni consecutive in cui la loss di validazione resta stabile o peggiora prima di fermarsi. Questo numero si chiama \textbf{patience}.
 % END F01-B0386
-
-% BEGIN F01-B0387
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-% END F01-B0387
-
-% BEGIN F01-B0388
-\section{Riepilogo}\label{f01-r1062}
-% END F01-B0388
-
-% BEGIN F01-B0389
-\begin{enumerate}
-\def\labelenumi{\arabic{enumi}.}
-\tightlist
-\item
-  Il deep learning funziona oggi grazie a \textbf{dati + GPU} e perché \textbf{impara le feature} invece di fissarle. Il prezzo è la loro \textbf{non interpretabilità}.
-\item
-  \textbf{Classificatore lineare} \(Wx+b\) + \textbf{softmax} + \textbf{cross-entropy} + discesa del gradiente = \textbf{regressione logistica}. La softmax definisce probabilità del modello, senza garantirne la calibrazione.
-\item
-  \textbf{Neurone artificiale} = mappa affine seguita da un'attivazione; il caso sigmoide corrisponde al modello logistico binario.
-
-  \begin{itemize}
-  \tightlist
-  \item
-    La sigmoide satura (\(\sigma' = \sigma(1-\sigma) \le 0.25\)) e non è centrata.
-  \item
-    La tanh (\(= 2\sigma(2x)-1\)) è centrata ma satura.
-  \item
-    La \textbf{ReLU} non satura per \(x>0\) ed è economica.
-  \end{itemize}
-\item
-  \textbf{Senza non linearità} qualunque rete collassa in un singolo strato lineare (\(W = W_2W_1\)).
-\item
-  \textbf{MLP}: strati fully connected, \(W \in \mathbb{R}^{\text{out}\times\text{in}}\), e \textbf{ogni neurone ha un bias} (6-4-3-1 → 47 parametri). La \textbf{forward propagation} è una composizione di funzioni: la rete è un\textquotesingle equazione esplicita.
-\item
-  \textbf{Approssimazione universale}: in teoria basta un hidden layer per qualunque funzione continua; in pratica, per la discretizzazione, reti più grandi e profonde sono più espressive. Rappresentare non significa saper imparare.
-\item
-  \textbf{Funzione obiettivo} \(= \frac1N\sum_i L_i + \lambda\Omega(\theta)\).
-
-  \begin{itemize}
-  \tightlist
-  \item
-    \textbf{Loss:} hinge (margine 1, assorbibile nella scala dei pesi), softmax/cross-entropy (gradiente \(= \text{softmax} - \text{one-hot}\)), MSE.
-  \item
-    \textbf{Regolarizzatori:} \(L_2\) (pesi piccoli, \emph{weight decay}) e \(L_1\) (pesi nulli).
-  \end{itemize}
-\item
-  \textbf{Backpropagation}:
-
-  \begin{itemize}
-  \tightlist
-  \item
-    regola della catena applicata \textbf{dall\textquotesingle uscita verso l\textquotesingle ingresso};
-  \item
-    ogni strato calcola solo \(\partial h_{i+1}/\partial W_{i+1}\) ("preleva l\textquotesingle ingresso") e \(\partial h_{i+1}/\partial h_i\) ("preleva il peso");
-  \item
-    il gradiente rispetto alle attivazioni viene \textbf{riusato} strato dopo strato;
-  \item
-    funziona per qualunque strato di cui si sappiano scrivere le due derivate ed è invariata dal 1986.
-  \end{itemize}
-\item
-  \textbf{Inizializzazione}: pesi piccoli, a media zero e \textbf{diversi} (rottura della simmetria), scalati con il fan-in; bias a zero.
-\item
-  \textbf{Regolarizzazione implicita}:
-
-  \begin{itemize}
-  \tightlist
-  \item
-    \textbf{dropout}: spegne neuroni a caso in training, mai in test;
-  \item
-    \textbf{data augmentation}: varianti con la stessa etichetta;
-  \item
-    \textbf{early stopping}: si ferma quando la loss di validazione sale, con una \emph{patience}.
-  \end{itemize}
-\end{enumerate}
-% END F01-B0389
-
-% BEGIN F01-B0390
-\begin{quote}
-\textbf{Riepilogo errata delle slide}
-\end{quote}
-% END F01-B0390
-
-% BEGIN F01-B0391
-\begin{quote}
-\begin{itemize}
-\tightlist
-\item
-  \textbf{Slide 15}: \(s_{ship} = 60.75\), non 61.95 (manca il bias).
-\item
-  \textbf{Slide 18}: denominatore della softmax \(\sum_k e^{z_k}\).
-\item
-  \textbf{Slide 19}: manca il segno meno nella cross-entropy.
-\item
-  \textbf{Slide 25}: \(\tanh(x) = 2\sigma(2x) - 1\).
-\item
-  \textbf{Slide 30}: \(W_2 \in \mathbb{R}^{3\times4}\), \(W_3 \in \mathbb{R}^{1\times3}\).
-\end{itemize}
-\end{quote}
-% END F01-B0391

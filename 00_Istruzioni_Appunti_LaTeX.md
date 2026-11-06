@@ -1,7 +1,7 @@
 ---
 tipo: istruzioni
 formato_destinazione: LaTeX e PDF
-aggiornato: 2026-10-29
+aggiornato: 2026-10-30
 standard_di_riferimento: 00_Istruzioni_Appunti.md
 tags: [istruzioni, deep-learning, latex, appunti]
 ---
@@ -34,13 +34,13 @@ La gerarchia per ricostruire la spiegazione del corso rimane **trascrizione del 
 - La **trascrizione è la sostanza**: aggiunge i perché, i passaggi sottintesi, le analogie, i calcoli e i chiarimenti alle domande d’aula.
 - Gli **appunti esistenti** mantengono la continuità terminologica e didattica. Non sostituiscono le fonti quando è richiesta una nuova redazione.
 
-La gerarchia ricostruisce quanto spiegato; non autorizza a riprodurre un errore matematico o una parola trascritta male. Verificare i passaggi e registrare le correzioni con il riferimento alla fonte. Se l’audio o il testo sono ambigui e il contesto non basta, dichiarare l’incertezza senza inventare la spiegazione.
+La gerarchia ricostruisce quanto spiegato. Quando una slide o la spiegazione presenta un possibile errore, conservarne la formulazione riconoscibile nel punto pertinente e affiancare una breve nota con il riferimento alla fonte e l’eventuale correzione. Non sostituire silenziosamente quanto espresso nei materiali e non usare un’espressione errata nei calcoli successivi senza chiarirla. Distinguere refuso certo, semplificazione didattica e passaggio ambiguo; non presentare ogni differenza di notazione come errore. Le parole corrotte dalla trascrizione vanno ricostruite soltanto se il contesto è univoco. Se l’audio o il testo sono ambigui e il contesto non basta, dichiarare l’incertezza senza inventare la spiegazione.
 
 Non aggiungere teoremi collaterali, dimostrazioni astratte, approfondimenti specialistici o argomenti non trattati. Sono ammesse brevi precisazioni indispensabili alla correttezza, riconoscibili come tali. Non usare fonti web per ampliare il programma senza una richiesta pertinente.
 
 Distinguere ciò che è stato spiegato da ciò che compare soltanto nelle slide. Se manca una fonte, registrarlo nel rapporto di lavoro; non presentare il controllo delle fonti come completo.
 
-Per la dispensa attuale il percorso autorizzato è **MLP → CNN → RNN → TCN → Transformer**. `Manuale_Studio_Machine_Learning_to_Deep_Learning.md` resta escluso finché l’utente non ne richiede esplicitamente l’inclusione. I richiami a quel documento non autorizzano a importarne i capitoli. I laboratori non fanno parte della dispensa teorica attuale.
+Per la dispensa attuale il percorso autorizzato è **MLP → CNN → RNN → TCN → Transformer → GNN**. `Manuale_Studio_Machine_Learning_to_Deep_Learning.md` resta escluso finché l’utente non ne richiede esplicitamente l’inclusione. I richiami a quel documento non autorizzano a importarne i capitoli. I laboratori non fanno parte della dispensa teorica attuale.
 
 ## 3. Struttura e continuità della spiegazione
 
@@ -55,6 +55,7 @@ L’unità organizzativa è l’argomento, non il file sorgente o la data di lez
 | RNN | Serie temporali, ricorrenza, hidden state, unfolding, BPTT e architetture ricorrenti con gate, entro il programma svolto. |
 | TCN | Convoluzione 1D, dilatazione, causalità, campo recettivo temporale e blocchi convoluzionali per sequenze. |
 | Transformer | Token, embedding e posizione, encoder, attention, Q/K/V, multi-head, MLP, LayerNorm e aggregazione finale. |
+| GNN | Grafi, message passing, GCN e derivazione spettrale; compiti sui nodi, coppie e grafi, pooling, grafi spazio-temporali, GAT e GraphCast. Distinguere i dettagli soltanto nelle slide, come la formula GATv2, dalle spiegazioni effettivamente svolte. |
 
 L’indice generale deve mostrare soltanto gli argomenti principali, allo stesso livello. Ogni capitolo deve aprirsi con un elenco navigabile dei propri sottoargomenti. Sezioni e sottosezioni restano all’interno dell’argomento a cui appartengono, con numerazione e riferimenti coerenti.
 
@@ -117,8 +118,9 @@ Conservare il codice necessario alla spiegazione teorica. Se viene richiesto un 
 | Analogie e chiarimenti emersi durante la lezione | Integrare nel testo, senza attribuzioni separate. |
 | Domande di ripasso, quiz e autovalutazione | Non aggiungere; se presenti nella fonte, escludere la forma interrogativa finale e recuperare nel capitolo le informazioni teoriche uniche delle risposte. |
 | Domande che introducono una spiegazione nel corpo | Conservare il contenuto esplicativo; nella nuova redazione preferire una formulazione espositiva. |
-| Riepiloghi di formule e concetti | Conservare: non sono domande di ripasso. |
-| Errata, avvisi, precisazioni e teoremi | Conservare con evidenza sobria e riferimento alla fonte. |
+| Riepiloghi finali di formule e concetti | Non mantenere una sezione finale autonoma. Escludere le sole ripetizioni dopo averne riscontrato il contenuto nel corpo; collocare eventuali informazioni uniche o tabelle realmente utili accanto alla spiegazione pertinente. |
+| Errata e precisazioni sulle fonti | Non mantenere un elenco finale autonomo. Conservare quanto espresso nella fonte e la breve nota locale con riferimento alla slide e all’eventuale correzione; evitare di duplicare una precisazione già presente nel corpo. |
+| Avvisi e teoremi | Conservare nel punto pertinente con evidenza sobria. |
 | Contenuti soltanto nelle slide | Conservare con una nota informativa che ne specifichi lo stato. |
 | Frontmatter e intestazioni editoriali ripetute | Trasferire in commenti o registro separato; non ripeterli nella dispensa. |
 | Titoli e numerazione | Mantenere gli argomenti e uniformare la numerazione; aggiornare i rinvii. |
@@ -126,6 +128,8 @@ Conservare il codice necessario alla spiegazione teorica. Se viene richiesto un 
 | Figure, diagrammi e tabelle | Conservare e verificarne la resa nel PDF. |
 
 Non eliminare informazioni soltanto perché si trovano dentro un callout o in una risposta. Non deduplicare, sintetizzare o accorciare il contenuto teorico senza un’istruzione esplicita.
+
+**Revisione concordata il 30/10/2026.** L’esclusione dei finali autonomi di riepilogo ed errata vale per tutti gli argomenti e per le successive redazioni LaTeX. Non autorizza altre riscritture: spiegazioni da slide e trascrizione, formule, derivazioni, esempi, analogie e figure restano conservati. I riepiloghi intermedi che servono a sviluppare il ragionamento non vengono eliminati automaticamente. I dettagli editoriali delle correzioni e dei termini trascritti male possono restare nel rapporto separato. Questa regola adatta soltanto la destinazione LaTeX e non modifica lo standard Markdown originale.
 
 ## 8. Continuità del sorgente e dell’impaginazione
 

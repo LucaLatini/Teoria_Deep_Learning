@@ -6,6 +6,7 @@ Gli originali non vengono modificati. Il manuale introduttivo è escluso.
 from pathlib import Path
 import argparse, collections, copy, hashlib, json, re, shutil, subprocess, sys
 from urllib.parse import unquote
+from finali_editoriali import revisiona
 
 sys.stdout.reconfigure(encoding='utf-8')
 OUT = Path(__file__).resolve().parents[1]
@@ -17,6 +18,7 @@ SOURCES = [
     ('03_CNN.md', 'Reti neurali convoluzionali (CNN)'),
     ('04_RNN.md', 'Serie temporali e reti neurali ricorrenti'),
     ('05_Transformer.md', 'Temporal Convolutional Networks e Transformer'),
+    ('06_GNN.md', 'GNN - Graph Neural Networks'),
 ]
 PANDOC_READER = 'markdown+tex_math_dollars+tex_math_single_backslash-smart'
 TOOLS = ROOT / 'tmp' / 'dispensa_build_tools'
@@ -83,6 +85,22 @@ def preprocess(path, ordinal):
     lines = text.splitlines(keepends=True)
     record = {'file': path.name, 'sha256_originale': sha(raw), 'righe_originali': len(lines), 'esclusioni': [], 'trasformazioni': [], 'righe': []}
     (OUT / 'originali' / path.name).write_bytes(raw)
+    # Conserva i riferimenti GNN già distribuiti anche quando una nuova lezione
+    # inserisce paragrafi prima delle vecchie sezioni. I nuovi titoli hanno un
+    # namespace distinto per non collidere con gli identificatori precedenti.
+    old_labels = {}
+    prior_ast = OUT / 'verifica' / f'f{ordinal:02d}_contenuto.json'
+    if ordinal == 5 and prior_ast.is_file():
+        def heading_text(x):
+            if isinstance(x,dict):
+                if x.get('t') == 'Str': return x['c']
+                if x.get('t') in ('Space','SoftBreak','LineBreak'): return ' '
+                if x.get('t') in ('Math','Code'): return x['c'][1]
+                return heading_text(x.get('c',[]))
+            if isinstance(x,list): return ''.join(heading_text(v) for v in x)
+            return ''
+        for b in json.loads(prior_ast.read_text('utf-8'))['blocks']:
+            if b['t'] == 'Header': old_labels[heading_text(b['c'][2])] = b['c'][1][0]
     out, in_yaml, yaml_finished = [], False, False
     in_fence = False
     for i, original in enumerate(lines, 1):
@@ -107,6 +125,8 @@ def preprocess(path, ordinal):
             if h:
                 title = re.sub(r'^\d+(?:\.\d+)*\.?\s+', '', h[2])
                 label = f'fonte{ordinal:02d}' if len(h[1]) == 1 else f'f{ordinal:02d}-r{i}'
+                if ordinal == 5:
+                    label = old_labels.get(title, 'fonte05' if len(h[1]) == 1 else f'f05-n30-r{i}')
                 changed = h[1] + ' ' + title + ' {#' + label + '}'
                 record['trasformazioni'].append({'riga': i, 'tipo': 'titolo e numerazione LaTeX', 'prima': line, 'dopo': changed})
                 line = changed
@@ -154,6 +174,10 @@ def transform(ast, path, ordinal, record):
     diagram_n = 0
     for n in walk(ast):
         t, c = n['t'], n.get('c')
+        if t == 'Table' and ordinal == 5:
+            words = ' '.join(x['c'] for x in walk(n) if x['t'] == 'Str')
+            if 'Coefficienti verso i nodi' in words and 'ReLU' in words:
+                c[2] = [[{'t':'AlignDefault'},{'t':'ColWidth','c':w}] for w in [.08,.36,.28,.28]]
         if t == 'Image':
             if not c[2][0].startswith('figure/'):
                 c[2][0] = resolve_image(c[2][0], path)
@@ -181,7 +205,7 @@ def transform(ast, path, ordinal, record):
 
 def organizza_argomenti(ast, ordinal):
     """Un argomento principale per capitolo; TCN e Transformer separati."""
-    names = {1: 'MLP - Multilayer Perceptron', 2: 'CNN - Reti neurali convoluzionali', 3: 'RNN - Reti neurali ricorrenti', 4: 'TCN - Temporal Convolutional Networks'}
+    names = {1: 'MLP - Multilayer Perceptron', 2: 'CNN - Reti neurali convoluzionali', 3: 'RNN - Reti neurali ricorrenti', 4: 'TCN - Temporal Convolutional Networks', 5: 'GNN - Graph Neural Networks'}
     def inlines(s):
         return [{'t': 'Str', 'c': s}]
     blocks = [b for b in ast['blocks'] if not (b['t'] == 'RawBlock' and '\\begin{indiceargomento}' in b['c'][1])]
@@ -289,7 +313,7 @@ PREAMBLE = r'''% Compilare con XeLaTeX, due volte. Tutto il testo è in questo u
 \vspace{10mm}
 {\color{inchiostro}\rule{\textwidth}{1pt}\par}
 \vspace{6mm}
-{\large MLP - Multilayer Perceptron\par CNN - Reti convoluzionali\par RNN - Reti ricorrenti\par TCN - Temporal Convolutional Networks\par Transformer\par}
+{\large MLP - Multilayer Perceptron\par CNN - Reti convoluzionali\par RNN - Reti ricorrenti\par TCN - Temporal Convolutional Networks\par Transformer\par GNN - Graph Neural Networks\par}
 \vfill
 \end{titlepage}
 \tableofcontents
@@ -330,6 +354,9 @@ def convert(limit=4, start=1):
         suspicious = [n['c'] for n in walk(baseline) if n['t'] == 'Str' and '$' in n['c']]
         if suspicious: raise AssertionError(f'Delimitatori matematici non interpretati: {name}: {suspicious[:15]}')
         ast = organizza_argomenti(transform(copy.deepcopy(baseline), path, ordinal, record), ordinal)
+        ast, _, note_changes = revisiona(ast)
+        record['criterio_finali'] = 'Revisione autorizzata il 30/10/2026: nessuna sezione finale autonoma di riepilogo o errata; note puntuali nel corpo.'
+        record['etichette_note_locali'] = note_changes
         # Record each block independently, including its payload and exact emitted TeX.
         blocktex = []
         block_records = []
@@ -382,35 +409,39 @@ def audit():
     totals = collections.Counter()
     for s in report['fonti']: totals.update(s['conteggi_finali'])
     rows = ['# Verifica della dispensa di teoria', '', report['ambito'], '',
-        'Gli originali sono conservati senza modifiche. La dispensa trasferisce i contenuti dei Markdown; non costituisce una nuova revisione scientifica delle slide o delle trascrizioni.', '',
-        '## Copertura file per file', '', '| Fonte | Righe originali | Righe escluse | Blocchi trasferiti | Formule | Tabelle | Immagini e diagrammi |', '|---|---:|---:|---:|---:|---:|---:|']
+        'I quattro Markdown precedenti a GNN sono conservati senza modifiche: il loro trasferimento non costituisce una nuova revisione scientifica. GNN è una redazione da slide e trascrizioni, aggiornata con le lezioni richieste; i relativi rapporti distinguono la verifica delle fonti dalla conversione. Il Markdown di lavorazione corrente è conservato fra gli originali della conversione e le versioni precedenti sono archiviate.', '',
+        '## Copertura file per file', '', '| Fonte | Righe originali | Righe escluse in preparazione | Blocchi mantenuti | Formule | Tabelle | Immagini e diagrammi |', '|---|---:|---:|---:|---:|---:|---:|']
     for s in report['fonti']:
         c=s['conteggi_finali']
         rows.append(f'| {s["file"]} | {s["righe_originali"]} | {s["righe_escluse"]} | {len(s["blocchi"])} | {c["Math"]} | {c["Table"]} | {c["Image"]} |')
     rows += ['', '## Criterio di conservazione', '',
-        '- Ogni riga originale è classificata come conservata oppure esclusa con motivazione e impronta SHA-256.',
+        '- Ogni riga originale è classificata nella preparazione iniziale come conservata oppure esclusa con motivazione e impronta SHA-256. Le esclusioni editoriali successive sono registrate separatamente per blocco.',
         '- Ogni blocco trasferito ha un identificatore nel sorgente LaTeX, un’impronta del contenuto strutturato e una del frammento LaTeX.',
-        '- Le formule sono confrontate con quelle dei contenuti originali mantenuti, rispettando anche le occorrenze ripetute.',
+        '- Le formule sono confrontate con quelle dei contenuti mantenuti nel corpo, rispettando anche le occorrenze ripetute. Le occorrenze nei soli finali esclusi sono documentate nel registro della revisione.',
         '- L’emissione del capitolo completo è confrontata con quella ottenuta assemblando i singoli blocchi.',
         '- Ogni immagine originale è copiata senza modifiche e verificata byte per byte; i diagrammi conservano anche il sorgente Mermaid.',
-        '- Le domande esplicative nel corpo e gli esempi svolti sono conservati. Non sono presenti sezioni autonome finali di domande di ripasso nei quattro file.',
-        '- Riepiloghi, errata e precisazioni matematiche restano inclusi. Nessuna deduplicazione dei contenuti teorici.',
+        '- Le spiegazioni nel corpo e gli esempi svolti sono conservati. Non sono aggiunte sezioni autonome finali di domande di ripasso.',
+        '- Su richiesta del 30/10/2026 sono rimossi i finali autonomi di riepilogo ed errata. Le note locali, i riferimenti alla formulazione delle fonti e le precisazioni restano accanto ai passaggi pertinenti. Il registro della revisione riscontra nel corpo ogni voce dei finali esclusi.',
         '- Il rinvio CNN «Sezione 3.1» è aggiornato con un riferimento LaTeX alla corrispondente sezione.',
         '- I rimandi al manuale introduttivo sono etichettati come riferimenti a un documento separato: il manuale non è incluso.', '',
-        '## Esclusioni editoriali', '', 'Sono esclusi soltanto i metadati YAML iniziali e le agende o convenzioni iniziali qui riportate. I titoli sono mantenuti come capitoli e sezioni, con numerazione uniforme.', '']
+        '## Esclusioni editoriali', '', 'Nella preparazione iniziale sono esclusi i metadati YAML e le agende o convenzioni iniziali qui riportate. La successiva revisione del 30/10/2026 esclude soltanto i finali autorizzati di riepilogo ed errata, con riscontro delle informazioni nel corpo e conservazione delle note locali. I titoli restano capitoli e sezioni con numerazione uniforme.', '']
     for s in report['fonti']:
         rows += ['### ' + s['file'], '']
         for ex in s['esclusioni']:
             if ex['motivo'].startswith('metadati'): continue
             rows += [f'- Riga {ex["riga"]}: {ex["testo"]}', '']
-    rows += ['## Dettaglio verificabile', '', 'Il registro JSON contiene la classificazione di tutte le righe, le trasformazioni editoriali, gli identificatori dei blocchi e le impronte dei file. I quattro JSON di contenuto conservano la struttura interpretata da Pandoc.', '',
+    if report.get('revisioni_editoriali'):
+        rows += ['## Criterio editoriale dei finali, concordato il 30 ottobre 2026', '',
+                 'La revisione storica dei soli finali ha lasciato invariati i Markdown allora presenti; le successive stesure da nuove lezioni sono documentate separatamente. Nella destinazione LaTeX i titoli delle note locali passano da «Errata slide» a «Nota sulla/sulle slide» senza riscrivere il testo delle note. Gli indici locali non elencano i finali esclusi e i nuovi argomenti non introducono riepiloghi o errata autonomi.', '',
+                 'Il riscontro per voce e la verifica esatta dei blocchi sono documentati in `verifica/Revisione_finali_2026-10-30.md` e `verifica/revisione_finali_2026-10-30.json`. La situazione precedente è conservata in `verifica/prima_revisione_finali/`. Le note sui termini corrotti nella trascrizione sono trasferite al rapporto tecnico, mentre i termini corretti restano nel corpo.', '']
+    rows += ['## Dettaglio verificabile', '', 'Il registro JSON contiene la classificazione di tutte le righe, le trasformazioni editoriali, gli identificatori dei blocchi e le impronte dei file. I JSON di contenuto conservano la struttura interpretata da Pandoc.', '',
         'Compilazione: eseguire XeLaTeX due volte nella cartella che contiene il sorgente. Il file `.tex` contiene tutto il testo; la cartella `figure/` contiene i soli asset esterni necessari.', '']
     (OUT / 'Verifica_conversione.md').write_text('\n'.join(rows), encoding='utf-8')
     print('AUDIT COMPLETATO:', dict(totals), flush=True)
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser()
-    p.add_argument('--limit', type=int, default=4)
+    p.add_argument('--limit', type=int, default=len(SOURCES))
     p.add_argument('--audit', action='store_true')
     p.add_argument('--start', type=int, default=1)
     a = p.parse_args()

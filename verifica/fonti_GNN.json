@@ -1,0 +1,172 @@
+{
+  "data": "2026-10-29",
+  "tipo": "nuova redazione da slide e trascrizione",
+  "fonti": [
+    {
+      "file": "03_Fonti\\Slide\\06 GNN.pdf",
+      "sha256": "6bd97aab5746277d370944d090cb0eb2d3c86087d486b04cae73f69f16302c15"
+    },
+    {
+      "file": "03_Fonti\\Trascrizioni\\29-10.txt",
+      "sha256": "defbe86144e6d07c404832fa0c239fc1f2b7625b4a2ee23c9e40e0ca6d00d1ea"
+    }
+  ],
+  "pagine_incluse": [
+    {
+      "pagina_pdf": 1,
+      "slide_stampata": 1
+    },
+    {
+      "pagina_pdf": 2,
+      "slide_stampata": 2
+    },
+    {
+      "pagina_pdf": 3,
+      "slide_stampata": 3
+    },
+    {
+      "pagina_pdf": 4,
+      "slide_stampata": 4
+    },
+    {
+      "pagina_pdf": 5,
+      "slide_stampata": 5
+    },
+    {
+      "pagina_pdf": 6,
+      "slide_stampata": 6
+    },
+    {
+      "pagina_pdf": 7,
+      "slide_stampata": 7
+    },
+    {
+      "pagina_pdf": 8,
+      "slide_stampata": 8
+    },
+    {
+      "pagina_pdf": 9,
+      "slide_stampata": 9
+    },
+    {
+      "pagina_pdf": 10,
+      "slide_stampata": 10
+    },
+    {
+      "pagina_pdf": 11,
+      "slide_stampata": 11
+    },
+    {
+      "pagina_pdf": 12,
+      "slide_stampata": 12
+    },
+    {
+      "pagina_pdf": 13,
+      "slide_stampata": 13
+    },
+    {
+      "pagina_pdf": 14,
+      "slide_stampata": 14
+    },
+    {
+      "pagina_pdf": 15,
+      "slide_stampata": 15
+    },
+    {
+      "pagina_pdf": 16,
+      "slide_stampata": 16
+    },
+    {
+      "pagina_pdf": 17,
+      "slide_stampata": 17
+    },
+    {
+      "pagina_pdf": 18,
+      "slide_stampata": 18
+    },
+    {
+      "pagina_pdf": 19,
+      "slide_stampata": 19
+    },
+    {
+      "pagina_pdf": 20,
+      "slide_stampata": 19
+    },
+    {
+      "pagina_pdf": 21,
+      "slide_stampata": 20
+    },
+    {
+      "pagina_pdf": 22,
+      "slide_stampata": 21
+    },
+    {
+      "pagina_pdf": 23,
+      "slide_stampata": 22
+    },
+    {
+      "pagina_pdf": 24,
+      "slide_stampata": 23
+    },
+    {
+      "pagina_pdf": 25,
+      "slide_stampata": 24
+    },
+    {
+      "pagina_pdf": 26,
+      "slide_stampata": 25
+    },
+    {
+      "pagina_pdf": 27,
+      "slide_stampata": 26
+    },
+    {
+      "pagina_pdf": 28,
+      "slide_stampata": 27
+    },
+    {
+      "pagina_pdf": 29,
+      "slide_stampata": 28
+    }
+  ],
+  "pagine_escluse": [
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62
+  ],
+  "motivo_esclusione": "oltre il termine esplicito alla slide stampata 28",
+  "trascrizione_caratteri": 53009,
+  "trascrizione_letta": "interamente, in tre intervalli consecutivi 0:17500, 17500:35000, 35000:fine",
+  "verifica_numerica": "verifica_numerica_GNN.json",
+  "capitoli_precedenti": "frammenti f01-f04 conservati senza modifiche"
+}

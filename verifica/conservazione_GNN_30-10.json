@@ -1,0 +1,19 @@
+{
+  "primi_quattro_frammenti_identici": true,
+  "formule_GNN_precedenti_conservate_con_molteplicita": 248,
+  "etichette_GNN_precedenti_conservate": true,
+  "blocchi_GNN_precedenti_non_identici": [
+    {
+      "tipo": "Para",
+      "testo": "Gli embedding ottenuti possono essere usati da un MLP per un compito sui nodi; combinarli in un vettore globale è un'altra possibilità menzionata nel percorso introduttivo. I compiti applicativi saranno però sviluppati dopo il punto di chiusura di questa lezione."
+    },
+    {
+      "tipo": "Figure",
+      "testo": "Vicinato del nodo e contributo del self-loop, dalla slide 20Vicinato del nodo e contributo del self-loop, dalla slide 20"
+    },
+    {
+      "tipo": "Para",
+      "testo": "Il percorso arriva qui: le applicazioni delle GNN e le architetture con attenzione appartengono alla parte successiva delle slide e non vengono sviluppate in questo capitolo."
+    }
+  ]
+}

@@ -1,0 +1,2511 @@
+% BEGIN F05-B0001
+\chapter{GNN - Graph Neural Networks}\label{fonte05}
+% END F05-B0001
+
+% BEGIN F05-B0002
+\begin{indiceargomento}
+\item \hyperref[f05-r18]{Dalla convoluzione alla griglia che la sostiene (slide 4-7)}
+\item \hyperref[f05-r49]{Un\textquotesingle immagine come segnale su un grafo (slide 8-9)}
+\item \hyperref[f05-r65]{Dati irregolari e requisiti della rete (slide 10-14)}
+\item \hyperref[f05-r102]{GCN e passaggio di messaggi (slide 15-17)}
+\item \hyperref[f05-r119]{Matrici di ingresso e ruolo dell\textquotesingle adiacenza (slide 18-19)}
+\item \hyperref[f05-r150]{Lo strato GCN in forma matriciale (slide 20-21)}
+\item \hyperref[f05-r198]{Dalla matrice ai messaggi del singolo nodo (slide 22)}
+\item \hyperref[f05-r282]{Profondità e campo recettivo sul grafo (slide 23)}
+\item \hyperref[f05-r298]{Laplaciano normalizzato e filtri polinomiali (slide 24)}
+\item \hyperref[f05-r335]{Base spettrale e trasformata di Fourier sul grafo (slide 25)}
+\item \hyperref[f05-r403]{Costruire il filtro con i polinomi di Chebyshev (slide 26)}
+\item \hyperref[f05-r439]{Eliminare gli autovettori dal calcolo (slide 27)}
+\item \hyperref[f05-r494]{Dal filtro di primo grado alla GCN finale (slide 28)}
+\item \hyperref[f05-n30-r558]{Dal modello al compito: che cosa si vuole prevedere (slide 30)}
+\item \hyperref[f05-n30-r579]{Classificare i nodi: uscita, applicazioni e supervisione (slide 31-35)}
+\item \hyperref[f05-n30-r656]{Link prediction: classificare una coppia di nodi (slide 36)}
+\item \hyperref[f05-n30-r690]{Graph classification e aggregazione dei nodi (slide 37-38)}
+\item \hyperref[f05-n30-r766]{Action recognition con grafi spazio-temporali (slide 39)}
+\item \hyperref[f05-n30-r801]{Limiti dell\textquotesingle aggregazione GCN e motivazione dell\textquotesingle attenzione (slide 41-42)}
+\item \hyperref[f05-n30-r822]{Un livello GAT: proiezione, score, maschera e aggregazione (slide 43-45)}
+\item \hyperref[f05-n30-r948]{Più teste, confronto con il Transformer e limiti della GAT (slide 46-50)}
+\item \hyperref[f05-n30-r994]{GraphCast: geometria della Terra e previsione meteorologica (slide 52-56)}
+\end{indiceargomento}
+% END F05-B0002
+
+% BEGIN F05-B0003
+Una rete convoluzionale sfrutta la struttura dell\textquotesingle ingresso: un\textquotesingle immagine non è soltanto un elenco di valori, ma una griglia in cui certe posizioni sono vicine. Le \textbf{Graph Neural Networks}, o \textbf{GNN}, estendono questa idea a dati le cui relazioni non formano una griglia regolare. Una molecola, una rete stradale o uno scheletro hanno elementi e connessioni; la struttura di queste connessioni deve entrare nel calcolo delle rappresentazioni.
+% END F05-B0003
+
+% BEGIN F05-B0004
+Il percorso parte dalla convoluzione già introdotta nelle \hyperref[fonte02]{reti convoluzionali}, costruisce l\textquotesingle operatore GCN attraverso il passaggio di messaggi e ne ricostruisce la motivazione spettrale. Il risultato finale separa due operazioni: \textbf{combinare nodi collegati} e \textbf{trasformare le feature di ogni nodo}.
+% END F05-B0004
+
+% BEGIN F05-B0005
+\section{Dalla convoluzione alla griglia che la sostiene (slide 4-7)}\label{f05-r18}
+% END F05-B0005
+
+% BEGIN F05-B0006
+\subsection{Un filtro locale con pesi condivisi (slide 4-5)}\label{f05-r20}
+% END F05-B0006
+
+% BEGIN F05-B0007
+Nella VGG, come nelle altre CNN, una successione di filtri modifica la rappresentazione dell\textquotesingle immagine; il classificatore usa poi le feature prodotte. Il filtro non combina pixel arbitrari: osserva una finestra locale, la sposta sistematicamente e riusa gli stessi coefficienti in tutte le posizioni. Il significato della posizione di ciascun coefficiente rimane stabile: sopra, sotto, a sinistra e a destra hanno lo stesso ruolo lungo la griglia.
+% END F05-B0007
+
+% BEGIN F05-B0008
+Per una singola immagine a un canale e un kernel quadrato di lato \(d=2k+1\), la correlazione incrociata spaziale è
+% END F05-B0008
+
+% BEGIN F05-B0009
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{S(i,j)=\sum_{m=-k}^{k}\sum_{n=-k}^{k}I(i+m,j+n)K(m,n).}$
+\end{adjustbox}
+\end{center}
+% END F05-B0009
+
+% BEGIN F05-B0010
+\(I(i+m,j+n)\) è il valore osservato nella finestra centrata in \((i,j)\); \(K(m,n)\) è il peso all\textquotesingle offset \((m,n)\); \(S(i,j)\) è uno scalare. Con un kernel \(3\times3\), \(k=1\) e vengono sommati nove prodotti. Nel caso multicanale si somma anche sui canali, secondo la convenzione del capitolo CNN.
+% END F05-B0010
+
+% BEGIN F05-B0011
+Per esempio, per la finestra
+% END F05-B0011
+
+% BEGIN F05-B0012
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle I_{\mathrm{loc}}=\begin{bmatrix}1&2&3\\4&5&6\\7&8&9\end{bmatrix},\qquad K=\frac19\begin{bmatrix}1&1&1\\1&1&1\\1&1&1\end{bmatrix},$
+\end{adjustbox}
+\end{center}
+% END F05-B0012
+
+% BEGIN F05-B0013
+il risultato centrale è \((1+2+3+4+5+6+7+8+9)/9=45/9=5\). Il calcolo richiede una finestra con posizioni relative ben definite.
+% END F05-B0013
+
+% BEGIN F05-B0014
+\begin{quote}
+\textbf{Precisazione sulla correlazione e sulla convoluzione}
+\end{quote}
+% END F05-B0014
+
+% BEGIN F05-B0015
+\begin{quote}
+La differenza matematica riguarda il ribaltamento del kernel, non la sola scelta dell\textquotesingle origine della finestra. La formula con \(I(i+m,j+n)K(m,n)\) è una correlazione incrociata; nella convoluzione si invertono gli offset, con convenzioni coerenti. Cambiare il punto usato per indicizzare l\textquotesingle uscita non basta, da solo, a trasformare l\textquotesingle una nell\textquotesingle altra.
+\end{quote}
+% END F05-B0015
+
+% BEGIN F05-B0016
+\subsection{Reticoli regolari in due e in una dimensione (slide 6-7)}\label{f05-r39}
+% END F05-B0016
+
+% BEGIN F05-B0017
+I pixel possono essere visti come punti di un reticolo discreto \(\mathbb Z^2\), immerso nel piano euclideo. L\textquotesingle immagine associa un valore o un vettore di valori a ogni punto. La struttura delle posizioni è regolare anche se i valori dei pixel cambiano continuamente da un\textquotesingle immagine all\textquotesingle altra.
+% END F05-B0017
+
+% BEGIN F05-B0018
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_17b1ab7734fcd0e7.png}}
+\caption{Il reticolo regolare su cui si muove il filtro spaziale, dalla slide 6}
+\end{figure}
+% END F05-B0018
+
+% BEGIN F05-B0019
+Nella convoluzione temporale il supporto è invece un reticolo monodimensionale: le osservazioni sono ordinate lungo un asse e il filtro conserva gli stessi offset nelle diverse posizioni. Cambia il numero di assi di scorrimento, non l\textquotesingle idea di località e condivisione dei pesi. Audio, testo rappresentato in sequenza e serie temporali sono esempi di questo schema; il collegamento è con la convoluzione 1D già trattata nel capitolo TCN.
+% END F05-B0019
+
+% BEGIN F05-B0020
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_9abaed06116308c7.png}}
+\caption{Interazioni locali lungo un reticolo monodimensionale, dalla slide 7}
+\end{figure}
+% END F05-B0020
+
+% BEGIN F05-B0021
+\section{Un\textquotesingle immagine come segnale su un grafo (slide 8-9)}\label{f05-r49}
+% END F05-B0021
+
+% BEGIN F05-B0022
+Un \textbf{grafo} è una coppia
+% END F05-B0022
+
+% BEGIN F05-B0023
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{G=(V,E),\qquad E\subseteq V\times V.}$
+\end{adjustbox}
+\end{center}
+% END F05-B0023
+
+% BEGIN F05-B0024
+\(V\) è l\textquotesingle insieme dei nodi, o vertici; \(E\) descrive gli archi, cioè le connessioni. Il grafo descrive \textbf{chi è collegato a chi}. Le feature descrivono invece \textbf{che cosa è associato a ciascun nodo}.
+% END F05-B0024
+
+% BEGIN F05-B0025
+Per un\textquotesingle immagine RGB, un nodo può corrispondere a un pixel e avere come feature la terna \((R,G,B)\). Una regola di connessione a quattro vicini collega un pixel interno a quello sopra, sotto, a sinistra e a destra. Ai bordi il numero di vicini si riduce. Questo grafo è un caso particolare, molto regolare, di struttura a grafo.
+% END F05-B0025
+
+% BEGIN F05-B0026
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_02b73ebaa948e8b1.png}}
+\caption{Pixel interpretati come nodi di un grafo reticolare, dalla slide 9}
+\end{figure}
+% END F05-B0026
+
+% BEGIN F05-B0027
+La connessione a quattro vicini non va confusa con tutti i pixel di un kernel \(3\times3\): quest\textquotesingle ultimo comprende anche le diagonali e il centro. La scelta del grafo e quella del supporto del filtro sono collegate ma distinte; non basta scrivere una matrice di adiacenza a quattro vicini per riprodurre automaticamente un qualsiasi kernel CNN.
+% END F05-B0027
+
+% BEGIN F05-B0028
+Un grafo può essere \textbf{orientato}, se il verso di una relazione conta, oppure \textbf{non orientato}, se la connessione è reciproca. Può inoltre essere binario, con archi presenti o assenti, oppure pesato. Nella derivazione spettrale successiva si considerano grafi non orientati, con adiacenza simmetrica e pesi non negativi; l\textquotesingle esempio più semplice è binario.
+% END F05-B0028
+
+% BEGIN F05-B0029
+\section{Dati irregolari e requisiti della rete (slide 10-14)}\label{f05-r65}
+% END F05-B0029
+
+% BEGIN F05-B0030
+\subsection{La località dipende dalle connessioni (slide 10-11)}\label{f05-r67}
+% END F05-B0030
+
+% BEGIN F05-B0031
+Un kernel standard richiede un vicinato di dimensione e organizzazione prefissate. In un grafo generale, un nodo può avere due vicini e un altro dieci. Non esiste necessariamente una posizione universale «in alto a destra» alla quale assegnare sempre lo stesso coefficiente.
+% END F05-B0031
+
+% BEGIN F05-B0032
+Gli esempi mostrano che la relazione utile non coincide sempre con la distanza sul foglio o nello spazio:
+% END F05-B0032
+
+% BEGIN F05-B0033
+\begin{itemize}
+\tightlist
+\item
+  In una \textbf{molecola}, gli atomi sono i nodi e i legami sono gli archi. Nell\textquotesingle acqua l\textquotesingle ossigeno è collegato a due idrogeni; nel grafo dei legami non compare un legame diretto fra i due idrogeni.
+\item
+  In una \textbf{rete stradale}, due luoghi vicini in linea d\textquotesingle aria possono essere separati da un percorso lungo. La connessione dipende dalle strade disponibili.
+\item
+  In una \textbf{rete di citazioni} o di telefonate, le relazioni dipendono da citazioni o contatti effettivi, non dalla posizione con cui si disegnano i nodi.
+\item
+  In una \textbf{mesh 3D}, i vertici sono collegati lungo la superficie. Due punti qualsiasi non sono necessariamente adiacenti: per raggiungerli può servire attraversare più archi.
+\item
+  Nello \textbf{scheletro umano}, i nodi rappresentano le articolazioni e gli archi le connessioni anatomiche. Due dita possono avvicinarsi nello spazio senza diventare articolazioni direttamente collegate.
+\end{itemize}
+% END F05-B0033
+
+% BEGIN F05-B0034
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_3996ba210ae4cd06.png}}
+\caption{Reti stradali, citazioni, molecole e pose come esempi di dati a grafo, dalla slide 11}
+\end{figure}
+% END F05-B0034
+
+% BEGIN F05-B0035
+Dire «dominio non euclideo» non impedisce di associare ai nodi coordinate 2D o 3D. Significa che non si può ridurre la struttura delle relazioni alla sola griglia regolare delle CNN. Esiste ancora una località, ma è definita dalla \textbf{topologia del grafo}, per esempio dal numero di archi di un cammino.
+% END F05-B0035
+
+% BEGIN F05-B0036
+\subsection{Numerazione arbitraria dei nodi (slide 13)}\label{f05-r83}
+% END F05-B0036
+
+% BEGIN F05-B0037
+Cambiare il numero assegnato a un atomo non cambia la molecola. Una rete per grafi deve rispettare questa proprietà: non deve apprendere un significato artificiale del «primo» o del «quarto» nodo. Quando si rinumerano i nodi, vanno riordinate coerentemente sia le feature sia tutte le connessioni.
+% END F05-B0037
+
+% BEGIN F05-B0038
+La distinzione utile è fra \textbf{equivarianza} e \textbf{invarianza}. Se l\textquotesingle uscita contiene una rappresentazione per nodo, rinumerare l\textquotesingle ingresso deve rinumerare allo stesso modo le righe dell\textquotesingle uscita: questa è equivarianza. Se si produce un solo risultato per l\textquotesingle intero grafo, una successiva aggregazione indipendente dall\textquotesingle ordine può rendere il risultato invariante.
+% END F05-B0038
+
+% BEGIN F05-B0039
+Non è la stessa operazione che permutare liberamente i pixel dentro un\textquotesingle immagine mantenendo ferma la griglia: in quel caso si cambiano i dati associati alle posizioni, e quindi il contenuto dell\textquotesingle immagine. Non va confusa neppure con l\textquotesingle invarianza alle rotazioni: se le feature contengono coordinate geometriche, una rotazione le modifica e la sola equivarianza alla rinumerazione non garantisce invarianza geometrica.
+% END F05-B0039
+
+% BEGIN F05-B0040
+\begin{quote}
+\textbf{Precisazione slide 13 --- Invarianza o equivarianza}
+\end{quote}
+% END F05-B0040
+
+% BEGIN F05-B0041
+\begin{quote}
+L\textquotesingle espressione generale «permutation invariance» va letta rispetto al tipo di uscita. Il livello GCN che mantiene una riga per nodo è equivarante alla rinumerazione coerente del grafo. Un\textquotesingle uscita globale può diventare invariante attraverso un\textquotesingle aggregazione appropriata.
+\end{quote}
+% END F05-B0041
+
+% BEGIN F05-B0042
+\subsection{Layout, vicinati e topologia variabile (slide 13-14)}\label{f05-r94}
+% END F05-B0042
+
+% BEGIN F05-B0043
+Servono quindi un operatore capace di usare vicinati con cardinalità diverse, una nozione di località basata sugli archi e parametri condivisi che non dipendano dall\textquotesingle ordine dei nodi. Il disegno del grafo sullo schermo non costituisce un sistema di coordinate privilegiato.
+% END F05-B0043
+
+% BEGIN F05-B0044
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_26c50c7a2e46c95c.png}}
+\caption{Vicinati irregolari e assenza di un ordinamento spaziale universale, dalla slide 13}
+\end{figure}
+% END F05-B0044
+
+% BEGIN F05-B0045
+La topologia può essere fissata dal dominio o variare fra esempi e situazioni. Non significa che ogni GCN debba apprendere automaticamente gli archi: nel modello qui sviluppato la matrice del grafo è fornita e i parametri appresi appartengono alla trasformazione delle feature.
+% END F05-B0045
+
+% BEGIN F05-B0046
+\section{GCN e passaggio di messaggi (slide 15-17)}\label{f05-r102}
+% END F05-B0046
+
+% BEGIN F05-B0047
+Le GNN sono una famiglia di reti per dati a grafo. La \textbf{Graph Convolutional Network} di Kipf e Welling è una sua specifica formulazione. Come MLP e CNN, presenta ingressi, rappresentazioni intermedie, parametri, funzioni di attivazione e una loss. L\textquotesingle addestramento continua a usare discesa del gradiente e backpropagation.
+% END F05-B0047
+
+% BEGIN F05-B0048
+Il principio intuitivo è il \textbf{message passing}. Ogni nodo riceve informazioni dai nodi connessi, le aggrega e costruisce una nuova rappresentazione. Questa operazione viene eseguita per tutti i nodi e può essere ripetuta in più strati.
+% END F05-B0048
+
+% BEGIN F05-B0049
+Si possono distinguere due momenti:
+% END F05-B0049
+
+% BEGIN F05-B0050
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Aggregazione:} si combinano le rappresentazioni dei vicini. Una somma, una media o un massimo non richiedono un ordine privilegiato dei vicini. Le slide citano anche aggregazioni apprese; la formula GCN seguente usa una somma con coefficienti determinati dai gradi.
+\item
+  \textbf{Trasformazione:} l\textquotesingle aggregato attraversa un livello neurale e un\textquotesingle attivazione, producendo il nuovo embedding del nodo.
+\end{enumerate}
+% END F05-B0050
+
+% BEGIN F05-B0051
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_b75d564c386c5040.png}}
+\caption{Aggiornamenti delle rappresentazioni dei nodi tramite passaggio di messaggi, dalla slide 17}
+\end{figure}
+% END F05-B0051
+
+% BEGIN F05-B0052
+Gli aggiornamenti di uno strato usano le rappresentazioni dello \textbf{strato precedente}: non si modifica un nodo e si usa subito quel nuovo valore per aggiornare quello successivo. Usare immediatamente il valore appena aggiornato renderebbe il calcolo dipendente dall\textquotesingle ordine di elaborazione, invece di descrivere un aggiornamento coerente di tutto lo strato.
+% END F05-B0052
+
+% BEGIN F05-B0053
+Gli embedding ottenuti possono essere usati da un MLP per un compito sui nodi; combinarli in un vettore globale è un\textquotesingle altra possibilità menzionata nel percorso introduttivo. I compiti applicativi sono sviluppati nella seconda parte del capitolo, a partire dalla slide 30.
+% END F05-B0053
+
+% BEGIN F05-B0054
+\section{Matrici di ingresso e ruolo dell\textquotesingle adiacenza (slide 18-19)}\label{f05-r119}
+% END F05-B0054
+
+% BEGIN F05-B0055
+\subsection{Feature e struttura sono due oggetti distinti (slide 18)}\label{f05-r121}
+% END F05-B0055
+
+% BEGIN F05-B0056
+Con \(N=|V|\) nodi e \(F_0\) feature per nodo, l\textquotesingle ingresso è
+% END F05-B0056
+
+% BEGIN F05-B0057
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{X\in\mathbb R^{N\times F_0},\qquad A\in\mathbb R^{N\times N}.}$
+\end{adjustbox}
+\end{center}
+% END F05-B0057
+
+% BEGIN F05-B0058
+Ogni riga \(x_i\) di \(X\) contiene le feature del nodo \(i\). La matrice \(A\) rappresenta gli archi: nel caso binario \(A_{ij}=1\) indica una connessione e \(A_{ij}=0\) la sua assenza. Nel caso non orientato \(A=A^\top\); non è richiesta l\textquotesingle esistenza di un unico cammino fra due nodi.
+% END F05-B0058
+
+% BEGIN F05-B0059
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_b23c2e4e641959c8.png}}
+\caption{Grafo e relativa matrice di adiacenza, dalla slide 18}
+\end{figure}
+% END F05-B0059
+
+% BEGIN F05-B0060
+La figura usa un grafo orientato e una matrice non simmetrica per mostrare come registrare le connessioni. Il calcolo spettrale sviluppato nel seguito assume invece un grafo non orientato: il piccolo esempio che segue rispetta questa ipotesi.
+% END F05-B0060
+
+% BEGIN F05-B0061
+Per il cammino a tre nodi \(1-2-3\), un piccolo esempio da riusare nei calcoli è
+% END F05-B0061
+
+% BEGIN F05-B0062
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle A=\begin{bmatrix}0&1&0\\1&0&1\\0&1&0\end{bmatrix},\qquad
+X=\begin{bmatrix}1&0\\0&2\\3&0\end{bmatrix}.$
+\end{adjustbox}
+\end{center}
+% END F05-B0062
+
+% BEGIN F05-B0063
+Ci sono tre nodi con due feature ciascuno: \(X\) ha forma \(3\times2\), mentre \(A\) è \(3\times3\). Il nodo 1 non riceve direttamente dal nodo 3 in un singolo passaggio.
+% END F05-B0063
+
+% BEGIN F05-B0064
+Nel caso pesato, \(A_{ij}\) rappresenta il peso della connessione. I pesi non sono necessariamente probabilità né devono sempre appartenere a \([0,1]\). La derivazione qui usata richiede pesi non negativi e simmetrici; non si estende invariata a qualunque matrice orientata.
+% END F05-B0064
+
+% BEGIN F05-B0065
+\subsection{La struttura come prior (slide 19, pagine PDF 19-20)}\label{f05-r142}
+% END F05-B0065
+
+% BEGIN F05-B0066
+Una matrice di adiacenza introduce un \textbf{vincolo strutturale}: stabilisce quali informazioni possono combinarsi in un passaggio. È un inductive bias analogo, per funzione, alla località imposta dalla convoluzione sull\textquotesingle immagine. Può limitare relazioni non pertinenti e aiutare la generalizzazione; non garantisce automaticamente l\textquotesingle assenza di overfitting.
+% END F05-B0066
+
+% BEGIN F05-B0067
+La struttura può provenire dalla conoscenza del dominio, come legami chimici e articolazioni, oppure essere costruita con euristiche, come i \(k\) vicini più prossimi nello spazio delle feature o una soglia di distanza. In uno scheletro con 14 articolazioni, per esempio, l\textquotesingle adiacenza è \(14\times14\); le feature delle articolazioni possono cambiare mentre le connessioni anatomiche restano uguali.
+% END F05-B0067
+
+% BEGIN F05-B0068
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_8fcf1db2bd5c9d2d.png}}
+\caption{Connessioni anatomiche usate come prior per una posa, dalla slide 19}
+\end{figure}
+% END F05-B0068
+
+% BEGIN F05-B0069
+\section{Lo strato GCN in forma matriciale (slide 20-21)}\label{f05-r150}
+% END F05-B0069
+
+% BEGIN F05-B0070
+\subsection{Self-loop, gradi e normalizzazione (slide 20)}\label{f05-r152}
+% END F05-B0070
+
+% BEGIN F05-B0071
+Per conservare anche il contributo del nodo stesso si aggiunge l\textquotesingle identità all\textquotesingle adiacenza:
+% END F05-B0071
+
+% BEGIN F05-B0072
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \widehat A=A+I,\qquad \widehat d_i=\sum_j\widehat A_{ij},\qquad
+\widehat D=\operatorname{diag}(\widehat d_1,\ldots,\widehat d_N).$
+\end{adjustbox}
+\end{center}
+% END F05-B0072
+
+% BEGIN F05-B0073
+Se \(A\) non aveva self-loop, nel caso binario \(\widehat d_i=d_i+1\). La matrice \(\widehat D^{-1/2}\) si ottiene applicando la potenza ai soli elementi diagonali:
+% END F05-B0073
+
+% BEGIN F05-B0074
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \widehat D^{-1/2}=\operatorname{diag}\left(\frac1{\sqrt{\widehat d_1}},\ldots,\frac1{\sqrt{\widehat d_N}}\right).$
+\end{adjustbox}
+\end{center}
+% END F05-B0074
+
+% BEGIN F05-B0075
+Non si eleva ogni elemento di una matrice generica alla potenza \(-1/2\): la semplicità dipende dal fatto che questa matrice è diagonale. Con self-loop unitari e pesi non negativi tutti i gradi aumentati sono positivi, anche per un nodo originariamente isolato.
+% END F05-B0075
+
+% BEGIN F05-B0076
+Definiamo l\textquotesingle{}\textbf{adiacenza normalizzata simmetricamente}
+% END F05-B0076
+
+% BEGIN F05-B0077
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{\widehat S=\widehat D^{-1/2}\widehat A\widehat D^{-1/2},\qquad
+\widehat S_{ij}=\frac{\widehat A_{ij}}{\sqrt{\widehat d_i\widehat d_j}}.}$
+\end{adjustbox}
+\end{center}
+% END F05-B0077
+
+% BEGIN F05-B0078
+La moltiplicazione a sinistra scala la riga \(i\) di \(\widehat A\) per \(1/\sqrt{\widehat d_i}\); quella a destra scala la colonna \(j\) per \(1/\sqrt{\widehat d_j}\). Si ottiene così il denominatore con entrambi i gradi. L\textquotesingle operatore considera tanto il nodo che riceve quanto quello che invia il contributo.
+% END F05-B0078
+
+% BEGIN F05-B0079
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_e4528ae812c3aabd.png}}
+\caption{Slide 20 completa con le annotazioni del ripasso su message passing e normalizzazione}
+\end{figure}
+% END F05-B0079
+
+% BEGIN F05-B0080
+\begin{quote}
+\textbf{Precisazione --- Adiacenza normalizzata e Laplaciano}
+\end{quote}
+% END F05-B0080
+
+% BEGIN F05-B0081
+\begin{quote}
+\(\widehat S\) non è il Laplaciano normalizzato: è l\textquotesingle adiacenza normalizzata del grafo con self-loop. Il corrispondente Laplaciano sarebbe \(I-\widehat S\). La distinzione è essenziale per seguire segni e passaggi nella derivazione spettrale.
+\end{quote}
+% END F05-B0081
+
+% BEGIN F05-B0082
+\subsection{Proiezione delle feature e attivazione (slide 21)}\label{f05-r177}
+% END F05-B0082
+
+% BEGIN F05-B0083
+Indichiamo con \(H^{(0)}=X\) l\textquotesingle ingresso e con \(F_\ell\) il numero di feature per nodo allo strato \(\ell\). La regola coerente nelle dimensioni è
+% END F05-B0083
+
+% BEGIN F05-B0084
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{H^{(\ell+1)}=\sigma\left(\widehat S H^{(\ell)}W^{(\ell)}\right).}$
+\end{adjustbox}
+\end{center}
+% END F05-B0084
+
+% BEGIN F05-B0085
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Oggetto
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Forma
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Ruolo
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(H^{(\ell)}\) & \(N\times F_\ell\) & Una rappresentazione per nodo \\
+\(W^{(\ell)}\) & \(F_\ell\times F_{\ell+1}\) & Trasformazione condivisa delle feature \\
+\(\widehat S\) & \(N\times N\) & Aggregazione secondo la struttura del grafo \\
+\(H^{(\ell)}W^{(\ell)}\) & \(N\times F_{\ell+1}\) & Feature proiettate \\
+\(H^{(\ell+1)}\) & \(N\times F_{\ell+1}\) & Rappresentazioni dopo aggregazione e attivazione \\
+\end{longtable}
+% END F05-B0085
+
+% BEGIN F05-B0086
+Il numero di nodi viene conservato, mentre il numero di feature può cambiare. Una ReLU agisce elemento per elemento. La matrice \(W^{(\ell)}\) è condivisa fra tutti i nodi: il loro numero non moltiplica il numero dei parametri del livello. Nella formula senza bias i parametri apprendibili sono \(F_\ell F_{\ell+1}\).
+% END F05-B0086
+
+% BEGIN F05-B0087
+Per un grafo fisso, \(\widehat S\) dipende dalla topologia e può essere preparata una volta; il training aggiorna \(W^{(\ell)}\). Se il grafo cambia, va usata la matrice coerente con quell\textquotesingle ingresso. Non si possono continuare a usare coefficienti precomputati su un\textquotesingle altra topologia.
+% END F05-B0087
+
+% BEGIN F05-B0088
+\begin{quote}
+\textbf{Nota sulla slide 21 --- Dimensioni dello strato precedente}
+\end{quote}
+% END F05-B0088
+
+% BEGIN F05-B0089
+\begin{quote}
+Con \(W^{(\ell)}\in\mathbb R^{F_{\ell-1}\times F_\ell}\), l\textquotesingle ingresso della formula indicizzata con \(H^{(\ell-1)}\) deve essere \(N\times F_{\ell-1}\), non \(N\times F_\ell\). Qui si usa uniformemente la convenzione ingresso \(H^{(\ell)}\), uscita \(H^{(\ell+1)}\).
+\end{quote}
+% END F05-B0089
+
+% BEGIN F05-B0090
+\subsection{Leggere il prodotto come passaggio di messaggi (slide 20-22, ripasso)}\label{f05-n30-r199}
+% END F05-B0090
+
+% BEGIN F05-B0091
+Se si toglie l\textquotesingle operatore \(\widehat S\), rimane \(\sigma(HW)\): ogni riga attraversa lo stesso strato fully connected e la stessa attivazione, ma non riceve informazioni dalle altre righe. È un MLP applicato separatamente ai nodi, non un meccanismo di comunicazione sul grafo. L\textquotesingle adiacenza è il termine che stabilisce da chi può arrivare ciascun contributo.
+% END F05-B0091
+
+% BEGIN F05-B0092
+Per vedere la selezione senza sovrapporvi subito la normalizzazione, indichiamo con \(B=HW\) la matrice delle feature già proiettate. Se la prima riga dell\textquotesingle adiacenza aumentata è \((1,1,0)\), il primo nodo riceve
+% END F05-B0092
+
+% BEGIN F05-B0093
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle (\widehat A B)_1=1\,b_1+1\,b_2+0\,b_3=b_1+b_2.$
+\end{adjustbox}
+\end{center}
+% END F05-B0093
+
+% BEGIN F05-B0094
+Con \(b_1=(1,0)\), \(b_2=(0,2)\) e \(b_3=(3,1)\), questa riga vale \((1,2)\): il terzo vettore non compare perché manca la connessione. La moltiplicazione per l\textquotesingle adiacenza realizza quindi il message passing attraverso una normale somma di prodotti, non attraverso un\textquotesingle operazione separata esterna alla rete.
+% END F05-B0094
+
+% BEGIN F05-B0095
+Le matrici dei gradi regolano la scala della somma. La spiegazione le presenta intuitivamente come un modo di fare una media dei contributi. Nella formula effettiva la normalizzazione è però simmetrica: ogni messaggio è pesato da \(1/\sqrt{\widehat d_i\widehat d_j}\), non sempre da \(1/|\mathcal N_i|\). La distinzione è già visibile nell\textquotesingle esempio numerico della sezione successiva, in cui una riga di \(\widehat S\) non somma a uno. Nel GCN qui descritto questi coefficienti sono determinati dal grafo; sono invece appresi i pesi che trasformano le feature.
+% END F05-B0095
+
+% BEGIN F05-B0096
+\section{Dalla matrice ai messaggi del singolo nodo (slide 22)}\label{f05-r198}
+% END F05-B0096
+
+% BEGIN F05-B0097
+\subsection{Espansione della regola (slide 22)}\label{f05-r200}
+% END F05-B0097
+
+% BEGIN F05-B0098
+Leggiamo gli embedding come vettori \textbf{riga}, coerentemente con \(H\). Ponendo \(\mathcal N(v)=\{u:A_{vu}\ne0\}\), nel caso binario senza self-loop preesistenti:
+% END F05-B0098
+
+% BEGIN F05-B0099
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{aligned}
+a_v^{(\ell+1)}&=\sum_{u\in\mathcal N(v)\cup\{v\}}
+\frac{h_u^{(\ell)}}{\sqrt{\widehat d_v\widehat d_u}},\\
+z_v^{(\ell+1)}&=a_v^{(\ell+1)}W^{(\ell)},\\
+h_v^{(\ell+1)}&=\sigma\left(z_v^{(\ell+1)}\right).
+\end{aligned}$
+\end{adjustbox}
+\end{center}
+% END F05-B0099
+
+% BEGIN F05-B0100
+\(a_v\) ha \(F_\ell\) componenti; \(z_v\) e \(h_v\) ne hanno \(F_{\ell+1}\). La prima riga è esattamente la riga \(v\) del prodotto \(\widehat SH\): gli indici dei nodi vengono sommati, l\textquotesingle asse delle feature resta disponibile per la proiezione.
+% END F05-B0100
+
+% BEGIN F05-B0101
+Se il grafo è pesato, ogni termine conserva anche il numeratore \(\widehat A_{vu}\). La forma con numeratore 1 non va applicata indiscriminatamente a un grafo pesato.
+% END F05-B0101
+
+% BEGIN F05-B0102
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_ae4407b1a434b45c.png}}
+\caption{Aggregazione dei vicini, proiezione e non linearità, dalla slide 22}
+\end{figure}
+% END F05-B0102
+
+% BEGIN F05-B0103
+L\textquotesingle associatività permette di calcolare prima \(HW\) oppure prima \(\widehat SH\):
+% END F05-B0103
+
+% BEGIN F05-B0104
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \widehat S(HW)=(\widehat SH)W.$
+\end{adjustbox}
+\end{center}
+% END F05-B0104
+
+% BEGIN F05-B0105
+L\textquotesingle uguaglianza riguarda i prodotti lineari con le stesse matrici, non autorizza a spostare la ReLU fra essi. Se \(W\) riduce molto le feature, proiettare prima può rendere meno costosa l\textquotesingle aggregazione; la scelta dipende dalle dimensioni e dalla rappresentazione sparsa del grafo.
+% END F05-B0105
+
+% BEGIN F05-B0106
+\subsection{Esempio numerico completo su tre nodi (slide 20-22)}\label{f05-r223}
+% END F05-B0106
+
+% BEGIN F05-B0107
+Per il cammino \(1-2-3\) introdotto sopra,
+% END F05-B0107
+
+% BEGIN F05-B0108
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \widehat A=\begin{bmatrix}1&1&0\\1&1&1\\0&1&1\end{bmatrix},\qquad
+\widehat D=\operatorname{diag}(2,3,2),$
+\end{adjustbox}
+\end{center}
+% END F05-B0108
+
+% BEGIN F05-B0109
+e quindi
+% END F05-B0109
+
+% BEGIN F05-B0110
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \widehat S=\begin{bmatrix}
+\frac12&\frac1{\sqrt6}&0\\
+\frac1{\sqrt6}&\frac13&\frac1{\sqrt6}\\
+0&\frac1{\sqrt6}&\frac12
+\end{bmatrix}.$
+\end{adjustbox}
+\end{center}
+% END F05-B0110
+
+% BEGIN F05-B0111
+Scegliamo una proiezione con due feature di uscita:
+% END F05-B0111
+
+% BEGIN F05-B0112
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle W=\begin{bmatrix}1&-1\\2&1\end{bmatrix},\qquad
+XW=\begin{bmatrix}1&-1\\4&2\\3&-3\end{bmatrix}.$
+\end{adjustbox}
+\end{center}
+% END F05-B0112
+
+% BEGIN F05-B0113
+Ogni riga viene trasformata dallo stesso \(W\). Per esempio, \((0,2)W=(4,2)\). Per il nodo 1 la somma dei messaggi proiettati è
+% END F05-B0113
+
+% BEGIN F05-B0114
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{aligned}
+z_1&=\frac12(1,-1)+\frac1{\sqrt6}(4,2)\\
+&=\left(\frac12+\frac4{\sqrt6},-\frac12+\frac2{\sqrt6}\right)\\
+&\simeq(2.132993,0.316497).
+\end{aligned}$
+\end{adjustbox}
+\end{center}
+% END F05-B0114
+
+% BEGIN F05-B0115
+Il nodo 3 non compare direttamente. Per il nodo 2 si sommano invece tre contributi:
+% END F05-B0115
+
+% BEGIN F05-B0116
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{aligned}
+z_2&=\frac1{\sqrt6}(1,-1)+\frac13(4,2)+\frac1{\sqrt6}(3,-3)\\
+&=\left(\frac4{\sqrt6}+\frac43,-\frac4{\sqrt6}+\frac23\right)\\
+&\simeq(2.966326,-0.966326).
+\end{aligned}$
+\end{adjustbox}
+\end{center}
+% END F05-B0116
+
+% BEGIN F05-B0117
+Il calcolo completo e la successiva ReLU danno:
+% END F05-B0117
+
+% BEGIN F05-B0118
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2143}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2857}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2857}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2143}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Nodo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Prima componente di \(z\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Seconda componente di \(z\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Uscita dopo ReLU
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & 2.132993 & 0.316497 & \((2.132993,0.316497)\) \\
+2 & 2.966326 & -0.966326 & \((2.966326,0)\) \\
+3 & 3.132993 & -0.683503 & \((3.132993,0)\) \\
+\end{longtable}
+% END F05-B0118
+
+% BEGIN F05-B0119
+Le righe di \(\widehat S\) non sommano necessariamente a uno: qui la prima somma a \(1/2+1/\sqrt6\simeq0.908248\). Questa \textbf{normalizzazione simmetrica non è una semplice media aritmetica} e non coincide con la normalizzazione per riga di una softmax.
+% END F05-B0119
+
+% BEGIN F05-B0120
+\subsection{Verifica della rinumerazione (slide 13 e 20-22)}\label{f05-r269}
+% END F05-B0120
+
+% BEGIN F05-B0121
+Sia \(P\) una matrice di permutazione: riordina le righe senza cambiarne i valori, e \(P^\top P=I\). Una rinumerazione coerente produce \(H'=PH\) e \(\widehat S'=P\widehat SP^\top\). La nuova uscita è
+% END F05-B0121
+
+% BEGIN F05-B0122
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{aligned}
+\sigma(\widehat S'H'W)
+&=\sigma(P\widehat SP^\top PHW)\\
+&=\sigma(P\widehat SHW)\\
+&=P\sigma(\widehat SHW).
+\end{aligned}$
+\end{adjustbox}
+\end{center}
+% END F05-B0122
+
+% BEGIN F05-B0123
+L\textquotesingle ultimo passaggio usa il fatto che l\textquotesingle attivazione è applicata componente per componente. Le rappresentazioni restano associate agli stessi nodi, soltanto in un ordine diverso: è la proprietà di equivarianza richiesta, non l\textquotesingle uguaglianza fra due matrici di uscita lasciate nello stesso ordine artificiale.
+% END F05-B0123
+
+% BEGIN F05-B0124
+\section{Profondità e campo recettivo sul grafo (slide 23)}\label{f05-r282}
+% END F05-B0124
+
+% BEGIN F05-B0125
+Uno strato considera il nodo e i vicini a un arco di distanza, cioè \textbf{1-hop}. Due strati possono trasferire informazioni da nodi raggiungibili con due archi, perché ogni vicino ha già incorporato informazioni dei propri vicini. Il meccanismo è analogo all\textquotesingle espansione del campo recettivo nelle CNN.
+% END F05-B0125
+
+% BEGIN F05-B0126
+Nel cammino \(1-2-3\), dopo il primo strato il nodo 1 dipende da 1 e 2. Dopo il secondo può dipendere anche da 3, attraverso 2. Non viene aggiunto un arco diretto fra 1 e 3: cambia l\textquotesingle estensione della dipendenza, non necessariamente la topologia.
+% END F05-B0126
+
+% BEGIN F05-B0127
+Per due livelli destinati a una classificazione dei nodi, la forma illustrata è
+% END F05-B0127
+
+% BEGIN F05-B0128
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle Z=\operatorname{softmax}_{\mathrm{classi}}\left(\widehat S\,\sigma(\widehat SXW^{(0)})W^{(1)}\right).$
+\end{adjustbox}
+\end{center}
+% END F05-B0128
+
+% BEGIN F05-B0129
+Se \(W^{(0)}\) è \(F_0\times F_1\) e \(W^{(1)}\) è \(F_1\times C\), \(Z\) è \(N\times C\). La softmax opera sulle classi di ogni nodo, non sul numero dei nodi. La distinzione fra asse delle feature e asse degli elementi è la stessa già necessaria nell\textquotesingle attention dei \hyperref[fonte04]{Transformer}.
+% END F05-B0129
+
+% BEGIN F05-B0130
+Dopo \(k\) strati il campo recettivo può raggiungere nodi a distanza fino a \(k\) archi. Non equivale a creare un grafo completo né garantisce che tutte le informazioni restino distinguibili. Nodi appartenenti a componenti disconnesse non possono scambiarsi messaggi attraverso un operatore che rispetta quegli archi.
+% END F05-B0130
+
+% BEGIN F05-B0131
+La costruzione locale è chiara; resta da motivare perché questa particolare combinazione di matrici possa essere interpretata come un filtro su un grafo. Il collegamento passa dal Laplaciano, dalla trasformata di Fourier sul grafo e da una rappresentazione polinomiale del filtro.
+% END F05-B0131
+
+% BEGIN F05-B0132
+\section{Laplaciano normalizzato e filtri polinomiali (slide 24)}\label{f05-r298}
+% END F05-B0132
+
+% BEGIN F05-B0133
+\subsection{Operatore sul grafo e segnale sui nodi (slide 24)}\label{f05-r300}
+% END F05-B0133
+
+% BEGIN F05-B0134
+Per questa derivazione torniamo inizialmente al grafo non orientato \textbf{senza} i self-loop aggiunti dalla GCN. Supponiamo \(d_i=\sum_j A_{ij}>0\) e definiamo
+% END F05-B0134
+
+% BEGIN F05-B0135
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{D=\operatorname{diag}(d_1,\ldots,d_N),\qquad
+S=D^{-1/2}AD^{-1/2},\qquad L=I-S.}$
+\end{adjustbox}
+\end{center}
+% END F05-B0135
+
+% BEGIN F05-B0136
+\(S\) è l\textquotesingle adiacenza normalizzata; \(L\) è il \textbf{Laplaciano normalizzato}. Entrambi sono \(N\times N\). Un segnale scalare sul grafo è \(x\in\mathbb R^N\), con un valore \(x_i\) per nodo. La derivazione si presenta prima per un segnale scalare e verrà poi estesa a più feature.
+% END F05-B0136
+
+% BEGIN F05-B0137
+Nel caso binario, espandere la riga \(i\) del prodotto dà
+% END F05-B0137
+
+% BEGIN F05-B0138
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{aligned}
+(Lx)_i&=((I-S)x)_i\\
+&=x_i-\sum_j S_{ij}x_j\\
+&=x_i-\sum_{j:A_{ij}=1}\frac{x_j}{\sqrt{d_i d_j}}.
+\end{aligned}$
+\end{adjustbox}
+\end{center}
+% END F05-B0138
+
+% BEGIN F05-B0139
+Il Laplaciano combina quindi già il nodo con il proprio vicinato, attraverso una differenza. Non ogni filtro coincide però con questa differenza: \(Lx\) è un caso particolare, non la definizione universale di convoluzione sul grafo. L\textquotesingle ipotesi \(d_i>0\) evita qui l\textquotesingle inversa di zero; nello strato finale i self-loop rendono positivi i gradi aumentati.
+% END F05-B0139
+
+% BEGIN F05-B0140
+\subsection{L\textquotesingle effetto su un autovettore (slide 24)}\label{f05-r319}
+% END F05-B0140
+
+% BEGIN F05-B0141
+Un autovettore non nullo \(u\) con autovalore \(\lambda\) soddisfa \(Lu=\lambda u\). Applicando due volte l\textquotesingle operatore,
+% END F05-B0141
+
+% BEGIN F05-B0142
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle L^2u=L(Lu)=L(\lambda u)=\lambda Lu=\lambda^2u.$
+\end{adjustbox}
+\end{center}
+% END F05-B0142
+
+% BEGIN F05-B0143
+Per ripetizione si ottiene \(L^ku=\lambda^ku\). Per un polinomio \(p(z)=a_0+a_1z+\cdots+a_Kz^K\),
+% END F05-B0143
+
+% BEGIN F05-B0144
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{aligned}
+p(L)u&=(a_0I+a_1L+\cdots+a_KL^K)u\\
+&=a_0u+a_1\lambda u+\cdots+a_K\lambda^Ku\\
+&=p(\lambda)u.
+\end{aligned}$
+\end{adjustbox}
+\end{center}
+% END F05-B0144
+
+% BEGIN F05-B0145
+Il termine costante della funzione diventa \(a_0I\) nella matrice. Un polinomio del Laplaciano scala quindi ciascun autovettore con il valore assunto dal polinomio sul suo autovalore. Per esempio, con \(p(z)=1-z/2\), una componente con \(\lambda=0\) rimane invariata e una con \(\lambda=2\) viene annullata.
+% END F05-B0145
+
+% BEGIN F05-B0146
+\section{Base spettrale e trasformata di Fourier sul grafo (slide 25)}\label{f05-r335}
+% END F05-B0146
+
+% BEGIN F05-B0147
+\subsection{La scomposizione e il cambio di coordinate (slide 25)}\label{f05-r337}
+% END F05-B0147
+
+% BEGIN F05-B0148
+Poiché il grafo è non orientato, \(L\) è reale e simmetrico. Si può scegliere una base completa di autovettori ortonormali, cioè di lunghezza uno e reciprocamente perpendicolari. Raccogliendoli per colonne,
+% END F05-B0148
+
+% BEGIN F05-B0149
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{U=[u_1\ \cdots\ u_N],\quad
+\Lambda=\operatorname{diag}(\lambda_1,\ldots,\lambda_N),\quad
+L=U\Lambda U^\top,\quad U^\top U=UU^\top=I.}$
+\end{adjustbox}
+\end{center}
+% END F05-B0149
+
+% BEGIN F05-B0150
+È una decomposizione agli autovalori di una matrice simmetrica. Nel caso presente, essendo \(L\) anche semidefinito positivo, è compatibile con una SVD opportunamente scelta; non si deve però estendere \(U\Lambda U^\top\) a una generica matrice. Una SVD generale ha forma \(U\Sigma V^\top\), con due basi eventualmente diverse.
+% END F05-B0150
+
+% BEGIN F05-B0151
+Come nel cambio di assi usato nella PCA, un vettore può essere descritto dalle sue proiezioni sugli assi della nuova base. Qui gli assi sono gli autovettori del Laplaciano:
+% END F05-B0151
+
+% BEGIN F05-B0152
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \widehat x_r=u_r^\top x,\qquad \widehat x=U^\top x,\qquad
+x=U\widehat x=\sum_{r=1}^N\widehat x_ru_r.$
+\end{adjustbox}
+\end{center}
+% END F05-B0152
+
+% BEGIN F05-B0153
+Tutti i vettori sono \(N\times1\). La verifica dell\textquotesingle inversione è immediata:
+% END F05-B0153
+
+% BEGIN F05-B0154
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle U\widehat x=U(U^\top x)=(UU^\top)x=Ix=x.$
+\end{adjustbox}
+\end{center}
+% END F05-B0154
+
+% BEGIN F05-B0155
+La \textbf{trasformata di Fourier sul grafo} è proprio \(\widehat x=U^\top x\): riscrive il segnale in questa base spettrale. L\textquotesingle inversa è la moltiplicazione per \(U\). Non si stanno perdendo componenti: a differenza di una PCA troncata, qui la base considerata è completa.
+% END F05-B0155
+
+% BEGIN F05-B0156
+Gli autovalori ordinano modi di variazione sul grafo: valori bassi sono associati a componenti più regolari lungo le connessioni, quelli alti a variazioni più rapide. Si parla di frequenze del \textbf{segnale rispetto al grafo}, non di un grafo che diventa fisicamente più disordinato. Con il Laplaciano normalizzato la regolarità va intesa nella normalizzazione dei gradi; su un grafo irregolare il vettore \((\sqrt{d_1},\ldots,\sqrt{d_N})^\top\) è un autovettore a frequenza zero, non necessariamente costante sui nodi.
+% END F05-B0156
+
+% BEGIN F05-B0157
+\subsection{Il filtro come moltiplicazione nel dominio spettrale (slide 25)}\label{f05-r360}
+% END F05-B0157
+
+% BEGIN F05-B0158
+Nel dominio di Fourier classico, la convoluzione si traduce in una moltiplicazione delle componenti trasformate. La costruzione sul grafo adotta la stessa idea: ogni frequenza riceve un moltiplicatore \(g(\lambda_r)\).
+% END F05-B0158
+
+% BEGIN F05-B0159
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{y=Ug(\Lambda)U^\top x,\qquad
+g(\Lambda)=\operatorname{diag}\bigl(g(\lambda_1),\ldots,g(\lambda_N)\bigr).}$
+\end{adjustbox}
+\end{center}
+% END F05-B0159
+
+% BEGIN F05-B0160
+I passaggi sono tre: \(U^\top\) cambia coordinate, \(g(\Lambda)\) scala separatamente le componenti, \(U\) ricostruisce il segnale sui nodi. Poiché la matrice del filtro è diagonale in questa base,
+% END F05-B0160
+
+% BEGIN F05-B0161
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle y=\sum_{r=1}^Ng(\lambda_r)\widehat x_ru_r.$
+\end{adjustbox}
+\end{center}
+% END F05-B0161
+
+% BEGIN F05-B0162
+Non occorre definire uno scorrimento geometrico del kernel su una griglia irregolare. Il filtro viene specificato attraverso il suo comportamento sulle componenti spettrali. Se \(g(\lambda)=\lambda\), si ritrova \(y=Lx\); un altro \(g\) produce un altro filtro.
+% END F05-B0162
+
+% BEGIN F05-B0163
+\subsection{Esempio completo con due nodi (slide 24-25)}\label{f05-r373}
+% END F05-B0163
+
+% BEGIN F05-B0164
+Due nodi collegati hanno
+% END F05-B0164
+
+% BEGIN F05-B0165
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle A=\begin{bmatrix}0&1\\1&0\end{bmatrix},\quad D=I,\quad
+L=\begin{bmatrix}1&-1\\-1&1\end{bmatrix}.$
+\end{adjustbox}
+\end{center}
+% END F05-B0165
+
+% BEGIN F05-B0166
+Gli autovettori normalizzati sono
+% END F05-B0166
+
+% BEGIN F05-B0167
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle u_1=\frac1{\sqrt2}\begin{bmatrix}1\\1\end{bmatrix},\quad \lambda_1=0,\qquad
+u_2=\frac1{\sqrt2}\begin{bmatrix}1\\-1\end{bmatrix},\quad \lambda_2=2.$
+\end{adjustbox}
+\end{center}
+% END F05-B0167
+
+% BEGIN F05-B0168
+Si controlla che \(Lu_1=0\) e \(Lu_2=2u_2\). Il primo modo è costante sui due nodi, il secondo cambia segno: rende concreta la distinzione fra bassa e alta frequenza.
+% END F05-B0168
+
+% BEGIN F05-B0169
+Per \(x=(3,1)^\top\), le coordinate trasformate sono
+% END F05-B0169
+
+% BEGIN F05-B0170
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \widehat x=\frac1{\sqrt2}\begin{bmatrix}1&1\\1&-1\end{bmatrix}
+\begin{bmatrix}3\\1\end{bmatrix}
+=\begin{bmatrix}2\sqrt2\\\sqrt2\end{bmatrix}.$
+\end{adjustbox}
+\end{center}
+% END F05-B0170
+
+% BEGIN F05-B0171
+Il filtro \(g(\lambda)=1-\lambda/2\) mantiene \(g(0)=1\) e annulla \(g(2)=0\). Dopo la moltiplicazione spettrale rimane \((2\sqrt2,0)^\top\) e la ricostruzione restituisce \(y=(2,2)^\top\). Il risultato è verificabile direttamente:
+% END F05-B0171
+
+% BEGIN F05-B0172
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \left(I-\frac12L\right)x=
+\begin{bmatrix}\frac12&\frac12\\\frac12&\frac12\end{bmatrix}
+\begin{bmatrix}3\\1\end{bmatrix}=\begin{bmatrix}2\\2\end{bmatrix}.$
+\end{adjustbox}
+\end{center}
+% END F05-B0172
+
+% BEGIN F05-B0173
+Invece \(Lx=(2,-2)^\top\): applicare soltanto il Laplaciano conserva una differenza, non produce lo stesso effetto del filtro precedente.
+% END F05-B0173
+
+% BEGIN F05-B0174
+La formula spettrale è concettualmente utile, ma calcolare e memorizzare tutti gli autovettori di un grafo con moltissimi nodi è costoso. Il passo successivo permette di evitare questa operazione nel calcolo del filtro.
+% END F05-B0174
+
+% BEGIN F05-B0175
+\section{Costruire il filtro con i polinomi di Chebyshev (slide 26)}\label{f05-r403}
+% END F05-B0175
+
+% BEGIN F05-B0176
+\subsection{Base polinomiale e ricorrenza (slide 26)}\label{f05-r405}
+% END F05-B0176
+
+% BEGIN F05-B0177
+Un modo per rappresentare o approssimare il filtro è usare una combinazione di polinomi. I polinomi di Chebyshev sono definiti da
+% END F05-B0177
+
+% BEGIN F05-B0178
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{T_0(z)=1,\qquad T_1(z)=z,\qquad
+T_k(z)=2zT_{k-1}(z)-T_{k-2}(z)\quad(k\ge2).}$
+\end{adjustbox}
+\end{center}
+% END F05-B0178
+
+% BEGIN F05-B0179
+Non serve calcolare derivate successive come in uno sviluppo di Taylor: i polinomi si costruiscono ricorsivamente. Per esempio,
+% END F05-B0179
+
+% BEGIN F05-B0180
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{aligned}
+T_2(z)&=2zT_1(z)-T_0(z)=2z^2-1,\\
+T_3(z)&=2zT_2(z)-T_1(z)=2z(2z^2-1)-z=4z^3-3z.
+\end{aligned}$
+\end{adjustbox}
+\end{center}
+% END F05-B0180
+
+% BEGIN F05-B0181
+Se \(z\in[-1,1]\), ciascun \(T_k(z)\) rimane in \([-1,1]\). Il vincolo riguarda l\textquotesingle intervallo dell\textquotesingle argomento: non vale per qualunque \(z\) reale. Per \(z=1/2\), per esempio, \(T_0=1\), \(T_1=1/2\), \(T_2=-1/2\) e \(T_3=-1\).
+% END F05-B0181
+
+% BEGIN F05-B0182
+\subsection{Riscalare gli autovalori (slide 26)}\label{f05-r421}
+% END F05-B0182
+
+% BEGIN F05-B0183
+Gli autovalori del Laplaciano normalizzato sono non negativi. Per usare la base nell\textquotesingle intervallo voluto, con \(\lambda_{\max}>0\) si pone
+% END F05-B0183
+
+% BEGIN F05-B0184
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \widetilde\lambda=\frac{2\lambda}{\lambda_{\max}}-1,\qquad
+\widetilde\Lambda=\frac{2\Lambda}{\lambda_{\max}}-I.$
+\end{adjustbox}
+\end{center}
+% END F05-B0184
+
+% BEGIN F05-B0185
+La trasformazione manda \(0\) in \(-1\) e \(\lambda_{\max}\) in \(1\). Per \(\lambda_{\max}=2\), gli autovalori \(0,1,2\) diventano rispettivamente \(-1,0,1\).
+% END F05-B0185
+
+% BEGIN F05-B0186
+Un filtro di grado \(K\) viene quindi rappresentato nella forma
+% END F05-B0186
+
+% BEGIN F05-B0187
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle g(\lambda)\simeq\sum_{k=0}^Kc_kT_k(\widetilde\lambda),\qquad
+g(\Lambda)\simeq\sum_{k=0}^Kc_kT_k(\widetilde\Lambda).$
+\end{adjustbox}
+\end{center}
+% END F05-B0187
+
+% BEGIN F05-B0188
+Il training apprende i coefficienti \(c_0,\ldots,c_K\). Si hanno \textbf{\(K+1\) coefficienti}: un grado piccolo limita la famiglia dei filtri disponibili. Un filtro generale non è automaticamente un polinomio finito; la sostituzione può essere un\textquotesingle approssimazione. Se invece si sceglie direttamente un filtro della famiglia polinomiale, quella famiglia definisce il modello.
+% END F05-B0188
+
+% BEGIN F05-B0189
+Con \(K=1\), \(\lambda_{\max}=2\) e \(c_0=c_1=1/2\) si ottiene \(g(\lambda)=1/2+(\lambda-1)/2=\lambda/2\). Per l\textquotesingle esempio a due nodi questo annulla la componente a frequenza zero e mantiene quella con autovalore 2: cambiando i coefficienti si cambia il comportamento del filtro.
+% END F05-B0189
+
+% BEGIN F05-B0190
+\section{Eliminare gli autovettori dal calcolo (slide 27)}\label{f05-r439}
+% END F05-B0190
+
+% BEGIN F05-B0191
+\subsection{Un\textquotesingle identità esatta per i polinomi (slide 27)}\label{f05-r441}
+% END F05-B0191
+
+% BEGIN F05-B0192
+Definiamo il Laplaciano riscalato
+% END F05-B0192
+
+% BEGIN F05-B0193
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \widetilde L=\frac{2L}{\lambda_{\max}}-I=U\widetilde\Lambda U^\top.$
+\end{adjustbox}
+\end{center}
+% END F05-B0193
+
+% BEGIN F05-B0194
+La scomposizione consente di passare dai polinomi degli autovalori ai polinomi della matrice. Il caso del quadrato mostra il meccanismo senza salti:
+% END F05-B0194
+
+% BEGIN F05-B0195
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{aligned}
+\widetilde L^2
+&=(U\widetilde\Lambda U^\top)(U\widetilde\Lambda U^\top)\\
+&=U\widetilde\Lambda(U^\top U)\widetilde\Lambda U^\top\\
+&=U\widetilde\Lambda I\widetilde\Lambda U^\top\\
+&=U\widetilde\Lambda^2U^\top.
+\end{aligned}$
+\end{adjustbox}
+\end{center}
+% END F05-B0195
+
+% BEGIN F05-B0196
+Per lo stesso motivo \(\widetilde L^k=U\widetilde\Lambda^kU^\top\). Sommando le potenze con gli stessi coefficienti si ottiene l\textquotesingle identità matriciale
+% END F05-B0196
+
+% BEGIN F05-B0197
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{UT_k(\widetilde\Lambda)U^\top=T_k(\widetilde L).}$
+\end{adjustbox}
+\end{center}
+% END F05-B0197
+
+% BEGIN F05-B0198
+Per \(k=0\) la costante diventa l\textquotesingle identità: \(UIU^\top=I\). Per \(k=2\),
+% END F05-B0198
+
+% BEGIN F05-B0199
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle U(2\widetilde\Lambda^2-I)U^\top=2\widetilde L^2-I.$
+\end{adjustbox}
+\end{center}
+% END F05-B0199
+
+% BEGIN F05-B0200
+Queste uguaglianze sono identità fra matrici e quindi agiscono su \textbf{qualsiasi segnale} \(x\) delle dimensioni corrette. La relazione più semplice \(Lu=\lambda u\) descrive il singolo autovettore, ma non limita l\textquotesingle identità polinomiale ai soli segnali che siano autovettori.
+% END F05-B0200
+
+% BEGIN F05-B0201
+\subsection{Dalla formula spettrale alla ricorrenza sui segnali (slide 27)}\label{f05-r467}
+% END F05-B0201
+
+% BEGIN F05-B0202
+Sostituendo lo sviluppo del filtro,
+% END F05-B0202
+
+% BEGIN F05-B0203
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{aligned}
+y&=Ug(\Lambda)U^\top x\\
+&\simeq U\left[\sum_{k=0}^Kc_kT_k(\widetilde\Lambda)\right]U^\top x\\
+&=\sum_{k=0}^Kc_kUT_k(\widetilde\Lambda)U^\top x\\
+&=\sum_{k=0}^Kc_kT_k(\widetilde L)x.
+\end{aligned}$
+\end{adjustbox}
+\end{center}
+% END F05-B0203
+
+% BEGIN F05-B0204
+La prima sostituzione può essere approssimata; l\textquotesingle eliminazione di \(U\) dal filtro polinomiale è esatta. Non occorre formare tutte le potenze della matrice. Si possono calcolare direttamente i vettori
+% END F05-B0204
+
+% BEGIN F05-B0205
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle v_0=x,\qquad v_1=\widetilde Lx,\qquad
+v_k=2\widetilde Lv_{k-1}-v_{k-2},\qquad
+y\simeq\sum_{k=0}^Kc_kv_k.$
+\end{adjustbox}
+\end{center}
+% END F05-B0205
+
+% BEGIN F05-B0206
+Nell\textquotesingle esempio a due nodi, \(\lambda_{\max}=2\) dà \(\widetilde L=L-I=-A\). Con \(x=(3,1)^\top\):
+% END F05-B0206
+
+% BEGIN F05-B0207
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle v_0=\begin{bmatrix}3\\1\end{bmatrix},\qquad
+v_1=\begin{bmatrix}-1\\-3\end{bmatrix},\qquad
+v_2=2\widetilde Lv_1-v_0=\begin{bmatrix}3\\1\end{bmatrix}.$
+\end{adjustbox}
+\end{center}
+% END F05-B0207
+
+% BEGIN F05-B0208
+La verifica coincide con \(T_2(\widetilde L)=2\widetilde L^2-I=I\), poiché qui \(\widetilde L^2=I\). Con \(c_0=1/2\), \(c_1=-1/2\) e grado 1 si ritrova \((v_0-v_1)/2=(2,2)^\top\), senza calcolare gli autovettori durante il filtraggio.
+% END F05-B0208
+
+% BEGIN F05-B0209
+L\textquotesingle interesse computazionale è proprio questo: si usano prodotti matrice-vettore, che possono sfruttare la sparsità del grafo, invece di una base spettrale completa. Per questo cammino di calcolo la diagonalizzazione serve a motivare la formula, non a essere rieseguita a ogni applicazione del livello.
+% END F05-B0209
+
+% BEGIN F05-B0210
+\section{Dal filtro di primo grado alla GCN finale (slide 28)}\label{f05-r494}
+% END F05-B0210
+
+% BEGIN F05-B0211
+\subsection{Due termini e un vincolo sui coefficienti (slide 28)}\label{f05-r496}
+% END F05-B0211
+
+% BEGIN F05-B0212
+La formulazione di Kipf e Welling mantiene i soli termini \(T_0\) e \(T_1\): è un filtro di \textbf{grado uno}, con due termini, non un filtro di grado due. Per il Laplaciano normalizzato \(\lambda_{\max}\le2\); usando 2 al posto del massimo effettivo,
+% END F05-B0212
+
+% BEGIN F05-B0213
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \widetilde L\simeq L-I=-S.$
+\end{adjustbox}
+\end{center}
+% END F05-B0213
+
+% BEGIN F05-B0214
+Se il massimo effettivo è 2, questa riscalatura coincide con quella precedente; altrimenti è una scelta semplificata della scala. Il filtro diventa
+% END F05-B0214
+
+% BEGIN F05-B0215
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{aligned}
+y&\simeq c_0T_0(\widetilde L)x+c_1T_1(\widetilde L)x\\
+&=c_0x+c_1\widetilde Lx\\
+&\simeq c_0x-c_1Sx.
+\end{aligned}$
+\end{adjustbox}
+\end{center}
+% END F05-B0215
+
+% BEGIN F05-B0216
+Si impone poi il vincolo \(c_0=\theta\), \(c_1=-\theta\), ottenendo
+% END F05-B0216
+
+% BEGIN F05-B0217
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle c_0x-c_1Sx=\theta x+\theta Sx=\boxed{\theta(I+S)x.}$
+\end{adjustbox}
+\end{center}
+% END F05-B0217
+
+% BEGIN F05-B0218
+Il segno positivo nasce dai due segni meno, quello della riscalatura e quello del coefficiente. Il vincolo fra coefficienti è una \textbf{scelta del modello}, non una conseguenza obbligatoria delle proprietà di Chebyshev. L\textquotesingle espansione polinomiale richiamata proviene dal percorso di Defferrard e collaboratori; la semplificazione di primo ordine e la costruzione della GCN sono il passo successivo di Kipf e Welling.
+% END F05-B0218
+
+% BEGIN F05-B0219
+\subsection{Rinormalizzare dopo l\textquotesingle aggiunta dei self-loop (slide 28)}\label{f05-r516}
+% END F05-B0219
+
+% BEGIN F05-B0220
+Ripetere il prodotto con \(I+S\) può amplificare il segnale. Per costruire l\textquotesingle operatore finale si aggiungono i self-loop all\textquotesingle adiacenza e si ricalcolano i gradi:
+% END F05-B0220
+
+% BEGIN F05-B0221
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \widehat A=A+I,\qquad
+\widehat D_{ii}=d_i+1,\qquad
+\widehat S=\widehat D^{-1/2}\widehat A\widehat D^{-1/2}.$
+\end{adjustbox}
+\end{center}
+% END F05-B0221
+
+% BEGIN F05-B0222
+Si sostituisce quindi \(I+S\) con \(\widehat S\). \textbf{Non è un\textquotesingle uguaglianza algebrica:} la nuova normalizzazione modifica sia il contributo del nodo stesso sia i coefficienti degli archi, perché i gradi sono cambiati.
+% END F05-B0222
+
+% BEGIN F05-B0223
+Nel grafo a due nodi,
+% END F05-B0223
+
+% BEGIN F05-B0224
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle I+S=\begin{bmatrix}1&1\\1&1\end{bmatrix},\qquad
+\widehat S=\frac12\begin{bmatrix}1&1\\1&1\end{bmatrix}.$
+\end{adjustbox}
+\end{center}
+% END F05-B0224
+
+% BEGIN F05-B0225
+Applicare il primo a \((3,1)^\top\) dà \((4,4)^\top\) e una seconda applicazione dà \((8,8)^\top\). Il secondo restituisce \((2,2)^\top\), che rimane uguale dopo un\textquotesingle altra propagazione. Il caso rende visibile tanto il cambio di operatore quanto il controllo della scala.
+% END F05-B0225
+
+% BEGIN F05-B0226
+Per l\textquotesingle adiacenza simmetrica normalizzata con pesi non negativi, gli autovalori di \(\widehat S\) hanno valore assoluto al più 1. Questo limita l\textquotesingle amplificazione dovuta alla sola propagazione; non garantisce che un\textquotesingle intera rete con matrici \(W\) apprese e attivazioni sia sempre stabile o che non possa avere problemi di gradiente.
+% END F05-B0226
+
+% BEGIN F05-B0227
+\subsection{Più feature e ritorno alla formula iniziale (slide 28)}\label{f05-r535}
+% END F05-B0227
+
+% BEGIN F05-B0228
+Passando da un segnale scalare a una matrice di feature, lo scalare apprendibile è sostituito da una trasformazione fra canali. Si aggiunge l\textquotesingle attivazione e si ritrova
+% END F05-B0228
+
+% BEGIN F05-B0229
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{H^{(\ell+1)}=\sigma\left(\widehat D^{-1/2}\widehat A\widehat D^{-1/2}H^{(\ell)}W^{(\ell)}\right).}$
+\end{adjustbox}
+\end{center}
+% END F05-B0229
+
+% BEGIN F05-B0230
+La derivazione chiarisce i ruoli: \(\widehat S\) combina nodi connessi, \(W\) combina feature. Il primo operatore dipende dal grafo; il secondo contiene i parametri del livello. Ripetere livelli espande il campo recettivo senza richiedere un reticolo euclideo né una diagonalizzazione completa durante ogni propagazione.
+% END F05-B0230
+
+% BEGIN F05-B0231
+La derivazione fornisce ora l\textquotesingle estrattore di rappresentazioni da usare nei diversi compiti su grafi. La seconda parte del capitolo introduce le teste di previsione, il pooling e l\textquotesingle aggregazione con attenzione.
+% END F05-B0231
+
+% BEGIN F05-B0232
+\section{Dal modello al compito: che cosa si vuole prevedere (slide 30)}\label{f05-n30-r558}
+% END F05-B0232
+
+% BEGIN F05-B0233
+Il message passing costruisce rappresentazioni, ma non stabilisce da solo \textbf{a quale oggetto assegnare la previsione}. Lo stesso estrattore per grafi può alimentare teste diverse: una per ciascun nodo, una per una coppia di nodi o una per l\textquotesingle intero grafo. Cambiano l\textquotesingle unità supervisionata, la forma dell\textquotesingle uscita e il modo in cui gli embedding vengono usati dalla loss.
+% END F05-B0233
+
+% BEGIN F05-B0234
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_c94d11a97898c3b5.png}}
+\caption{I diversi livelli a cui si può formulare un compito su grafi, dalla slide 30}
+\end{figure}
+% END F05-B0234
+
+% BEGIN F05-B0235
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Compito
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Oggetto della previsione
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Esempio discusso
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Node classification & Un\textquotesingle etichetta per nodo & Argomento di un documento; classe semantica di un pixel \\
+Link prediction & Esistenza o tipo di relazione fra due nodi & Nuova amicizia; collegamento fra luoghi \\
+Graph classification & Un\textquotesingle etichetta per l\textquotesingle intero grafo & Classe di un\textquotesingle immagine; azione di una persona \\
+Anomaly detection & Un nodo o una configurazione con comportamento anomalo & Un computer con attività insolita nella rete \\
+Community detection & Gruppi di nodi legati fra loro & Comunità nella struttura delle relazioni \\
+\end{longtable}
+% END F05-B0235
+
+% BEGIN F05-B0236
+L\textquotesingle analogia con le immagini chiarisce la differenza. Se si considera un\textquotesingle immagine come grafo di pixel, classificare l\textquotesingle immagine significa produrre un\textquotesingle etichetta per tutto il segnale sul reticolo: è un compito a livello di grafo. La \textbf{segmentazione semantica} assegna invece una classe a ogni pixel, per esempio «computer» ai pixel del portatile: è l\textquotesingle analogo della classificazione dei nodi. Questo confronto riguarda il livello della previsione; non impone di sostituire ogni CNN con una GNN.
+% END F05-B0236
+
+% BEGIN F05-B0237
+In una rete di computer, i nodi possono descrivere dispositivi e gli archi le comunicazioni. Un\textquotesingle attività molto diversa da quella attesa può suggerire un guasto o un comportamento da approfondire, anche potenzialmente malevolo; l\textquotesingle anomalia rilevata non identifica automaticamente una causa specifica. In una rete stradale si può invece prevedere se una coppia di luoghi ammette una certa connessione, per esempio un passaggio pedonale. Prevedere quel collegamento e calcolare il percorso migliore sono operazioni diverse.
+% END F05-B0237
+
+% BEGIN F05-B0238
+\begin{quote}
+\textbf{Precisazione sulla community detection (slide 30)}
+\end{quote}
+% END F05-B0238
+
+% BEGIN F05-B0239
+\begin{quote}
+L\textquotesingle espressione orale «trovare le parti più importanti» introduce intuitivamente il compito. Qui le comunità sono gruppi nella struttura delle connessioni; individuare i nodi più importanti è un\textquotesingle altra domanda. La lezione non sviluppa algoritmi di community detection o di anomaly detection: ne colloca soltanto il ruolo fra le applicazioni.
+\end{quote}
+% END F05-B0239
+
+% BEGIN F05-B0240
+\section{Classificare i nodi: uscita, applicazioni e supervisione (slide 31-35)}\label{f05-n30-r579}
+% END F05-B0240
+
+% BEGIN F05-B0241
+\subsection{Un vettore di score per ciascun nodo (slide 31)}\label{f05-n30-r581}
+% END F05-B0241
+
+% BEGIN F05-B0242
+Se il compito riguarda ogni nodo, le trasformazioni mantengono una riga per nodo. Indicando con \(F\) la dimensione finale degli embedding e con \(C\) il numero di classi, la matrice finale è \(H\in\mathbb R^{N\times F}\). La testa di classificazione applica la stessa trasformazione a tutte le righe:
+% END F05-B0242
+
+% BEGIN F05-B0243
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{Z=HW_{\mathrm{cls}}+\mathbf 1b^\top\in\mathbb R^{N\times C},\qquad
+W_{\mathrm{cls}}\in\mathbb R^{F\times C},\quad b\in\mathbb R^C.}$
+\end{adjustbox}
+\end{center}
+% END F05-B0243
+
+% BEGIN F05-B0244
+\(\mathbf 1\in\mathbb R^N\) serve a ripetere il bias per tutti i nodi. La riga \(z_v\) contiene i \textbf{logit}, cioè gli score prima della normalizzazione; non è ancora una distribuzione di probabilità. Per il nodo \(v\):
+% END F05-B0244
+
+% BEGIN F05-B0245
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{aligned}
+z_{v,c}&=\sum_{f=1}^Fh_{v,f}(W_{\mathrm{cls}})_{f,c}+b_c,\\
+p_{v,c}&=\frac{\exp(z_{v,c})}{\sum_{k=1}^C\exp(z_{v,k})},\\
+\widehat y_v&=\arg\max_c z_{v,c}=\arg\max_c p_{v,c}.
+\end{aligned}$
+\end{adjustbox}
+\end{center}
+% END F05-B0245
+
+% BEGIN F05-B0246
+La prima riga è un prodotto riga per matrice; la seconda applica la softmax \textbf{sulle classi dello stesso nodo}. L\textquotesingle argomento del massimo non cambia, perché l\textquotesingle esponenziale è crescente e il denominatore è comune alle classi. Si riusano quindi il classificatore e la cross-entropy introdotti nel capitolo MLP; la GNN ha costruito le feature usando anche la struttura del grafo.
+% END F05-B0246
+
+% BEGIN F05-B0247
+Un piccolo calcolo esplicita la testa. Con
+% END F05-B0247
+
+% BEGIN F05-B0248
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle h_v=(2,0),\qquad W_{\mathrm{cls}}=
+\begin{bmatrix}1&0&-1\\0&1&0\end{bmatrix},\qquad b=(0,0,1)^\top,$
+\end{adjustbox}
+\end{center}
+% END F05-B0248
+
+% BEGIN F05-B0249
+si ottiene \(z_v=(2,0,-1)\). Il denominatore vale \(e^2+1+e^{-1}\simeq8.756935\), perciò
+% END F05-B0249
+
+% BEGIN F05-B0250
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle p_v\simeq(0.843795,0.114195,0.042010).$
+\end{adjustbox}
+\end{center}
+% END F05-B0250
+
+% BEGIN F05-B0251
+La previsione è la prima classe. Se è anche quella vera, il contributo alla cross-entropy è \(-\log(0.843795)\simeq0.169846\). Il calcolo numerico è una ricostruzione didattica della formula, non una misura sul dataset delle slide.
+% END F05-B0251
+
+% BEGIN F05-B0252
+\begin{quote}
+\textbf{Convenzione dei vettori (slide 31)}
+\end{quote}
+% END F05-B0252
+
+% BEGIN F05-B0253
+\begin{quote}
+La slide scrive \(z_v=Wh_v+b\) usando vettori colonna. Qui gli embedding della GCN sono raccolti per righe: la stessa operazione è \(z_v=h_vW_{\mathrm{cls}}+b^\top\), con la matrice dei pesi trasposta rispetto alla convenzione della slide. Non cambia il classificatore.
+\end{quote}
+% END F05-B0253
+
+% BEGIN F05-B0254
+\subsection{Documenti collegati, profili e dataset Cora (slide 31-32)}\label{f05-n30-r612}
+% END F05-B0254
+
+% BEGIN F05-B0255
+In una rete di citazioni, ogni nodo è un documento e un arco registra una citazione. Le feature possono rappresentare titolo o abstract, mentre l\textquotesingle etichetta descrive l\textquotesingle argomento del documento. La rappresentazione di un articolo può così dipendere sia dal testo sia dai documenti collegati. Una relazione alternativa può essere la presenza di autori comuni: il grafo viene costruito in base alla relazione pertinente al problema, non soltanto al tipo di dato «documento».
+% END F05-B0255
+
+% BEGIN F05-B0256
+Il dataset \textbf{Cora} della slide 32 usa pubblicazioni come nodi e citazioni come collegamenti. Le feature sono descritte come bag-of-words o vettori ricavati dal testo. Le sette etichette riportate sono Neural Networks, Rule Learning, Reinforcement Learning, Probabilistic Methods, Genetic Algorithms, Theory e Case-Based Reasoning. Per \(N\) pubblicazioni, la testa restituisce quindi \(N\times7\) score. Se la citazione viene rappresentata come relazione orientata o resa reciproca, la matrice usata dal modello deve riflettere la scelta; non si deduce la simmetria dalla sola parola «citazione».
+% END F05-B0256
+
+% BEGIN F05-B0257
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_496a40bcaa34e0e7.png}}
+\caption{Rappresentazioni dei documenti visualizzate nel caso Cora, dalla slide 32}
+\end{figure}
+% END F05-B0257
+
+% BEGIN F05-B0258
+Un\textquotesingle altra applicazione è il profiling in una rete sociale: ogni utente è un nodo e si può prevedere una sua categoria o un attributo, per esempio un interesse. Le slide citano anche la previsione del tipo di atomo in una struttura molecolare. In tutti questi casi la GNN produce rappresentazioni per nodo; il significato dell\textquotesingle etichetta dipende dal dominio.
+% END F05-B0258
+
+% BEGIN F05-B0259
+\subsection{Siti geografici e immagini satellitari (slide 33)}\label{f05-n30-r622}
+% END F05-B0259
+
+% BEGIN F05-B0260
+Un nodo può rappresentare un \textbf{sito geografico} osservato da satellite. La sua informazione è una patch d\textquotesingle immagine, eventualmente con più bande; un estrattore visivo produce il vettore di feature del sito. Gli archi possono collegare siti vicini o siti con caratteristiche ambientali correlate. Il vantaggio rispetto a elaborare ogni immagine separatamente è che la descrizione di un luogo può essere aggiornata usando anche il contesto degli altri luoghi.
+% END F05-B0260
+
+% BEGIN F05-B0261
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_beb11736931897d3.png}}
+\caption{Dalle immagini satellitari alle relazioni fra siti e alla classificazione, dalla slide 33}
+\end{figure}
+% END F05-B0261
+
+% BEGIN F05-B0262
+L\textquotesingle esempio orale motiva il problema attraverso la presenza di insetti vettori: prevedere una condizione di rischio in un sito può aiutare a scegliere dove intensificare il monitoraggio o collocare trappole. Si possono costruire relazioni diverse, basate sulla distanza geografica oppure sulla somiglianza dell\textquotesingle ambiente, come aree montane e aree edificate. Il segnale da classificare resta associato al sito, quindi il compito è a livello di nodo.
+% END F05-B0262
+
+% BEGIN F05-B0263
+\begin{quote}
+\textbf{Riferimento applicativo e formulazione orale (slide 33)}
+\end{quote}
+% END F05-B0263
+
+% BEGIN F05-B0264
+\begin{quote}
+La trascrizione associa il West Nile al nome reso come «Cullicoides simicola» e descrive intuitivamente un classificatore di presenza dell\textquotesingle insetto. L\textquotesingle associazione nominale non va assunta come dato biologico: l\textquotesingle OMS indica le zanzare del genere \emph{Culex} come principali vettori del WNV. Inoltre, l\textquotesingle articolo citato nella slide, \emph{Spotting Virus From Satellites} di Bonicelli e collaboratori (2023), ha come obiettivo la \textbf{circolazione del West Nile virus}, che non coincide con la sola presenza di un insetto. L\textquotesingle esempio conserva il significato didattico di una previsione per sito. Fonti di controllo della precisazione: \href{https://www.who.int/news-room/fact-sheets/detail/west-nile-virus}{OMS, West Nile virus} e \href{https://doi.org/10.1109/TGRS.2023.3293270}{articolo citato, DOI 10.1109/TGRS.2023.3293270}.
+\end{quote}
+% END F05-B0264
+
+% BEGIN F05-B0265
+La figura introduce anche l\textquotesingle idea di più relazioni fra gli stessi siti. Non si ricostruiscono qui i dettagli dell\textquotesingle architettura MAGAT, i protocolli sperimentali o i risultati numerici dell\textquotesingle articolo: non sono sviluppati nella spiegazione del caso.
+% END F05-B0265
+
+% BEGIN F05-B0266
+\subsection{Impostazione transduttiva e induttiva (slide 34-35)}\label{f05-n30-r635}
+% END F05-B0266
+
+% BEGIN F05-B0267
+Nel caso \textbf{transduttivo}, il grafo è disponibile durante l\textquotesingle addestramento, ma soltanto alcuni nodi hanno etichette note per la supervisione. L\textquotesingle obiettivo è prevedere le etichette dei nodi rimanenti \textbf{nello stesso grafo}. I nodi non etichettati possono comunque contribuire al message passing attraverso feature e connessioni: non devono scomparire dalla struttura solo perché manca la loro etichetta.
+% END F05-B0267
+
+% BEGIN F05-B0268
+Se \(\mathcal V_L\) è l\textquotesingle insieme dei nodi con etichette usate nel training, la cross-entropy supervisionata si applica soltanto a quell\textquotesingle insieme:
+% END F05-B0268
+
+% BEGIN F05-B0269
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{\mathcal L=-\frac1{|\mathcal V_L|}\sum_{v\in\mathcal V_L}\log p_{v,y_v}.}$
+\end{adjustbox}
+\end{center}
+% END F05-B0269
+
+% BEGIN F05-B0270
+Si selezionano le righe supervisionate, si prende la probabilità della classe vera e si media il logaritmo negativo. Per esempio, con etichette note soltanto nei nodi 1 e 3 e probabilità corrette \(0.8\) e \(0.5\),
+% END F05-B0270
+
+% BEGIN F05-B0271
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \mathcal L=-\frac{\log0.8+\log0.5}{2}\simeq0.458145.$
+\end{adjustbox}
+\end{center}
+% END F05-B0271
+
+% BEGIN F05-B0272
+Il nodo 2 può influire sugli embedding dei vicini, ma non gli si attribuisce una classe vera inventata per calcolare questa loss. La disponibilità della struttura non autorizza a usare come supervisione le etichette tenute per la valutazione.
+% END F05-B0272
+
+% BEGIN F05-B0273
+Nel caso \textbf{induttivo}, la regola appresa deve trasferirsi a nodi o grafi non osservati durante il training. Il disegno mostra più grafi di addestramento e un nuovo grafo da etichettare. Il modello deve poter applicare i parametri condivisi alle feature e alla struttura del nuovo ingresso, senza dipendere dall\textquotesingle identità dei nodi del training.
+% END F05-B0273
+
+% BEGIN F05-B0274
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_d19450164b3a8d4d.png}}
+\caption{Supervisione parziale nello stesso grafo e trasferimento a nuovi grafi, dalla slide 34}
+\end{figure}
+% END F05-B0274
+
+% BEGIN F05-B0275
+\begin{quote}
+\textbf{Portata dell\textquotesingle esempio induttivo (slide 34-35)}
+\end{quote}
+% END F05-B0275
+
+% BEGIN F05-B0276
+\begin{quote}
+La spiegazione contrappone «un grafo» a «molti grafi», come nel disegno. La distinzione generale riguarda però \textbf{che cosa resta non osservato durante il training}: anche la previsione su nuovi nodi può essere induttiva, senza richiedere per definizione molti grafi di addestramento. Occorre comunque disporre delle feature e delle relazioni che il modello usa al momento della previsione.
+\end{quote}
+% END F05-B0276
+
+% BEGIN F05-B0277
+\section{Link prediction: classificare una coppia di nodi (slide 36)}\label{f05-n30-r656}
+% END F05-B0277
+
+% BEGIN F05-B0278
+Nella link prediction non si legge isolatamente l\textquotesingle embedding di un nodo: si considerano due rappresentazioni \(h_u\) e \(h_v\) per stimare la loro relazione. Gli esempi sono una nuova amicizia, un\textquotesingle interazione futura fra utenti, il gradimento di un oggetto o un collegamento mancante. Le slide citano inoltre interazioni proteina-proteina e farmaco-bersaglio, senza sviluppare modelli specifici per questi domini.
+% END F05-B0278
+
+% BEGIN F05-B0279
+La pipeline separa l\textquotesingle estrazione delle feature dal \textbf{decoder di coppia}:
+% END F05-B0279
+
+% BEGIN F05-B0280
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{aligned}
+H&=\operatorname{GNN}(X,A),\\
+s_{uv}&=\operatorname{Decoder}(h_u,h_v),\\
+z_{uv}&=W_{\mathrm{edge}}s_{uv}+b_{\mathrm{edge}}\in\mathbb R^C.
+\end{aligned}$
+\end{adjustbox}
+\end{center}
+% END F05-B0280
+
+% BEGIN F05-B0281
+In quest\textquotesingle ultima formula \(s_{uv}\) è scritto come vettore colonna di dimensione \(D_e\), perciò \(W_{\mathrm{edge}}\in\mathbb R^{C\times D_e}\). Il decoder può restituire un vettore da classificare oppure direttamente uno score scalare. Un MLP che riceve la concatenazione \([h_u\Vert h_v]\) è un decoder apprendibile; il \textbf{prodotto scalare} è invece una scelta semplice che non introduce propri pesi aggiuntivi.
+% END F05-B0281
+
+% BEGIN F05-B0282
+Per un solo logit binario si può scrivere
+% END F05-B0282
+
+% BEGIN F05-B0283
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{r_{uv}=h_uh_v^\top=\sum_{f=1}^Fh_{u,f}h_{v,f},\qquad
+p_{uv}=\operatorname{sigmoid}(r_{uv})=\frac1{1+e^{-r_{uv}}}.}$
+\end{adjustbox}
+\end{center}
+% END F05-B0283
+
+% BEGIN F05-B0284
+Il prodotto somma le interazioni componente per componente e restituisce uno scalare; la sigmoide lo porta in \((0,1)\). Gli embedding che entrano nel prodotto restano appresi dalla GNN. Per \(h_u=(1,2)\) e \(h_v=(2,1)\):
+% END F05-B0284
+
+% BEGIN F05-B0285
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle r_{uv}=1\cdot2+2\cdot1=4,\qquad p_{uv}\simeq0.982014.$
+\end{adjustbox}
+\end{center}
+% END F05-B0285
+
+% BEGIN F05-B0286
+Con etichetta \(y_{uv}\in\{0,1\}\), la binary cross-entropy è
+% END F05-B0286
+
+% BEGIN F05-B0287
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \mathcal L_{uv}=-y_{uv}\log p_{uv}-(1-y_{uv})\log(1-p_{uv}).$
+\end{adjustbox}
+\end{center}
+% END F05-B0287
+
+% BEGIN F05-B0288
+Se l\textquotesingle arco deve esserci, \(y_{uv}=1\) e il contributo è circa \(0.018150\); se deve essere assente, \(y_{uv}=0\) e il contributo è circa \(4.018150\). Lo stesso score riceve quindi un segnale di apprendimento diverso in base alla relazione vera.
+% END F05-B0288
+
+% BEGIN F05-B0289
+\begin{quote}
+\textbf{Score, classe e decoder (slide 36)}
+\end{quote}
+% END F05-B0289
+
+% BEGIN F05-B0290
+\begin{quote}
+La pipeline della slide usa \(C\) score e un argomento del massimo. Per il problema binario si possono usare \textbf{due logit con softmax} oppure \textbf{un logit con sigmoide e BCE}: una softmax su un solo logit varrebbe sempre 1. Il prodotto scalare è inoltre simmetrico: scambiare \(u\) e \(v\) non cambia lo score. Se il tipo di relazione richiede di distinguere i due versi, questa scelta del decoder va riesaminata.
+\end{quote}
+% END F05-B0290
+
+% BEGIN F05-B0291
+Per prevedere un collegamento sconosciuto, la coppia da valutare non deve necessariamente appartenere al vicinato usato dal message passing. Prima si costruiscono gli embedding con le relazioni disponibili; poi si interroga il decoder sulla coppia di interesse. Non si deve fornire al modello come informazione già nota proprio l\textquotesingle arco che si intende tenere nascosto per valutarne la previsione.
+% END F05-B0291
+
+% BEGIN F05-B0292
+\section{Graph classification e aggregazione dei nodi (slide 37-38)}\label{f05-n30-r690}
+% END F05-B0292
+
+% BEGIN F05-B0293
+\subsection{Dal numero variabile di nodi a un vettore globale (slide 37)}\label{f05-n30-r692}
+% END F05-B0293
+
+% BEGIN F05-B0294
+Per assegnare una sola etichetta a un grafo occorre trasformare l\textquotesingle insieme degli embedding in una rappresentazione di dimensione fissa. Un grafo con 20 nodi e uno con 100 nodi possono così alimentare la stessa testa di classificazione:
+% END F05-B0294
+
+% BEGIN F05-B0295
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{g=\operatorname{POOL}\{h_v:v\in V\}\in\mathbb R^F,\qquad
+z_G=\operatorname{MLP}(g)\in\mathbb R^C.}$
+\end{adjustbox}
+\end{center}
+% END F05-B0295
+
+% BEGIN F05-B0296
+La previsione discreta è \(\widehat y_G=\arg\max_c z_{G,c}\); il training può usare la cross-entropy con l\textquotesingle etichetta del grafo. Nella notazione sintetica della slide \(\widehat y_G=\operatorname{MLP}(h_{\mathrm{graph}})\) è sottintesa la lettura finale degli score. Il pooling non è il classificatore: costruisce le feature globali che il classificatore userà.
+% END F05-B0296
+
+% BEGIN F05-B0297
+La riduzione deve rispettare la numerazione arbitraria dei nodi. Riordinare le righe non deve cambiare il vettore del grafo, purché anche la struttura sia stata riordinata coerentemente. È il passaggio dall\textquotesingle equivarianza delle rappresentazioni per nodo all\textquotesingle invarianza della previsione globale, già distinto nella parte introduttiva.
+% END F05-B0297
+
+% BEGIN F05-B0298
+\subsection{Global average pooling (slide 38)}\label{f05-n30-r703}
+% END F05-B0298
+
+% BEGIN F05-B0299
+La riduzione più semplice è la media:
+% END F05-B0299
+
+% BEGIN F05-B0300
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{g=\frac1N\sum_{v=1}^Nh_v,\qquad
+g_f=\frac1N\sum_{v=1}^Nh_{v,f}.}$
+\end{adjustbox}
+\end{center}
+% END F05-B0300
+
+% BEGIN F05-B0301
+Ogni embedding ha \(F\) componenti; si somma separatamente ciascuna componente e si divide per il numero di nodi. L\textquotesingle uscita conserva \(F\) feature, perdendo l\textquotesingle asse dei nodi. Non occorre apprendere pesi per questa operazione. È l\textquotesingle analogo sul grafo del pooling globale delle mappe CNN e della media dei token del Transformer.
+% END F05-B0301
+
+% BEGIN F05-B0302
+Con tre embedding
+% END F05-B0302
+
+% BEGIN F05-B0303
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle h_1=(1,0),\qquad h_2=(0,2),\qquad h_3=(3,1),$
+\end{adjustbox}
+\end{center}
+% END F05-B0303
+
+% BEGIN F05-B0304
+la somma è \((4,3)\) e \(g=(4/3,1)\). Scambiare l\textquotesingle ordine dei tre vettori lascia invariata la somma, quindi la media. Grafo piccolo e grafo grande producono entrambi un vettore di due componenti; non conservano però necessariamente le stesse informazioni dopo la compressione.
+% END F05-B0304
+
+% BEGIN F05-B0305
+\subsection{Pooling con attenzione e collegamento al token speciale (slide 38)}\label{f05-n30-r718}
+% END F05-B0305
+
+% BEGIN F05-B0306
+La media attribuisce lo stesso coefficiente a tutti i nodi. Un pooling apprendibile può assegnare pesi diversi in base alle feature. Nella forma riportata dalla slide:
+% END F05-B0306
+
+% BEGIN F05-B0307
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{aligned}
+s_v&=a_{\mathrm{pool}}^\top h_v,\\
+\alpha_v&=\frac{e^{s_v}}{\sum_{u\in V}e^{s_u}},\\
+\boxed{g}&=\boxed{\sum_{v\in V}\alpha_vh_v.}
+\end{aligned}$
+\end{adjustbox}
+\end{center}
+% END F05-B0307
+
+% BEGIN F05-B0308
+Qui i singoli \(h_v\) sono scritti come colonne, \(a_{\mathrm{pool}}\in\mathbb R^F\) è apprendibile, \(s_v\) e \(\alpha_v\) sono scalari e \(g\in\mathbb R^F\). Il prodotto scalare costruisce uno score per nodo; la softmax lo confronta con gli score di \textbf{tutti i nodi da aggregare}; la somma pesata costruisce il vettore finale. I coefficienti sono non negativi e sommano a 1.
+% END F05-B0308
+
+% BEGIN F05-B0309
+Nell\textquotesingle esempio precedente, scegliendo \(a_{\mathrm{pool}}=(\log2,0)^\top\), gli score sono \((\log2,0,3\log2)\) e i loro esponenziali sono \((2,1,8)\). Quindi
+% END F05-B0309
+
+% BEGIN F05-B0310
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{aligned}
+(\alpha_1,\alpha_2,\alpha_3)&=(2/11,1/11,8/11),\\
+g&=\frac2{11}(1,0)+\frac1{11}(0,2)+\frac8{11}(3,1)\\
+&=(26/11,10/11)\simeq(2.363636,0.909091).
+\end{aligned}$
+\end{adjustbox}
+\end{center}
+% END F05-B0310
+
+% BEGIN F05-B0311
+Il risultato privilegia il terzo nodo per effetto degli score, non perché si trovi artificialmente in terza posizione. Il vettore dei pesi è un esempio scelto per rendere il calcolo verificabile; durante il training viene appreso.
+% END F05-B0311
+
+% BEGIN F05-B0312
+Una seconda realizzazione discussa usa una \textbf{query speciale}, come il token {[}CLS{]} del Transformer. Si può aggiungere un nodo dedicato alla raccolta globale, collegarlo ai nodi del grafo e leggere la sua rappresentazione finale. Per un\textquotesingle operazione di attention di lettura, con una query riga \(q\in\mathbb R^{1\times d_k}\), chiavi \(K\in\mathbb R^{N\times d_k}\) e valori \(V\in\mathbb R^{N\times F_o}\):
+% END F05-B0312
+
+% BEGIN F05-B0313
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{aligned}
+qK^\top&\in\mathbb R^{1\times N},\\
+\beta&=\operatorname{softmax}_{\mathrm{nodi}}(qK^\top/\sqrt{d_k})\in\mathbb R^{1\times N},\\
+g&=\beta V\in\mathbb R^{1\times F_o}.
+\end{aligned}$
+\end{adjustbox}
+\end{center}
+% END F05-B0313
+
+% BEGIN F05-B0314
+\textbf{Una query produce una riga di uscita}: è il motivo per cui questa costruzione può ridurre il grafo a un vettore. Se \(N=3\), \(F_o=2\), \(\beta=(2/11,1/11,8/11)\) e le righe di \(V\) sono i tre embedding dell\textquotesingle esempio, il prodotto restituisce lo stesso \((26/11,10/11)\). La formula con \(a_{\mathrm{pool}}\) e la lettura con query speciale sono due possibili costruzioni del pooling con attenzione; non sono per definizione la stessa parametrizzazione.
+% END F05-B0314
+
+% BEGIN F05-B0315
+La scelta di usare un nodo nuovo o di leggere un\textquotesingle articolazione già esistente, per esempio la testa nello scheletro, è una scelta architetturale. Quel nodo deve avere accesso alle informazioni che si vogliono raccogliere; un\textquotesingle articolazione qualsiasi non diventa automaticamente un riassunto globale senza collegamenti e addestramento adeguati.
+% END F05-B0315
+
+% BEGIN F05-B0316
+\subsection{Pooling gerarchico (slide 38)}\label{f05-n30-r752}
+% END F05-B0316
+
+% BEGIN F05-B0317
+Un unico pooling globale comprime tutto il grafo in un passaggio. Il \textbf{pooling gerarchico} divide invece i nodi in gruppi e costruisce un nodo riassuntivo per ciascun gruppo. Si ottiene un grafo più piccolo, sul quale possono seguire altre trasformazioni e altre aggregazioni. È l\textquotesingle analogo dell\textquotesingle aumento graduale della scala nelle CNN, adattato a una struttura senza finestre rettangolari universali.
+% END F05-B0317
+
+% BEGIN F05-B0318
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_3f71a87c08994d69.png}}
+\caption{Aggregazioni successive di gruppi di nodi, dalla slide 38}
+\end{figure}
+% END F05-B0318
+
+% BEGIN F05-B0319
+Per esempio, si può partizionare il grafo in cinque cluster e fare la media separatamente in ciascuno. Per un cluster \(\mathcal C_r\), il vettore risultante è
+% END F05-B0319
+
+% BEGIN F05-B0320
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle g_r=\frac1{|\mathcal C_r|}\sum_{v\in\mathcal C_r}h_v.$
+\end{adjustbox}
+\end{center}
+% END F05-B0320
+
+% BEGIN F05-B0321
+Con i tre nodi dell\textquotesingle esempio, i gruppi \(\{1,2\}\) e \(\{3\}\) darebbero rispettivamente \((1/2,1)\) e \((3,1)\). Sono ora due rappresentazioni di gruppi; le relazioni del grafo ridotto devono descrivere come tali gruppi sono collegati. Non è la stessa operazione che applicare la media sull\textquotesingle intero insieme fin dall\textquotesingle inizio. La lezione introduce la costruzione per clustering e aggregazioni successive, senza sviluppare uno specifico algoritmo di clustering o di pooling appreso.
+% END F05-B0321
+
+% BEGIN F05-B0322
+Un cenno orale collega inoltre l\textquotesingle analisi dei flussi su grafi alla rilevazione di comportamenti anomali negli LLM, anche associati ad allucinazioni. Non sono indicati uno studio o un protocollo sufficienti a ricostruire quel metodo: resta un esempio di possibile applicazione, senza aggiungere un\textquotesingle architettura non descritta nelle fonti.
+% END F05-B0322
+
+% BEGIN F05-B0323
+\section{Action recognition con grafi spazio-temporali (slide 39)}\label{f05-n30-r766}
+% END F05-B0323
+
+% BEGIN F05-B0324
+\subsection{Dal video alle coordinate delle articolazioni (slide 39)}\label{f05-n30-r768}
+% END F05-B0324
+
+% BEGIN F05-B0325
+Un video contiene molti pixel, ma per riconoscere alcune azioni può essere utile rappresentare direttamente \textbf{come si muove il corpo}. Un passaggio di pose estimation estrae, per ogni fotogramma, le posizioni delle articolazioni. La sequenza diventa così una successione di scheletri, più compatta del video originale.
+% END F05-B0325
+
+% BEGIN F05-B0326
+Le posizioni possono provenire da un sensore dedicato, come nell\textquotesingle esempio Kinect, oppure da una rete che prende l\textquotesingle immagine e stima le coordinate dei giunti. Sono due modi di ottenere l\textquotesingle ingresso per il modello successivo. Una stima di posa resta una misura o una previsione con possibili errori: non va confusa con la conoscenza esatta della posizione reale.
+% END F05-B0326
+
+% BEGIN F05-B0327
+Con \(T\) istanti, \(J\) articolazioni e coordinate in \(d=2\) o \(d=3\) dimensioni, un modo di raccogliere il segnale è
+% END F05-B0327
+
+% BEGIN F05-B0328
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle X\in\mathbb R^{T\times J\times d},\qquad x_{t,j}\in\mathbb R^d.$
+\end{adjustbox}
+\end{center}
+% END F05-B0328
+
+% BEGIN F05-B0329
+Ogni \(x_{t,j}\) descrive la posizione dell\textquotesingle articolazione \(j\) al tempo \(t\). Nell\textquotesingle esempio orale di uno scheletro con 24 articolazioni, quattro fotogrammi e coordinate 3D, il tensore ha forma \(4\times24\times3\): contiene 288 coordinate. Il numero di articolazioni dipende dalla rappresentazione della posa, non è una costante obbligatoria di tutte le ST-GCN.
+% END F05-B0329
+
+% BEGIN F05-B0330
+\subsection{Archi spaziali e archi temporali (slide 39)}\label{f05-n30-r780}
+% END F05-B0330
+
+% BEGIN F05-B0331
+Si possono vedere le coppie \((t,j)\) come nodi di un unico grafo spazio-temporale. I nodi sono \(TJ\); la matrice di feature può essere scritta anche come \(X_{\mathrm{flat}}\in\mathbb R^{(TJ)\times d}\), senza cambiare il segnale rappresentato. Le relazioni hanno due significati:
+% END F05-B0331
+
+% BEGIN F05-B0332
+\begin{itemize}
+\tightlist
+\item
+  Gli \textbf{archi spaziali} collegano articolazioni connesse nello stesso istante, per esempio polso e gomito. Nella figura sono blu.
+\item
+  Gli \textbf{archi temporali} collegano la stessa articolazione in istanti successivi, per esempio il polso al tempo \(t\) e il polso al tempo \(t+1\). Nella figura sono verdi.
+\end{itemize}
+% END F05-B0332
+
+% BEGIN F05-B0333
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_45843699186a2626.png}}
+\caption{Slide 39 completa con annotazione sulle connessioni temporali verdi}
+\end{figure}
+% END F05-B0333
+
+% BEGIN F05-B0334
+Per esempio, se il polso passa da \((1,0,0)\) a \((2,0,0)\), la variazione è \((1,0,0)\): l\textquotesingle arco temporale mette in relazione le due osservazioni della stessa articolazione. Nello stesso fotogramma, l\textquotesingle arco verso il gomito permette invece di descrivere la configurazione del braccio. I due collegamenti portano informazioni diverse, entrambe utili per distinguere un\textquotesingle azione.
+% END F05-B0334
+
+% BEGIN F05-B0335
+Le \textbf{Spatio-Temporal Graph Convolutional Networks}, o \textbf{ST-GCN}, sfruttano questa struttura per aggiornare le rappresentazioni. Si può fornire una sola struttura complessiva oppure mantenere distinta la natura spaziale e temporale degli archi. La distinzione può aiutare il modello a elaborare separatamente relazioni con ruoli diversi; non implica una garanzia universale di prestazioni migliori per ogni dataset.
+% END F05-B0335
+
+% BEGIN F05-B0336
+\subsection{Un\textquotesingle azione come etichetta dell\textquotesingle intera sequenza (slide 39)}\label{f05-n30-r793}
+% END F05-B0336
+
+% BEGIN F05-B0337
+Il risultato richiesto è la classe dell\textquotesingle azione, per esempio una categoria di movimento, non un\textquotesingle etichetta indipendente per ciascuna articolazione. Dopo gli strati spazio-temporali si aggregano le rappresentazioni dei nodi e si usa una testa di classificazione del grafo. È quindi un caso di \textbf{graph classification}, anche se la struttura comprende più fotogrammi.
+% END F05-B0337
+
+% BEGIN F05-B0338
+La pipeline è: video, stima delle pose, coordinate e connessioni spazio-temporali, strati per grafi, pooling e classificatore. Dopo aver estratto la posa, questo modello lavora sulla struttura degli scheletri; non deve necessariamente continuare a leggere tutti i pixel del video.
+% END F05-B0338
+
+% BEGIN F05-B0339
+La stessa rappresentazione si può interpretare come un insieme di \textbf{serie temporali}: una per articolazione, con due o tre coordinate per istante. Il grafo aggiunge però le relazioni fra quelle serie. Non si osserva soltanto la traiettoria del singolo polso; si possono apprendere pattern che dipendono dalla sua interazione con gomito, spalla e altre articolazioni. È il collegamento con RNN e TCN: l\textquotesingle evoluzione temporale rimane centrale, ma qui è accompagnata da un prior esplicito sulle relazioni del corpo.
+% END F05-B0339
+
+% BEGIN F05-B0340
+\section{Limiti dell\textquotesingle aggregazione GCN e motivazione dell\textquotesingle attenzione (slide 41-42)}\label{f05-n30-r801}
+% END F05-B0340
+
+% BEGIN F05-B0341
+Nella GCN già costruita, la trasformazione \(W\) è appresa, mentre i coefficienti di aggregazione dipendono dall\textquotesingle adiacenza e dai gradi. Due messaggi con ruoli diversi non ricevono un peso scelto confrontando il loro contenuto: il filtro strutturale è fissato dal grafo. «Tutti i vicini contribuiscono ugualmente», nella formulazione sintetica della slide 41, va quindi letto come assenza di attenzione al contenuto; con la normalizzazione simmetrica i coefficienti possono già essere numericamente diversi a causa dei gradi.
+% END F05-B0341
+
+% BEGIN F05-B0342
+Un secondo limite è l\textquotesingle{}\textbf{over-smoothing}. Ripetere molte aggregazioni può rendere le rappresentazioni dei nodi sempre meno distinguibili. Aumentare la profondità estende il campo recettivo, ma non assicura di mantenere differenze utili alla classificazione: la rete può mescolare eccessivamente i segnali.
+% END F05-B0342
+
+% BEGIN F05-B0343
+Un esempio minimo rende visibile il fenomeno. Per due nodi connessi con self-loop, senza una trasformazione ulteriore e con attivazione identità,
+% END F05-B0343
+
+% BEGIN F05-B0344
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \widehat S=\frac12\begin{bmatrix}1&1\\1&1\end{bmatrix},\qquad
+H=\begin{bmatrix}0\\2\end{bmatrix},\qquad
+\widehat SH=\begin{bmatrix}1\\1\end{bmatrix}.$
+\end{adjustbox}
+\end{center}
+% END F05-B0344
+
+% BEGIN F05-B0345
+Le due rappresentazioni diventano uguali già in un passaggio e successive applicazioni di questo operatore le mantengono uguali. È un caso illustrativo di mescolamento, non la dimostrazione che ogni GCN debba collassare dopo uno specifico numero di strati. Nelle reti complete intervengono anche pesi, attivazioni e struttura del grafo.
+% END F05-B0345
+
+% BEGIN F05-B0346
+Infine la GCN richiede una struttura disponibile o costruita: non bastano le sole feature se non si è deciso quali nodi possano comunicare. Le \textbf{Graph Attention Networks}, o \textbf{GAT}, introducono coefficienti di aggregazione appresi a partire dalle rappresentazioni dei nodi. Si vuole quindi imparare anche \textbf{quanto contano i diversi messaggi}, oltre a come trasformare le feature.
+% END F05-B0346
+
+% BEGIN F05-B0347
+\begin{quote}
+\textbf{Attenzione e struttura disponibile (slide 41-44)}
+\end{quote}
+% END F05-B0347
+
+% BEGIN F05-B0348
+\begin{quote}
+Il richiamo orale a «imparare l\textquotesingle adiacenza» descrive i coefficienti di una \textbf{matrice di interazione pesata}, non implica necessariamente apprendere la presenza discreta di tutti gli archi. Se viene fornita una maschera, il modello pesa soltanto i collegamenti ammessi. Senza una maschera si possono considerare tutte le coppie, assumendo un insieme completo di interazioni candidate. L\textquotesingle attenzione, da sola, non garantisce inoltre di eliminare l\textquotesingle over-smoothing in qualsiasi rete profonda.
+\end{quote}
+% END F05-B0348
+
+% BEGIN F05-B0349
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_30b252cfafcf9a34.png}}
+\caption{Più pesi di attenzione per i messaggi diretti allo stesso nodo, dalla slide 42}
+\end{figure}
+% END F05-B0349
+
+% BEGIN F05-B0350
+\section{Un livello GAT: proiezione, score, maschera e aggregazione (slide 43-45)}\label{f05-n30-r822}
+% END F05-B0350
+
+% BEGIN F05-B0351
+\subsection{Prima trasformare le feature (slide 43, pagine PDF 44-45)}\label{f05-n30-r824}
+% END F05-B0351
+
+% BEGIN F05-B0352
+Per seguire la notazione delle slide GAT, in questa derivazione il singolo embedding è un \textbf{vettore colonna}: \(h_i\in\mathbb R^F\). La trasformazione condivisa è
+% END F05-B0352
+
+% BEGIN F05-B0353
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{u_i=Wh_i\in\mathbb R^{F'},\qquad W\in\mathbb R^{F'\times F}.}$
+\end{adjustbox}
+\end{center}
+% END F05-B0353
+
+% BEGIN F05-B0354
+La slide indica questo vettore con \(h_i^W\); qui \(u_i\) evita di confondere l\textquotesingle apice con una potenza. Ogni componente di uscita è una combinazione delle \(F\) feature di ingresso. Lo stesso \(W\) è usato per tutti i nodi, come per la proiezione della GCN. Per esempio, con \(F=F'=2\) e \(W=I\), un embedding \((1,0)^\top\) resta \((1,0)^\top\); con \(W=\operatorname{diag}(2,1)\) diventerebbe \((2,0)^\top\).
+% END F05-B0354
+
+% BEGIN F05-B0355
+Questo cambio di convenzione è locale e dichiarato: se si raccolgono nuovamente gli embedding per righe in \(H\in\mathbb R^{N\times F}\), la proiezione complessiva è \(U=HW^\top\in\mathbb R^{N\times F'}\), non \(HW\) con la matrice delle slide lasciata nelle stesse dimensioni.
+% END F05-B0355
+
+% BEGIN F05-B0356
+\subsection{Dalla coppia di vettori a uno score scalare (slide 43)}\label{f05-n30-r834}
+% END F05-B0356
+
+% BEGIN F05-B0357
+Per misurare il contributo del nodo \(j\) all\textquotesingle aggiornamento di \(i\), si concatenano le due rappresentazioni proiettate:
+% END F05-B0357
+
+% BEGIN F05-B0358
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle [u_i\Vert u_j]\in\mathbb R^{2F'},\qquad a\in\mathbb R^{2F'}.$
+\end{adjustbox}
+\end{center}
+% END F05-B0358
+
+% BEGIN F05-B0359
+Il vettore \(a\) è apprendibile. La concatenazione unisce le componenti senza sommarle; il prodotto scalare successivo le combina in \textbf{un solo numero}:
+% END F05-B0359
+
+% BEGIN F05-B0360
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{e_{ij}=\operatorname{LeakyReLU}\left(a^\top[u_i\Vert u_j]\right).}$
+\end{adjustbox}
+\end{center}
+% END F05-B0360
+
+% BEGIN F05-B0361
+Scomponendo \(a=[a_L\Vert a_R]\), con \(a_L,a_R\in\mathbb R^{F'}\),
+% END F05-B0361
+
+% BEGIN F05-B0362
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{aligned}
+a^\top[u_i\Vert u_j]&=\sum_{r=1}^{F'}(a_L)_r(u_i)_r+
+\sum_{r=1}^{F'}(a_R)_r(u_j)_r\\
+&=a_L^\top u_i+a_R^\top u_j.
+\end{aligned}$
+\end{adjustbox}
+\end{center}
+% END F05-B0362
+
+% BEGIN F05-B0363
+La Leaky ReLU conserva la natura scalare dello score. Con pendenza negativa \(\eta\in(0,1)\), vale \(\operatorname{LeakyReLU}(x)=x\) per \(x\ge0\) e \(\eta x\) per \(x<0\). Diversamente dalla ReLU standard, non annulla tutto il semiasse negativo. Il richiamo è alle funzioni di attivazione del capitolo CNN.
+% END F05-B0363
+
+% BEGIN F05-B0364
+Per un esempio da usare anche nei passaggi successivi, fissiamo
+% END F05-B0364
+
+% BEGIN F05-B0365
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle h_1=\begin{bmatrix}1\\0\end{bmatrix},\quad
+h_2=\begin{bmatrix}0\\2\end{bmatrix},\quad
+h_3=\begin{bmatrix}-1\\1\end{bmatrix},\quad
+W=I,\quad a=\begin{bmatrix}1\\-1\\1\\1\end{bmatrix},\quad\eta=0.2.$
+\end{adjustbox}
+\end{center}
+% END F05-B0365
+
+% BEGIN F05-B0366
+Per la coppia ordinata \((1,2)\),
+% END F05-B0366
+
+% BEGIN F05-B0367
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle a^\top[u_1\Vert u_2]=1\cdot1-1\cdot0+1\cdot0+1\cdot2=3,$
+\end{adjustbox}
+\end{center}
+% END F05-B0367
+
+% BEGIN F05-B0368
+quindi \(e_{12}=3\). Per \((2,1)\) il valore prima dell\textquotesingle attivazione è \(-1\) e \(e_{21}=-0.2\). Lo score può dunque essere diverso nei due versi anche con un grafo non orientato. Questi valori sono scelte didattiche per il calcolo, non parametri appresi nel caso Cora.
+% END F05-B0368
+
+% BEGIN F05-B0369
+Lo score \(e_{ij}\) non è ancora il coefficiente del messaggio, né una probabilità di esistenza dell\textquotesingle arco. È un\textquotesingle affinità da normalizzare insieme alle altre della stessa riga. I pesi \(W\) e \(a\) sono parametri del modello; gli score cambiano quando cambiano gli embedding in ingresso.
+% END F05-B0369
+
+% BEGIN F05-B0370
+\subsection{Quali coppie considerare e che cosa significa la maschera (slide 44)}\label{f05-n30-r869}
+% END F05-B0370
+
+% BEGIN F05-B0371
+Nella versione locale si definisce \(\mathcal N_i\) come l\textquotesingle insieme dei nodi da cui \(i\) può ricevere un messaggio, includendo il nodo stesso se si usano self-loop. Per un grafo orientato fissiamo la convenzione: la riga \(i\), colonna \(j\) descrive il contributo \textbf{\(j\to i\)}. È questa convenzione, insieme alla maschera, a stabilire il verso del flusso.
+% END F05-B0371
+
+% BEGIN F05-B0372
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \widetilde e_{ij}=\begin{cases}
+e_{ij},&j\in\mathcal N_i,\\
+-\infty,&j\notin\mathcal N_i.
+\end{cases}$
+\end{adjustbox}
+\end{center}
+% END F05-B0372
+
+% BEGIN F05-B0373
+Il valore \(-\infty\) non è il peso di un messaggio: è un valore messo \textbf{prima della softmax} per rendere nullo quel contributo dopo la normalizzazione. Mettere semplicemente 0 prima della softmax non avrebbe lo stesso effetto, perché \(e^0=1\).
+% END F05-B0373
+
+% BEGIN F05-B0374
+Per il cammino \(1-2-3\) con self-loop, il supporto ammesso è
+% END F05-B0374
+
+% BEGIN F05-B0375
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle M=\begin{bmatrix}1&1&0\\1&1&1\\0&1&1\end{bmatrix}.$
+\end{adjustbox}
+\end{center}
+% END F05-B0375
+
+% BEGIN F05-B0376
+La coppia \((1,3)\) è esclusa, ma \((1,1)\) e \((1,2)\) sono ammesse. Con i dati numerici precedenti, la matrice degli score mascherati è
+% END F05-B0376
+
+% BEGIN F05-B0377
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \widetilde E=\begin{bmatrix}
+2&3&-\infty\\
+-0.2&0&-0.4\\
+-\infty&0&-0.4
+\end{bmatrix}.$
+\end{adjustbox}
+\end{center}
+% END F05-B0377
+
+% BEGIN F05-B0378
+Per esempio, nella seconda riga la concatenazione con il nodo 3 dà \(-2\) prima della Leaky ReLU, quindi \(-0.4\). Tutte le posizioni non ammesse rimangono escluse, indipendentemente dal loro eventuale score non mascherato.
+% END F05-B0378
+
+% BEGIN F05-B0379
+La domanda annotata sulle coppie va letta in termini di \textbf{coppie ordinate}: \(e_{ij}\) ed \(e_{ji}\) possono differire e si considerano anche i self-loop se ammessi. Nella versione completa ci sono \(N^2\) posizioni candidate; in quella mascherata bastano le posizioni del supporto ammesso. Non è necessario calcolare tutte le coppie non collegate per poi scartarle. La possibilità di usare una maschera permette inoltre di lavorare con relazioni orientate senza imporre la simmetria richiesta dalla precedente derivazione spettrale della GCN.
+% END F05-B0379
+
+% BEGIN F05-B0380
+\subsection{Softmax sui vicini: perché il contributo escluso diventa zero (slide 45)}\label{f05-n30-r896}
+% END F05-B0380
+
+% BEGIN F05-B0381
+Per ogni destinatario \(i\) si normalizzano gli score sui nodi sorgente:
+% END F05-B0381
+
+% BEGIN F05-B0382
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{\alpha_{ij}=\frac{\exp(\widetilde e_{ij})}{\sum_{k=1}^N\exp(\widetilde e_{ik})}
+=\frac{\exp(e_{ij})}{\sum_{k\in\mathcal N_i}\exp(e_{ik})}
+\quad(j\in\mathcal N_i).}$
+\end{adjustbox}
+\end{center}
+% END F05-B0382
+
+% BEGIN F05-B0383
+Per \(j\notin\mathcal N_i\), il numeratore è \(\exp(-\infty)=0\), quindi \(\alpha_{ij}=0\). Per una riga con almeno una posizione valida, la somma dei coefficienti è
+% END F05-B0383
+
+% BEGIN F05-B0384
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \sum_j\alpha_{ij}=\frac{\sum_j\exp(\widetilde e_{ij})}{\sum_k\exp(\widetilde e_{ik})}=1.$
+\end{adjustbox}
+\end{center}
+% END F05-B0384
+
+% BEGIN F05-B0385
+Nell\textquotesingle esempio, la prima riga diventa
+% END F05-B0385
+
+% BEGIN F05-B0386
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{aligned}
+\alpha_{11}&=\frac{e^2}{e^2+e^3}=\frac1{1+e}\simeq0.268941,\\
+\alpha_{12}&=\frac{e^3}{e^2+e^3}=\frac e{1+e}\simeq0.731059,\\
+\alpha_{13}&=0.
+\end{aligned}$
+\end{adjustbox}
+\end{center}
+% END F05-B0386
+
+% BEGIN F05-B0387
+Il coefficiente maggiore corrisponde allo score maggiore; la somma della riga è uno; la connessione mascherata non contribuisce. Sono i tre effetti della normalizzazione discussi nella spiegazione. Il denominatore non somma tutte le righe della matrice: confronta i candidati della \textbf{stessa riga}.
+% END F05-B0387
+
+% BEGIN F05-B0388
+\begin{quote}
+\textbf{Righe senza vicini ammessi (slide 44-45)}
+\end{quote}
+% END F05-B0388
+
+% BEGIN F05-B0389
+\begin{quote}
+La proprietà precedente richiede un denominatore non nullo. Se una riga fosse interamente mascherata, la softmax non definirebbe una distribuzione valida. Includere un self-loop è un modo per garantire almeno un candidato per nodo; un\textquotesingle implementazione deve comunque gestire esplicitamente il proprio supporto.
+\end{quote}
+% END F05-B0389
+
+% BEGIN F05-B0390
+\subsection{Somma pesata e nuova rappresentazione del nodo (slide 45)}\label{f05-n30-r921}
+% END F05-B0390
+
+% BEGIN F05-B0391
+Dopo la normalizzazione, i coefficienti si applicano alle feature proiettate:
+% END F05-B0391
+
+% BEGIN F05-B0392
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{h'_i=\sigma\left(\sum_{j\in\mathcal N_i}\alpha_{ij}u_j\right)
+=\sigma\left(\sum_{j\in\mathcal N_i}\alpha_{ij}Wh_j\right).}$
+\end{adjustbox}
+\end{center}
+% END F05-B0392
+
+% BEGIN F05-B0393
+Ogni \(\alpha_{ij}\) è uno scalare e ogni \(u_j\) ha \(F'\) componenti. Il prodotto scala tutte le componenti del messaggio, la somma restituisce un vettore in \(\mathbb R^{F'}\) e l\textquotesingle attivazione opera componente per componente. È sempre message passing: cambia il criterio con cui si pesano le informazioni disponibili.
+% END F05-B0393
+
+% BEGIN F05-B0394
+Se \(U\) raccoglie i vettori proiettati per righe e \(\mathbf A_{\mathrm{att}}=[\alpha_{ij}]\), l\textquotesingle intero strato si legge come
+% END F05-B0394
+
+% BEGIN F05-B0395
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{H'=\sigma(\mathbf A_{\mathrm{att}} U)=\sigma(\mathbf A_{\mathrm{att}} H W^\top).}$
+\end{adjustbox}
+\end{center}
+% END F05-B0395
+
+% BEGIN F05-B0396
+Le dimensioni sono \((N\times N)(N\times F')=N\times F'\). Il parallelo con \(\widehat S H W\) della GCN è diretto: \(\mathbf A_{\mathrm{att}}\) svolge il ruolo di operatore di aggregazione, ma viene calcolata dalle feature e dai parametri dell\textquotesingle attenzione.
+% END F05-B0396
+
+% BEGIN F05-B0397
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_4651b263581de288.png}}
+\caption{Slide 45 completa con schema del calcolo e annotazione sulle coppie di nodi}
+\end{figure}
+% END F05-B0397
+
+% BEGIN F05-B0398
+Nell\textquotesingle esempio precedente, con ReLU come attivazione finale, si ottengono:
+% END F05-B0398
+
+% BEGIN F05-B0399
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.0800}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.3600}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2800}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 6\tabcolsep) * \real{0.2800}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Nodo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Coefficienti verso i nodi 1, 2, 3
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Somma prima della ReLU
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Nuova rappresentazione
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & \((0.268941,0.731059,0)\) & \((0.268941,1.462117)\) & \((0.268941,1.462117)\) \\
+2 & \((0.328933,0.401760,0.269307)\) & \((0.059625,1.072827)\) & \((0.059625,1.072827)\) \\
+3 & \((0,0.598688,0.401312)\) & \((-0.401312,1.598688)\) & \((0,1.598688)\) \\
+\end{longtable}
+% END F05-B0399
+
+% BEGIN F05-B0400
+Per il primo nodo, il calcolo è \(0.268941(1,0)+0.731059(0,2)\); per il secondo è la combinazione di tutti e tre i vettori; per il terzo è \(0.598688(0,2)+0.401312(-1,1)\). La ReLU modifica soltanto la prima componente negativa dell\textquotesingle ultima riga. Gli arrotondamenti della tabella sono effettuati dopo i calcoli.
+% END F05-B0400
+
+% BEGIN F05-B0401
+\section{Più teste, confronto con il Transformer e limiti della GAT (slide 46-50)}\label{f05-n30-r948}
+% END F05-B0401
+
+% BEGIN F05-B0402
+\subsection{Multi-head graph attention e residui (slide 46)}\label{f05-n30-r950}
+% END F05-B0402
+
+% BEGIN F05-B0403
+Una sola testa usa una proiezione e un vettore di affinità. Più teste apprendono in parallelo trasformazioni e coefficienti differenti sugli stessi nodi. Con \(K\) teste e \(F'\) feature prodotte da ciascuna:
+% END F05-B0403
+
+% BEGIN F05-B0404
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{h'_i=\mathop{\Vert}_{k=1}^K
+\sigma\left(\sum_{j\in\mathcal N_i}\alpha_{ij}^{(k)}W^{(k)}h_j\right)
+\in\mathbb R^{KF'}.}$
+\end{adjustbox}
+\end{center}
+% END F05-B0404
+
+% BEGIN F05-B0405
+Si esegue una somma pesata per ogni testa e si concatenano i risultati \textbf{lungo le feature dello stesso nodo}. Tre teste da quattro feature producono 12 feature per nodo, quindi \(N\times12\) per tutto il grafo: non producono tre volte il numero di nodi. Per due teste con uscite \((1,2)\) e \((3,4)\) su uno stesso nodo, la concatenazione è \((1,2,3,4)\), non \((4,6)\): quest\textquotesingle ultimo sarebbe un risultato di somma, che è un\textquotesingle altra operazione.
+% END F05-B0405
+
+% BEGIN F05-B0406
+Le GAT possono essere combinate con connessioni residue. Per una somma residua devono coincidere le forme dei due rami, eventualmente adattando le dimensioni con una proiezione. Vale la stessa condizione già incontrata in ResNet e nei Transformer; aggiungere il collegamento non significa saltare automaticamente il calcolo del ramo trasformato.
+% END F05-B0406
+
+% BEGIN F05-B0407
+\subsection{Che cosa condivide con la self-attention e che cosa cambia (slide 47)}\label{f05-n30-r962}
+% END F05-B0407
+
+% BEGIN F05-B0408
+GAT e self-attention costruiscono entrambe coefficienti per combinare rappresentazioni. Nel GAT descritto, lo stesso vettore proiettato \(Wh_i\) partecipa al calcolo delle affinità e, quando il nodo invia un messaggio, al contenuto aggregato. Nel Transformer studiato, query, key e value sono prodotti da tre proiezioni distinte.
+% END F05-B0408
+
+% BEGIN F05-B0409
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Aspetto
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+GAT descritta
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Self-attention del Transformer studiato
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Score della coppia & Leaky ReLU di una proiezione della concatenazione & Prodotto query-key diviso per \(\sqrt{d_k}\) \\
+Trasformazioni delle feature & Un \(W\) condiviso nei ruoli precedenti e vettore \(a\) & Proiezioni distinte \(W^Q,W^K,W^V\) \\
+Supporto delle interazioni & Vicini ammessi dalla maschera, oppure tutte le coppie & Tutte le coppie ammesse dall\textquotesingle eventuale maschera \\
+Struttura fornita al modello & Relazioni del grafo & Posizioni dei token e maschere del problema \\
+Aggregazione & Somma pesata dei vettori proiettati & Somma pesata dei value \\
+\end{longtable}
+% END F05-B0409
+
+% BEGIN F05-B0410
+Il richiamo orale alla «condivisione fra query, key e value» aiuta a confrontare i ruoli, ma la GAT \textbf{non è soltanto una scaled dot-product attention con tre matrici rese uguali}: cambia anche la funzione che costruisce lo score. Nella singola testa GAT, senza bias, i parametri di proiezione e affinità sono \(F'F+2F'\). Per \(F=4\) e \(F'=3\) sono \(12+6=18\), condivisi fra le coppie. Il confronto con i parametri di una testa Transformer dipende dalle dimensioni delle sue proiezioni e dall\textquotesingle eventuale proiezione finale; non basta contare le matrici ignorandone le forme.
+% END F05-B0410
+
+% BEGIN F05-B0411
+La tabella delle slide contrappone il caso usuale di GAT locale e sparsa alla self-attention completa su una sequenza. È un confronto fra le configurazioni illustrate, non un divieto per i Transformer di usare maschere. Se si elimina la maschera della GAT, non si conserva più il vincolo di località imposto dagli archi; possono comunque restare informazioni geometriche nelle feature dei nodi. L\textquotesingle adiacenza, d\textquotesingle altra parte, non sostituisce automaticamente qualunque informazione sulle coordinate o sull\textquotesingle orientamento.
+% END F05-B0411
+
+% BEGIN F05-B0412
+\subsection{Pesi osservabili, interpretabilità e GATv2 (slide 48-50)}\label{f05-n30-r978}
+% END F05-B0412
+
+% BEGIN F05-B0413
+I coefficienti di attenzione sono quantità che si possono osservare. La slide 48 mostra le rappresentazioni di un livello GAT su Cora: i colori indicano le classi dei nodi e lo spessore dei collegamenti riassume coefficienti di attenzione attraverso le teste e i due versi. È una visualizzazione utile per esaminare il comportamento del modello, non una prova che quei pesi costituiscano da soli una spiegazione causale della decisione.
+% END F05-B0413
+
+% BEGIN F05-B0414
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_49735303aeccf927.png}}
+\caption{Visualizzazione di rappresentazioni e pesi di attenzione su Cora, dalla slide 48}
+\end{figure}
+% END F05-B0414
+
+% BEGIN F05-B0415
+\begin{quote}
+\textbf{Dettagli presenti nelle slide, soltanto richiamati nella spiegazione (slide 48-50)}
+\end{quote}
+% END F05-B0415
+
+% BEGIN F05-B0416
+\begin{quote}
+La visualizzazione usa t-SNE, ma il suo algoritmo non viene sviluppato. GATv2 è menzionata come evoluzione del modello; le slide 49-50 ne esplicitano il limite e la modifica delle operazioni, senza una derivazione orale. Nella GAT standard lo score ha forma \(\operatorname{LeakyReLU}(a_L^\top Wh_i+a_R^\top Wh_j)\): a parità di candidati, il primo termine è comune a tutti i vicini della stessa query e la Leaky ReLU è monotona. L\textquotesingle ordinamento dei vicini non può quindi essere scelto arbitrariamente in funzione della query. Questo è il significato dell\textquotesingle attenzione «statica» indicata nelle slide, non il fatto che tutti i coefficienti numerici restino sempre costanti.
+\end{quote}
+% END F05-B0416
+
+% BEGIN F05-B0417
+La formula di GATv2 riportata nella slide 50 cambia l\textquotesingle ordine fra proiezione, non linearità e riduzione a scalare:
+% END F05-B0417
+
+% BEGIN F05-B0418
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle e^{\mathrm{GATv2}}_{ij}=\widetilde a^\top
+\operatorname{LeakyReLU}\left(\widetilde W[h_i\Vert h_j]\right).$
+\end{adjustbox}
+\end{center}
+% END F05-B0418
+
+% BEGIN F05-B0419
+Qui \([h_i\Vert h_j]\in\mathbb R^{2F}\), \(\widetilde W\in\mathbb R^{D_a\times2F}\) e \(\widetilde a\in\mathbb R^{D_a}\): la non linearità agisce su un vettore prima della combinazione finale. La formula resta materiale presente nelle slide; non si aggiungono una dimostrazione di approssimazione universale, confronti sperimentali o un\textquotesingle implementazione di GATv2 non svolti nella lezione. Il limite chiarisce anche perché la descrizione intuitiva di GAT come attenzione adattabile non debba essere letta come una capacità illimitata di modificare ogni ordinamento dei vicini.
+% END F05-B0419
+
+% BEGIN F05-B0420
+\section{GraphCast: geometria della Terra e previsione meteorologica (slide 52-56)}\label{f05-n30-r994}
+% END F05-B0420
+
+% BEGIN F05-B0421
+\subsection{Prevedere l\textquotesingle evoluzione dello stato atmosferico (slide 52-53)}\label{f05-n30-r996}
+% END F05-B0421
+
+% BEGIN F05-B0422
+Nella previsione meteorologica tradizionale, un simulatore fisico evolve uno stato dell\textquotesingle atmosfera attraverso modelli dei processi ambientali. Il calcolo può essere costoso. L\textquotesingle esempio \textbf{GraphCast}, presentato nelle slide con riferimento al lavoro del 2023, mostra una diversa via: apprendere dai dati una regola di previsione che utilizza una rappresentazione a grafo della geometria terrestre.
+% END F05-B0422
+
+% BEGIN F05-B0423
+I nodi descrivono posizioni o regioni su una discretizzazione della superficie e le feature contengono variabili meteorologiche, come vento, temperatura e pressione. Gli archi descrivono relazioni geometriche fra le posizioni. Il target è il valore futuro di variabili associate alle posizioni: è una previsione a livello di nodo, ma di quantità numeriche, non una classificazione di tutta la Terra in una sola categoria.
+% END F05-B0423
+
+% BEGIN F05-B0424
+La figura mostra stati meteorologici precedenti e correnti che alimentano la previsione dello stato successivo. In forma schematica:
+% END F05-B0424
+
+% BEGIN F05-B0425
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \widehat X_{t+\Delta}=f_\theta(X_{t-\Delta},X_t;G_{\mathrm{geom}}).$
+\end{adjustbox}
+\end{center}
+% END F05-B0425
+
+% BEGIN F05-B0426
+\(X_t\) raccoglie le variabili allo stesso istante, \(\Delta\) indica il passo temporale e \(G_{\mathrm{geom}}\) la struttura geometrica usata nel modello. Se il segnale sulla griglia di ingresso ha \(N_g\) posizioni e \(F_m\) variabili, \(X_t\) e il target sulla stessa griglia hanno forma \(N_g\times F_m\). La formula descrive la dipendenza temporale del problema, non tutte le operazioni interne di trasferimento fra griglia e mesh.
+% END F05-B0426
+
+% BEGIN F05-B0427
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_80ec9ccb15aaa259.png}}
+\caption{Dagli stati osservati alla previsione successiva e alla sua ripetizione nel tempo, dalla slide 53}
+\end{figure}
+% END F05-B0427
+
+% BEGIN F05-B0428
+Per esempio, con tre posizioni e due variabili per posizione, lo stato da prevedere contiene sei valori. Si apprendono le trasformazioni che collegano gli stati osservati a quelli futuri; il target del training è lo stato successivo disponibile nei dati. L\textquotesingle esempio di forma non aggiunge uno specifico metodo di loss o di calibrazione non sviluppato nella spiegazione.
+% END F05-B0428
+
+% BEGIN F05-B0429
+Il processo può essere ripetuto per ottenere una traiettoria futura, come nel rollout della figura. I parametri restano quelli del modello addestrato; si aggiornano gli stati usati nella previsione. Le slide indicano un addestramento su decenni di dati meteorologici e riportano un confronto competitivo con HRES per previsioni a dieci giorni, insieme a un\textquotesingle inferenza molto più rapida. Sono risultati del confronto presentato sul modello del 2023, non una garanzia universale per qualsiasi variabile, situazione o sistema meteorologico.
+% END F05-B0429
+
+% BEGIN F05-B0430
+\begin{quote}
+\textbf{Simulazione, apprendimento e accuratezza (slide 52-53)}
+\end{quote}
+% END F05-B0430
+
+% BEGIN F05-B0431
+\begin{quote}
+La spiegazione orale descrive l\textquotesingle obiettivo come «imparare la simulazione» e qualifica alcune previsioni fisiche come «exact or very accurate». Il senso utile è apprendere l\textquotesingle evoluzione futura senza ripetere tutte le operazioni di un simulatore a ogni previsione. Le slide parlano di addestramento su dati meteorologici: non si deve dedurre che il modello copi esclusivamente l\textquotesingle uscita di un singolo simulatore, né che le previsioni fisiche o apprese siano esatte. La maggiore velocità riguarda la previsione del modello già addestrato; il training ha un proprio costo.
+\end{quote}
+% END F05-B0431
+
+% BEGIN F05-B0432
+\subsection{Mesh a più risoluzioni e passaggio di messaggi (slide 54)}\label{f05-n30-r1017}
+% END F05-B0432
+
+% BEGIN F05-B0433
+La Terra viene rappresentata mediante una \textbf{mesh}, cioè una discretizzazione di punti e connessioni sulla superficie sferica. Le slide mostrano strutture icosaedriche a più risoluzioni. Una risoluzione maggiore descrive dettagli più fini, ma comporta più nodi e più calcolo. Una struttura più grossolana copre regioni più ampie con meno elementi.
+% END F05-B0433
+
+% BEGIN F05-B0434
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_8162460233278d74.png}}
+\caption{Trasferimento fra griglia e mesh e connessioni a più scale, dalla slide 54}
+\end{figure}
+% END F05-B0434
+
+% BEGIN F05-B0435
+L\textquotesingle architettura illustrata distingue un trasferimento delle informazioni verso la mesh, un processore basato sul message passing e una ricostruzione verso l\textquotesingle uscita. Le connessioni su più scale permettono di combinare contesto esteso e variazioni locali, invece di scegliere soltanto una discretizzazione fine o soltanto una grossolana. La rappresentazione multirisoluzione viene usata nello stesso modello; il disegno non impone di interpretarla come una serie di modelli indipendenti addestrati separatamente.
+% END F05-B0435
+
+% BEGIN F05-B0436
+L\textquotesingle analogia con le gerarchie già studiate riguarda le scale dell\textquotesingle informazione: un fenomeno locale può essere influenzato da configurazioni più ampie. Nel caso meteorologico la geometria delle relazioni è parte del problema, non un ordinamento arbitrario imposto a un elenco di valori. Il capitolo non sviluppa tutte le equazioni interne di GraphCast o i dettagli numerici del suo simulatore di confronto, perché il caso è presentato come applicazione intuitiva delle GNN.
+% END F05-B0436
+
+% BEGIN F05-B0437
+\subsection{Il ruolo del prior geometrico nell\textquotesingle applicazione (slide 55-56)}\label{f05-n30-r1027}
+% END F05-B0437
+
+% BEGIN F05-B0438
+Il motivo per scegliere una rete per grafi emerge qui in modo concreto: quando il target dipende da \textbf{come le unità sono connesse e da come l\textquotesingle informazione può propagarsi}, la geometria può essere incorporata nel modello. La mesh per il meteo, le articolazioni del corpo e le relazioni fra documenti sono modi diversi di fornire un prior relazionale al calcolo delle rappresentazioni.
+% END F05-B0438
+
+% BEGIN F05-B0439
+Un prior pertinente può aiutare la generalizzazione e limitare combinazioni non utili; non garantisce automaticamente l\textquotesingle assenza di overfitting o di incertezza. Le sfide citate nella slide 56, fra cui scalabilità, over-smoothing, interpretabilità e grafi che cambiano, restano aspetti da considerare nella scelta del modello.
+% END F05-B0439

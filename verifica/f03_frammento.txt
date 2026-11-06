@@ -21,8 +21,6 @@
 \item \hyperref[f03-r741]{Stato candidato: proporre un nuovo contenuto (slide 33)}
 \item \hyperref[f03-r762]{Aggiornare la memoria ed esporre lo stato (slide 34)}
 \item \hyperref[f03-r838]{Perché separare cell state e hidden state (slide 35)}
-\item \hyperref[f03-r874]{Riepilogo operativo (slide 4--35)}
-\item \hyperref[f03-r898]{Errata e precisazioni da conservare nel ripasso (slide 4--35)}
 \end{indiceargomento}
 % END F03-B0002
 
@@ -90,7 +88,7 @@ Il primo istante è \(t_0\) e ogni passo aggiunge lo stesso intervallo \(\Delta 
 
 % BEGIN F03-B0015
 \begin{quote}
-\textbf{Errata slide 4 --- Discreto non significa finito}
+\textbf{Nota sulla slide 4 --- Discreto non significa finito}
 \end{quote}
 % END F03-B0015
 
@@ -276,7 +274,7 @@ Un intervallo dichiarato al 90\% mira a contenere il valore futuro con quella co
 
 % BEGIN F03-B0046
 \begin{quote}
-\textbf{Errata slide 10 --- Conoscere il processo non elimina il caso}
+\textbf{Nota sulla slide 10 --- Conoscere il processo non elimina il caso}
 \end{quote}
 % END F03-B0046
 
@@ -294,6 +292,7 @@ Conoscere il processo generatore dei dati permette di descrivere correttamente l
 Spesso la previsione usa una finestra limitata di osservazioni precedenti. Per prevedere il passo \(t\) a partire da \(q\) ritardi, l\textquotesingle ingresso è \((x_{t-1},\ldots,x_{t-q})\): sono \(q\) osservazioni. La funzione appresa cerca di sfruttare le relazioni temporali contenute in quella finestra.
 % END F03-B0049
 
+\begin{samepage}
 % BEGIN F03-B0050
 \begin{quote}
 \textbf{Slide 12 --- Schema statistico generale non sviluppato}
@@ -305,10 +304,11 @@ Spesso la previsione usa una finestra limitata di osservazioni precedenti. Per p
 La slide scrive \(x_t=f(x_{t-1},\ldots,x_{t-q};\phi)+g(\xi_{t-1},\ldots,\xi_{t-q};\theta)\), separando una funzione dei valori passati da una dei disturbi. \(\phi,\theta\) sono parametri e \(\xi\) indica disturbi casuali. È una rappresentazione introduttiva, non l\textquotesingle equazione della RNN né una definizione universale dei modelli di forecasting. Non si sviluppano qui stima dei disturbi o modelli combinati.
 \end{quote}
 % END F03-B0051
+\end{samepage}
 
 % BEGIN F03-B0052
 \begin{quote}
-\textbf{Errata slide 12 --- Indici della finestra}
+\textbf{Nota sulla slide 12 --- Indici della finestra}
 \end{quote}
 % END F03-B0052
 
@@ -397,7 +397,7 @@ Il modello MA di ordine \(q\) è riportato come \(x_t=\mu+\xi_t+\sum_{i=1}^q\the
 
 % BEGIN F03-B0067
 \begin{quote}
-\textbf{Errata slide 14 --- Media del processo e media campionaria}
+\textbf{Nota sulla slide 14 --- Media del processo e media campionaria}
 \end{quote}
 % END F03-B0067
 
@@ -1041,7 +1041,7 @@ La \textbf{sovrapposizione degli effetti} consiste nel tenere conto di tutti i m
 
 % BEGIN F03-B0167
 \begin{quote}
-\textbf{Errata slide 27 --- Derivate locali e stato iniziale}
+\textbf{Nota sulla slide 27 --- Derivate locali e stato iniziale}
 \end{quote}
 % END F03-B0167
 
@@ -1290,7 +1290,7 @@ Se ogni fattore è al più \(c<1\), il prodotto è al più \(c^{t-k}\), che dimi
 
 % BEGIN F03-B0203
 \begin{quote}
-\textbf{Errata slide 28 --- Il limite non vale senza W}
+\textbf{Nota sulla slide 28 --- Il limite non vale senza W}
 \end{quote}
 % END F03-B0203
 
@@ -1330,7 +1330,7 @@ con \(g_{\mathrm{clip}}=0\) se \(g=0\). Se \(\|g\|_2\leq c\), il minimo vale 1 e
 
 % BEGIN F03-B0211
 \begin{quote}
-\textbf{Errata slide 29 --- Il clipping non recupera gradienti svaniti}
+\textbf{Nota sulla slide 29 --- Il clipping non recupera gradienti svaniti}
 \end{quote}
 % END F03-B0211
 
@@ -1571,7 +1571,7 @@ Il nome \emph{forget gate} può trarre in inganno: un valore grande \textbf{cons
 
 % BEGIN F03-B0246
 \begin{quote}
-\textbf{Errata slide 32 --- Interpretazione del forget gate}
+\textbf{Nota sulla slide 32 --- Interpretazione del forget gate}
 \end{quote}
 % END F03-B0246
 
@@ -1728,7 +1728,7 @@ Se l\textquotesingle output gate vale zero, \(h_t=0\) su quella componente, ma \
 
 % BEGIN F03-B0271
 \begin{quote}
-\textbf{Errata slide 34 --- Indice della memoria precedente}
+\textbf{Nota sulla slide 34 --- Indice della memoria precedente}
 \end{quote}
 % END F03-B0271
 
@@ -1838,96 +1838,3 @@ I Transformer sono soltanto anticipati come successivo argomento: possono evitar
 % BEGIN F03-B0290
 I collegamenti utili per il ripasso sono \hyperref[fonte01]{Multilayer Perceptron} per neurone, attivazioni, loss e regola della catena; \hyperref[fonte02]{reti convoluzionali} per condivisione dei pesi, composizione dei blocchi e connessioni residue; manuale introduttivo di Machine Learning (documento separato) per regressione e ottimizzazione.
 % END F03-B0290
-
-% BEGIN F03-B0291
-\section{Riepilogo operativo (slide 4--35)}\label{f03-r874}
-% END F03-B0291
-
-% BEGIN F03-B0292
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Concetto
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Formula o forma
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Interpretazione e condizioni
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-Sequenza & \(X\in\mathbb R^{T\times d}\) & \(T\) passi, \(d\) feature per passo; \(T\) può variare \\
-Codifica periodica & \((\cos(2\pi k/P),\sin(2\pi k/P))\) & Preserva la vicinanza a cavallo del ciclo \\
-AR(\(p\)) & \(x_t=\sum_{i=1}^p\phi_ix_{t-i}+\xi_t\) & Dipendenza lineare dai ritardi più innovazione \\
-Stato RNN & \(h_t=\phi(Wh_{t-1}+Ux_t)\) & Ingresso corrente e storia compressa \\
-Uscita RNN & \(o_t=Vh_t\) & Score o quantità di uscita, non automaticamente probabilità \\
-Dimensioni dei pesi & \(U:m\times d\), \(W:m\times m\), \(V:r\times m\) & Convenzione a vettori colonna \\
-Pesi RNN & \(md+m^2+rm\) & Senza bias o stato iniziale appreso; indipendenti da \(T\) \\
-Jacobiana temporale & \(J_t=D_tW\) & Include derivata dell\textquotesingle attivazione e pesi ricorrenti \\
-Dipendenza lontana & \(\partial h_t/\partial h_k=J_t\cdots J_{k+1}\) & Prodotto delle transizioni intermedie \\
-BPTT finale & \(\delta_T=D_TV^Tg\), \(\delta_t=D_tW^T\delta_{t+1}\) & Una sola loss finale; \(g=\nabla_{o_T}\mathcal L\) \\
-Gradiente di \(V\) & \(g h_T^T\) & Prodotto esterno alla proiezione finale \\
-Gradienti condivisi & \(\nabla_W\mathcal L=\sum_t\delta_th_{t-1}^T\), \(\nabla_U\mathcal L=\sum_t\delta_tx_t^T\) & Si sommano le occorrenze dello stesso parametro \\
-Gate LSTM & \(g_t=\sigma(U_gx_t+W_gh_{t-1})\) & Un valore fra 0 e 1 per componente; \(g=i,f,o\) \\
-Candidato LSTM & \(\widetilde C_t=\tanh(U_Cx_t+W_Ch_{t-1})\) & Proposta di contenuto da filtrare con \(i_t\) \\
-Memoria LSTM & \(C_t=f_t\odot C_{t-1}+i_t\odot\widetilde C_t\) & Conservazione più scrittura; non necessariamente media \\
-Hidden state LSTM & \(h_t=o_t\odot\tanh(C_t)\) & Esposizione filtrata della memoria \\
-\end{longtable}
-% END F03-B0292
-
-% BEGIN F03-B0293
-\begin{quote}
-\textbf{Da saper spiegare}
-\end{quote}
-% END F03-B0293
-
-% BEGIN F03-B0294
-\begin{quote}
-Una RNN riusa le stesse matrici per aggiornare uno stato di dimensione fissata, quindi può elaborare sequenze di lunghezza variabile. La BPTT applica la regola della catena al grafo srotolato e somma i contributi ai pesi condivisi. I lunghi prodotti di Jacobiane possono attenuare o amplificare il gradiente. La LSTM introduce una memoria con aggiornamento additivo e tre gate apprendibili: conservare il passato, scrivere il candidato ed esporre lo stato sono operazioni distinte.
-\end{quote}
-% END F03-B0294
-
-% BEGIN F03-B0295
-\section{Errata e precisazioni da conservare nel ripasso (slide 4--35)}\label{f03-r898}
-% END F03-B0295
-
-% BEGIN F03-B0296
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Riferimento
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Correzione o precisazione
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-Slide 4 & Discreto non significa finito; il campione osservato è finito, il processo può proseguire. \\
-Slide 6--8 & Stagionalità e ciclo non richiedono la stessa periodicità rigida; residuo non equivale automaticamente a rumore bianco. Media e varianza non esauriscono la stazionarietà. \\
-Slide 10 & Un processo stocastico noto può mantenere innovazioni imprevedibili: conoscere il DGP non dà sempre il valore futuro esatto. \\
-Slide 11 & Una fascia nel grafico non prova copertura al 90\% o gaussianità; l\textquotesingle incertezza è rappresentata, non derivata qui. \\
-Slide 12 & Per prevedere \(x_t\) con \(q\) ritardi usare \(x_{t-1},\ldots,x_{t-q}\); lo schema dei disturbi non esplicita l\textquotesingle innovazione corrente. \\
-Slide 13--14 & Rumore bianco non implica gaussianità; nel MA \(\mu\) è la media del processo, stimabile mediante la media empirica. \\
-Slide 18 & Usare codifiche cicliche per periodi effettivi; l\textquotesingle anno assoluto non è automaticamente ciclico. Media empirica zero non è garantita dalla sola coppia seno-coseno. \\
-Slide 22--23 & \(U,W,V\) sono parametri; \(h_t\) è un\textquotesingle attivazione della sequenza. Lunghezza variabile non significa numero di feature variabile. \\
-Slide 24--27 & Lo srotolamento riusa i pesi; la BPTT non crea la condivisione. La profondità temporale cresce con i passi. \\
-Slide 27 & Le derivate nella somma devono essere locali; per \(h_0\) indipendente dai pesi il termine \(k=0\) è nullo. Il gradiente di \(V\) usa lo stato finale, che dipende dalla storia. \\
-Slide 28 & La Jacobiana della transizione è \(D_tW\), non la sola derivata dell\textquotesingle attivazione. \\
-Slide 29 & Il clipping limita gradienti grandi, senza ricostruire contributi già svaniti. \\
-Slide 30--32 & I gate sono continui, non bit rigidi; il forget gate alto conserva, basso attenua. La LSTM non è l\textquotesingle unico modello con memoria di dimensione fissata. \\
-Slide 31 & Notazione LSTM a righe convertita coerentemente a colonne; l\textquotesingle output gate \(o_t\) è distinto dallo score della RNN. \\
-Slide 34 & La memoria precedente è \(C_{t-1}\). Con \(i_t=0\) rimane \(f_t\odot C_{t-1}\): identità solo se anche \(f_t=1\) nelle componenti considerate. \\
-Slide 35 & LSTM e GRU mitigano il problema delle dipendenze lontane; non garantiscono conservazione illimitata o stabilità assoluta. \\
-\end{longtable}
-% END F03-B0296
-
-% BEGIN F03-B0297
-Le forme trascritte come «Adamart/Adamard», «EFO» e «bad propagation» sono ricondotte rispettivamente a \textbf{Hadamard}, ai gate \textbf{\(i,f,o\)} e alla \textbf{backpropagation}, coerentemente con formule e contesto. I frammenti non intelligibili della domanda sul confronto con altri regressori non consentono di ricostruire un metodo preciso e non sono trasformati in contenuti aggiuntivi.
-% END F03-B0297

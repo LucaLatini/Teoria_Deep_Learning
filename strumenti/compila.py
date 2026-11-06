@@ -1,15 +1,19 @@
 """Assembla il preambolo aggiornato, compila e registra gli avvisi LaTeX."""
 import argparse, importlib.util, json, re, shutil, subprocess
+import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent))
+
 p = argparse.ArgumentParser()
-p.add_argument('--chapters', type=int, default=4)
+p.add_argument('--chapters', type=int, default=None, help='Numero di file sorgente, non di argomenti; per default tutti quelli registrati.')
 p.add_argument('--passes', type=int, default=2)
 a = p.parse_args()
 spec = importlib.util.spec_from_file_location('converti', Path(__file__).with_name('converti.py'))
 m = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(m)
 m.REPORT = json.loads((m.OUT / 'verifica/registro_conversione.json').read_text('utf-8'))
+if a.chapters is None: a.chapters = len(m.REPORT['fonti'])
 parts = [(m.BUILD / f'f{i:02d}.tex').read_text('utf-8') for i in range(1, a.chapters + 1)]
 partial = a.chapters < len(m.REPORT['fonti'])
 stem = 'verifica_parziale' if partial else 'Dispensa_Deep_Learning'

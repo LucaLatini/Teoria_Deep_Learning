@@ -21,8 +21,6 @@
 \item \hyperref[f02-r974]{VGG: distribuire la capacità lungo la profondità (slide 63--68)}
 \item \hyperref[f02-r1063]{Profondità e residual learning: ResNet (slide 69--75)}
 \item \hyperref[f02-r1134]{Batch Normalization: statistiche e trasformazione appresa (slide 76--86)}
-\item \hyperref[f02-r1273]{Riepilogo Formule Operative}
-\item \hyperref[f02-r1299]{Errata e precisazioni principali}
 \end{indiceargomento}
 % END F02-B0002
 
@@ -2603,83 +2601,3 @@ In PyTorch si usano \texttt{net.train()} e \texttt{net.eval()}. \texttt{net.trai
 La trattazione termina alla \textbf{pagina PDF 86 di \texttt{03\_conv.pdf}}, ``Batch Normalization During Inference'', numerata \textbf{79/86} nel piè di pagina. La trascrizione si chiude con le statistiche di inferenza e il confronto BatchNorm/dropout nelle modalità training/eval. La successiva pagina PDF 87, ``Benefits of Batch Normalization'', non risulta spiegata nella registrazione e non viene sviluppata. Titoli e nomi delle immagini usano le pagine fisiche del PDF.
 \end{quote}
 % END F02-B0440
-
-% BEGIN F02-B0441
-\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
-% END F02-B0441
-
-% BEGIN F02-B0442
-\section{Riepilogo Formule Operative}\label{f02-r1273}
-% END F02-B0442
-
-% BEGIN F02-B0443
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Concetto
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Formula Matematica
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Significato e Vincoli
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-\textbf{Tensore Immagine RGB} & \(X \in \mathbb{R}^{C \times H \times W}\) & Standard PyTorch: \(C=3\) canali, \(H\) altezza, \(W\) larghezza \\
-\textbf{Operatore LSI Discreto} & \(o(x, y) = \sum_m \sum_n i(m, n) K(x-m, y-n)\) & Convoluzione 2D con risposta all\textquotesingle impulso \(K\) \\
-\textbf{Mappa di Feature Multicanale} & \(F(i, j) = b + \sum_{c=1}^{C_{in}} \sum_m \sum_n I(i+m, j+n, c) K_c(m, n)\) & Somma attraverso tutti i \(C_{in}\) canali di ingresso più bias scalare \(b\) \\
-\textbf{Dimensioni Spaziali Uscita} & \(H' = \left\lfloor \frac{H - K + 2P}{S} \right\rfloor + 1, \; W' = \left\lfloor \frac{W - K + 2P}{S} \right\rfloor + 1\) & \(K\): kernel, \(P\): padding, \(S\): stride, \(\lfloor \cdot \rfloor\): floor \\
-\textbf{Padding per Dimensione Costante ("same")} & \(P = \frac{K - 1}{2}\) & Valido per kernel dispari \(K\) con stride unitario \(S = 1\) \\
-\textbf{Parametri Apprendibili Strato Conv} & \(\text{Parametri} = C_{out} \cdot (K^2 \cdot C_{in} + 1)\) & Completamente indipendente dalla risoluzione spaziale \(H \times W\) \\
-\textbf{Attivazione ReLU} & \(f(x) = \max(0, x)\) & Gradiente 1 per \(x>0\); gradiente 0 per \(x<0\) (rischio dying ReLU) \\
-\textbf{Attivazione Leaky ReLU} & \(f(x) = \max(x, \alpha x)\) & Pendenza \(\alpha \approx 0.01\) per \(x<0\) (mantiene vivo il gradiente) \\
-\textbf{Attivazione ELU} & \(f(x) = x \text{ se } x>0, \; \alpha(e^x - 1) \text{ se } x \le 0\) & Asintoto a \(-\alpha\) per \(x \to -\infty\); media attivazioni vicina a 0 \\
-\textbf{Pooling: forma, senza padding} & \(H'=\lfloor(H-K)/S\rfloor+1\), \(W'=\lfloor(W-K)/S\rfloor+1\) & \(N,C\) invariati; dilatazione 1, finestre compatibili \\
-\textbf{Max pooling} & \(Y_{n,c,i,j}=\max_{u,v}X_{n,c,iS+u,jS+v}\) & \(0\leq u,v<K\); zero parametri apprendibili \\
-\textbf{Average pooling} & \(Y_{n,c,i,j}=K^{-2}\sum_{u,v}X_{n,c,iS+u,jS+v}\) & Media sulla finestra; zero parametri apprendibili \\
-\textbf{Global average pooling} & \(z_{n,c}=(hw)^{-1}\sum_{i,j}X_{n,c,i,j}\) & \(N\times C\times h\times w\to N\times C\times1\times1\) \\
-\textbf{Pool adattivo a griglia fissa} & \(N\times C\times h\times w\to N\times C\times o\times o\) & Dopo flatten: \(Co^2\) ingressi per esempio \\
-\textbf{Campo recettivo} & \(r_\ell=r_{\ell-1}+(k_\ell-1)j_{\ell-1}\), \(j_\ell=s_\ell j_{\ell-1}\) & \(r_0=j_0=1\), senza dilatazione \\
-\textbf{Parametri dense} & \(d_{\mathrm{out}}(d_{\mathrm{in}}+1)\) & Bias incluso \\
-\textbf{Blocco residuo} & \(H=x+F(x)\) & Stesse forme; entrambi i rami calcolati \\
-\textbf{Gradiente residuo} & \(\nabla_x\mathcal L=g+J_F^Tg\) & Somma, non selezione, dei contributi \\
-\textbf{BN: media e varianza} & \(\mu_{B,c}=M^{-1}\sum_aX_{a,c}\), \(v_{B,c}=M^{-1}\sum_a(X_{a,c}-\mu_{B,c})^2\) & \(M=NHW\), una coppia per canale \\
-\textbf{BN: training} & \(Y_c=\gamma_c(X_c-\mu_{B,c})/\sqrt{v_{B,c}+\epsilon}+\beta_c\) & Forma invariata; \(2C\) parametri apprendibili \\
-\textbf{BN: inferenza} & \(Y_c=\gamma_c(X_c-\bar\mu_c)/\sqrt{\bar v_c+\epsilon}+\beta_c\) & Statistiche memorizzate; nessun nuovo calcolo sul batch \\
-\end{longtable}
-% END F02-B0443
-
-% BEGIN F02-B0444
-\section{Errata e precisazioni principali}\label{f02-r1299}
-% END F02-B0444
-
-% BEGIN F02-B0445
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Riferimento
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Precisazione
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-Slide 25 & Linearità significa sovrapposizione dei segnali, non movimento rettilineo della finestra. \\
-Slide 32 e spiegazione orale & Convoluzione e correlazione differiscono per il ribaltamento del kernel, non per la scelta del centro dell\textquotesingle uscita. \\
-Slide 38 & Il campo recettivo teorico cresce componendo regioni; due kernel \(3\times3\) a stride 1 danno \(5\times5\). \\
-Slide 54 & Una ReLU negativa non blocca l\textquotesingle intero modello; ELU è differenziabile in zero solo per \(\alpha=1\). \\
-Slide 55--57 & Il dimezzamento dei due assi richiede \(K=S=2\) nell\textquotesingle esempio; pooling non cambia i canali. \\
-Slide 59 & Il pooling adattivo precede flattening e MLP; non li sostituisce entrambi. \\
-Slide 65--66 & Le ReLU dei livelli nascosti sono distinte dall\textquotesingle uscita finale di classificazione. \\
-Slide 71--74 & Shortcut identità solo a forme coincidenti; i rami e i gradienti vengono sommati. \\
-Slide 80--85 & BN non impone gaussianità né decorrelazione; con \(\epsilon>0\) la varianza normalizzata non è esattamente 1. \\
-Slide 86 & Nelle CNN \(N=1\) non implica \(NHW=1\); \texttt{train()}/\texttt{eval()} cambiano la modalità dei livelli. \\
-\end{longtable}
-% END F02-B0445

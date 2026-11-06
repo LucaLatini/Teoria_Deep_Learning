@@ -1,0 +1,47 @@
+{
+  "pagine_totali": 205,
+  "argomenti": [
+    [
+      1,
+      "1 MLP - Multilayer Perceptron",
+      3
+    ],
+    [
+      1,
+      "2 CNN - Reti neurali convoluzionali",
+      45
+    ],
+    [
+      1,
+      "3 RNN - Reti neurali ricorrenti",
+      113
+    ],
+    [
+      1,
+      "4 TCN - Temporal Convolutional Networks",
+      147
+    ],
+    [
+      1,
+      "5 Transformer",
+      159
+    ],
+    [
+      1,
+      "6 GNN - Graph Neural Networks",
+      184
+    ]
+  ],
+  "gnn_pagine": [
+    184,
+    205
+  ],
+  "elementi_fuori_area": [],
+  "capitoli_precedenti_frammenti": "identici byte per byte",
+  "pagine_precedenti_corpo_testo": {
+    "controllate": 181,
+    "differenze": []
+  },
+  "sha256_pdf": "03535fa78e5e29348644a2bc80f43f8117cfec717103b779694d25dfe1ec3450",
+  "verifica_visiva": "Tutte le 22 pagine nuove e l’indice renderizzati; ispezionate entrambe le tavole di contatto, con dettagli delle pagine 197, 202 e 204."
+}

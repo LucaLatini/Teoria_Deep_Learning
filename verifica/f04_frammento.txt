@@ -543,7 +543,7 @@ Per l\textquotesingle apprendimento si applica la backpropagation al grafo convo
 
 % BEGIN F04-B0094
 \begin{quote}
-\textbf{Errata slide 14 --- Nessuna garanzia assoluta sui gradienti}
+\textbf{Nota sulla slide 14 --- Nessuna garanzia assoluta sui gradienti}
 \end{quote}
 % END F04-B0094
 
@@ -575,8 +575,6 @@ La struttura convoluzionale consente anche di adattare strumenti di localizzazio
 \item \hyperref[f04-r766]{Dalla sequenza di rappresentazioni alla classificazione (slide 37--38)}
 \item \hyperref[f04-r821]{TCN e Transformer: confronto, modalità e costi (slide 39--41)}
 \item \hyperref[f04-r898]{Confine della spiegazione e materiale rinviato (slide 42--60)}
-\item \hyperref[f04-r907]{Riepilogo delle forme e delle formule (slide 5--41)}
-\item \hyperref[f04-r933]{Errata e precisazioni principali (slide 5--41)}
 \end{indiceargomento}
 % END F04-B0098
 
@@ -1953,101 +1951,3 @@ La parte successiva contiene loss di regressione, MSE e MAE, discretizzazione de
 % BEGIN F04-B0332
 La causalità delle TCN, il riassunto delle RNN e la differenza fra parametri e attivazioni si collegano a \hyperref[fonte03]{reti ricorrenti}; filtri, canali, campo recettivo, pooling, residui e BatchNorm a \hyperref[fonte02]{reti convoluzionali}; MLP, ReLU, softmax e loss di classificazione a \hyperref[fonte01]{Multilayer Perceptron}.
 % END F04-B0332
-
-% BEGIN F04-B0333
-\section{Riepilogo delle forme e delle formule (slide 5--41)}\label{f04-r907}
-% END F04-B0333
-
-% BEGIN F04-B0334
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Operazione
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Formula o forma
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Da ricordare
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-Conv1D multicanale & \(Y_{t,o}=b_o+\sum_{i,c}X_{t+i,c}K_{i,c,o}\) & Filtro condiviso lungo un solo asse \\
-Parametri Conv1D & \(C_{\mathrm{out}}(kC_{\mathrm{in}}+1)\) & Con bias; non dipendono da \(T\) \\
-Dilatazione causale & \(y_t=\sum_{i=0}^{k-1}x_{t-di}\omega_i\) & Punti distanziati di \(d\) \\
-Ampiezza del kernel dilatato & \(1+(k-1)d\) & Ampiezza coperta, non numero di pesi \\
-Padding causale & \(P_{\mathrm{sinistra}}=(k-1)d\) & Stride 1, stessa lunghezza in uscita \\
-Campo recettivo & \(r_\ell=r_{\ell-1}+(k_\ell-1)d_\ell j_{\ell-1}\) & \(j_\ell=s_\ell j_{\ell-1}\) \\
-Sequenza Transformer & \(X:T\times D\) & Una riga per token \\
-Feed-forward & \(\operatorname{ReLU}(y_tW_1+b_1)W_2+b_2\) & Stessi pesi sulle posizioni; \(D\to F\to D\) \\
-LayerNorm & \(y_j=\gamma_j(x_j-\mu)/\sqrt{v+\epsilon}+\beta_j\) & Statistiche sulle feature del singolo token \\
-Proiezioni & \(Q=XW^Q\), \(K=XW^K\), \(V=XW^V\) & Q e K: \(T\times d_k\); V: \(T\times d_v\) \\
-Score & \(QK^T:T\times T\) & Riga = query; colonna = key \\
-Scala & \(S=QK^T/\sqrt{d_k}\) & Con \(d_k=64\) si divide per 8 \\
-Pesi & \(A=\operatorname{softmax}_{\mathrm{righe}}(S)\) & Ogni riga somma a 1 \\
-Attention & \(Z=AV:T\times d_v\) & Somma pesata dei value per query \\
-Multi-head & \(\operatorname{Concat}(Z_1,\ldots,Z_H)W^O\) & Concatenazione sulle feature, uscita \(T\times D\) \\
-Residui e norm & \(Y=\operatorname{LN}_1(X+\operatorname{MHA}(X))\); \(B=\operatorname{LN}_2(Y+\operatorname{FFN}(Y))\) & Forma del blocco conservata \\
-Average pooling & \(g=T^{-1}\sum_tz_t\) & Da \(T\times D\) a un vettore di \(D\) feature \\
-Token {[}CLS{]} & Ingresso \((T+1)\times D\), poi estrazione di una riga & Il riassunto va appreso dal modello \\
-\end{longtable}
-% END F04-B0334
-
-% BEGIN F04-B0335
-\begin{quote}
-\textbf{Percorso essenziale da saper ricostruire}
-\end{quote}
-% END F04-B0335
-
-% BEGIN F04-B0336
-\begin{quote}
-Le TCN combinano localmente una sequenza usando filtri condivisi, dilatati e causali. Il Transformer rende invece dinamici i coefficienti delle interazioni: proietta i token in query, key e value; confronta ogni query con le key; normalizza gli score per riga; combina i value. Più teste offrono proiezioni diverse, poi ricombinate sulle feature. Residui, LayerNorm e MLP completano il blocco, mantenendone la forma. Per classificare l\textquotesingle intera sequenza occorre infine un riassunto, per esempio media dei token o rappresentazione {[}CLS{]}.
-\end{quote}
-% END F04-B0336
-
-% BEGIN F04-B0337
-\section{Errata e precisazioni principali (slide 5--41)}\label{f04-r933}
-% END F04-B0337
-
-% BEGIN F04-B0338
-\begin{longtable}[]{@{}
-  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
-  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
-\toprule\noalign{}
-\begin{minipage}[b]{\linewidth}\raggedright
-Riferimento
-\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
-Precisazione
-\end{minipage} \\
-\midrule\noalign{}
-\endhead
-\bottomrule\noalign{}
-\endlastfoot
-Slide 5--6 & LeNet-5 non è la prima comparsa assoluta delle idee convoluzionali. 1D descrive l\textquotesingle asse di scorrimento, non l\textquotesingle assenza di canali. \\
-Slide 7--8 & La formula a ritardi e l\textquotesingle esempio a finestre usano convenzioni di orientamento diverse; esplicitare indici e ribaltamento del kernel. I cinque risultati numerici della slide 8 sono verificati. \\
-Slide 9--11 & Dilatazione 2 su tre punti dà offset 0, 2, 4. La dilatazione è distinta dallo stride; il campo recettivo cresce anche a stride 1. \\
-Slide 10 & Causalità significa non accedere a ingressi futuri; non dimostra causalità fisica e non sostituisce l\textquotesingle allineamento corretto dei target. \\
-Slide 11 & Tre convoluzioni con dilatazioni 1, 2, 4 danno campo recettivo 15; tre blocchi con due convoluzioni ciascuno danno 29 alle stesse dilatazioni. \\
-Slide 12--13 & Aggiungere feature aumenta i canali e i pesi; accuracy e F1 possono ordinare diversamente i modelli. F1 casuale 0.5 non è una baseline universale. \\
-Slide 14 & TCN non garantisce assenza di vanishing/exploding gradient; usa la backpropagation. Anche RNN può essere studiata con metodi di attribuzione. \\
-Slide 19--20 & Encoder--decoder non serve soltanto a cambiare modalità. Sei livelli sono una configurazione di riferimento, non una regola generale. \\
-Slide 21 & Tokenizzazione ed embedding sono distinti; non c\textquotesingle è sempre un token per parola e l\textquotesingle embedding può essere addestrato end-to-end. \\
-Slide 22--25 & Il MLP è applicato separatamente alle posizioni ma con pesi condivisi; la forma finale uguale non esclude dimensioni interne diverse. \\
-Slide 26--27 & Si divide per una deviazione standard stabilizzata, non per la varianza. \(\gamma\) è una scala apprendibile non vincolata, non un gate sigmoidale. \\
-Slide 26--27 & LayerNorm non rende tutti i token ugualmente rilevanti e non garantisce identici gradienti; le statistiche sono per token, non fra tutti i token della sequenza. \\
-Slide 30 & Ogni \(\alpha_{t,i}\) è uno scalare; la softmax normalizza l\textquotesingle intero insieme degli score della riga. Nell\textquotesingle attenzione concreta si combinano i value proiettati. \\
-Slide 33 & Si confrontano tutte le coppie query--key, comprese quelle sulla diagonale. Q e K devono avere la stessa dimensione; V può in generale averne una diversa. \\
-Slide 34 & \(Q,K,V\) raccolgono vettori in matrici. Il fattore di scala usa \(\sqrt{d_k}\), non \(d_k\). La matrice degli score non è necessariamente simmetrica e la diagonale non deve dominare. \\
-Slide 35--36 & Si concatenano le feature delle teste allineate per posizione, non le lunghezze delle sequenze. \\
-Slide 37--38 & Il pooling finale riduce la sequenza; i blocchi interni la conservano. Un token {[}CLS{]} arbitrario non è automaticamente un riassunto utile. \\
-Slide 39--41 & L\textquotesingle80\% di parametri nel MLP non è una quota universale; contano le dimensioni. Più token aumentano attivazioni e calcolo, non direttamente i pesi condivisi. \\
-Slide 39--41 & La cache KV descritta richiede la stabilità delle rappresentazioni passate nella generazione causale; non si trasferisce invariata all\textquotesingle encoder bidirezionale. \\
-\end{longtable}
-% END F04-B0338
-
-% BEGIN F04-B0339
-Le forme trascritte come «deletion», «casual», «GCN/DCN/TCM», «MootGate/MootHead attention», «Venus/batteries» e «graph count» sono ricondotte, dove il contesto lo rende univoco, a \textbf{dilation}, \textbf{causal}, \textbf{TCN}, \textbf{Multi-Head Attention}, \textbf{values} e \textbf{Grad-CAM}. Il passaggio dai termini corrotti alle nozioni corrette segue formule e figure, senza introdurre nuovi moduli.
-% END F04-B0339

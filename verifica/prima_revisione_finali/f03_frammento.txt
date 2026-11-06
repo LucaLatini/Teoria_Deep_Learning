@@ -1,0 +1,1933 @@
+% BEGIN F03-B0001
+\chapter{RNN - Reti neurali ricorrenti}\label{fonte03}
+% END F03-B0001
+
+% BEGIN F03-B0002
+\begin{indiceargomento}
+\item \hyperref[f03-r34]{Serie temporali e sequenze di lunghezza variabile (slide 3--4)}
+\item \hyperref[f03-r66]{Pattern temporali: trend, stagionalità e residuo (slide 5--8)}
+\item \hyperref[f03-r106]{Forecasting: continuare una sequenza (slide 9--12)}
+\item \hyperref[f03-r139]{Autoregressione e richiamo ai modelli statistici (slide 13--14)}
+\item \hyperref[f03-r172]{Preparazione dei dati e codifica ciclica (slide 15--18)}
+\item \hyperref[f03-r230]{Reti ricorrenti e forme dei problemi sequenziali (slide 19--21)}
+\item \hyperref[f03-r248]{Vanilla RNN: equazioni, dimensioni e significato (slide 22)}
+\item \hyperref[f03-r346]{Hidden state: un riassunto utile, non il modello appreso (slide 23)}
+\item \hyperref[f03-r384]{Unfolding: esplicitare il calcolo nel tempo (slide 24--26)}
+\item \hyperref[f03-r410]{BPTT: sommare i contributi ai parametri condivisi (slide 27)}
+\item \hyperref[f03-r547]{Dipendenze a lungo termine e instabilità del gradiente (slide 28--29)}
+\item \hyperref[f03-r638]{Memoria selettiva e architetture con gate (slide 30)}
+\item \hyperref[f03-r648]{LSTM: stato interno e quadro delle equazioni (slide 31)}
+\item \hyperref[f03-r687]{Gate: interruttori continui apprendibili (slide 32)}
+\item \hyperref[f03-r741]{Stato candidato: proporre un nuovo contenuto (slide 33)}
+\item \hyperref[f03-r762]{Aggiornare la memoria ed esporre lo stato (slide 34)}
+\item \hyperref[f03-r838]{Perché separare cell state e hidden state (slide 35)}
+\item \hyperref[f03-r874]{Riepilogo operativo (slide 4--35)}
+\item \hyperref[f03-r898]{Errata e precisazioni da conservare nel ripasso (slide 4--35)}
+\end{indiceargomento}
+% END F03-B0002
+
+% BEGIN F03-B0003
+Le reti convoluzionali sfruttano la struttura spaziale delle immagini. Le \textbf{reti neurali ricorrenti}, o \textbf{RNN}, sfruttano invece l\textquotesingle ordine di una sequenza: a ogni passo combinano una nuova osservazione con una rappresentazione di quanto è stato elaborato prima. Il problema centrale è costruire e apprendere una memoria utile al compito, anche quando le sequenze hanno lunghezze diverse.
+% END F03-B0003
+
+% BEGIN F03-B0004
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f03_01.pdf}}
+% END F03-B0004
+
+% BEGIN F03-B0005
+\section{Serie temporali e sequenze di lunghezza variabile (slide 3--4)}\label{f03-r34}
+% END F03-B0005
+
+% BEGIN F03-B0006
+Una \textbf{serie temporale} è una successione ordinata di osservazioni raccolte nel tempo. Esempi sono un segnale audio o una canzone, la temperatura misurata giorno per giorno, il prezzo di un titolo finanziario e le misure di un sensore. L\textquotesingle ordine è parte dell\textquotesingle informazione: scambiare due osservazioni può modificare il significato della sequenza.
+% END F03-B0006
+
+% BEGIN F03-B0007
+Si distinguono un tempo continuo, in cui il segnale è definito su un intervallo temporale, e un tempo discreto, in cui si considerano istanti separati. Qui si lavora con sequenze discrete osservate per un numero finito di passi:
+% END F03-B0007
+
+% BEGIN F03-B0008
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{X=(x_1,x_2,\ldots,x_T),\qquad x_t\in\mathbb R^d.}$
+\end{adjustbox}
+\end{center}
+% END F03-B0008
+
+% BEGIN F03-B0009
+\(T\) è la \textbf{lunghezza della sequenza}; \(d\) è il \textbf{numero di feature di ogni osservazione}. Con vettori colonna, ogni \(x_t\) ha forma \(d\times1\). Disporre una osservazione per riga produce una rappresentazione tabellare \(X\in\mathbb R^{T\times d}\).
+% END F03-B0009
+
+% BEGIN F03-B0010
+\begin{itemize}
+\tightlist
+\item
+  Una serie \textbf{univariata} ha \(d=1\): per esempio il solo numero di passeggeri.
+\item
+  Una serie \textbf{multivariata} ha \(d>1\): per esempio più misure meteorologiche per ciascun giorno. Aggiungere una codifica della data alle misure aumenta il numero di feature.
+\end{itemize}
+% END F03-B0010
+
+% BEGIN F03-B0011
+La differenza fra una e più componenti è analoga a quella fra un valore grayscale e i tre canali RGB di \hyperref[fonte02]{reti convoluzionali}; un\textquotesingle immagine RGB isolata, però, non è per questo una serie temporale. Una successione di immagini, come un video, possiede anche l\textquotesingle asse temporale. Analogamente, una nuvola di punti LiDAR isolata è un insieme spaziale, mentre misure LiDAR successive possono formare una sequenza.
+% END F03-B0011
+
+% BEGIN F03-B0012
+Se il campionamento è regolare, gli istanti soddisfano
+% END F03-B0012
+
+% BEGIN F03-B0013
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{t_k=t_0+k\Delta t,\qquad f_c=\frac1{\Delta t}.}$
+\end{adjustbox}
+\end{center}
+% END F03-B0013
+
+% BEGIN F03-B0014
+Il primo istante è \(t_0\) e ogni passo aggiunge lo stesso intervallo \(\Delta t\). In un secondo entrano \(1/\Delta t\) intervalli, da cui la frequenza di campionamento \(f_c\). Per esempio, una misura ogni \(0.5\) secondi corrisponde a \(f_c=2\) Hz. Per dati mensili il passo è invece un mese: si usa l\textquotesingle unità temporale appropriata.
+% END F03-B0014
+
+% BEGIN F03-B0015
+\begin{quote}
+\textbf{Errata slide 4 --- Discreto non significa finito}
+\end{quote}
+% END F03-B0015
+
+% BEGIN F03-B0016
+\begin{quote}
+Il tempo discreto è definito dall\textquotesingle insieme separato degli indici, non dalla finitezza della serie. Una serie discreta può continuare indefinitamente; è il campione osservato nel dataset a essere finito. Il campionamento regolare richiede inoltre un intervallo costante, non soltanto osservazioni discrete.
+\end{quote}
+% END F03-B0016
+
+% BEGIN F03-B0017
+\subsection{Sequenze di parole e limite dell\textquotesingle ingresso fisso (slide 4)}\label{f03-r58}
+% END F03-B0017
+
+% BEGIN F03-B0018
+Una frase è una sequenza in cui l\textquotesingle indice \(t\) indica la posizione, senza dover rappresentare un tempo fisico. Ogni elemento può essere un token, identificato da un indice in un vocabolario e fornito alla rete mediante una rappresentazione numerica. Due frasi possono contenere numeri diversi di token.
+% END F03-B0018
+
+% BEGIN F03-B0019
+Per classificare il sentiment di una frase, un MLP applicato direttamente alla concatenazione degli ingressi richiede una dimensione iniziale fissata. Con \(T\) osservazioni di \(d\) feature, la concatenazione ha \(Td\) componenti: se \(T\) cambia, cambia anche il numero di ingressi richiesto al primo livello denso. È la stessa rigidità della testa densa discussa in \hyperref[fonte02]{reti convoluzionali}.
+% END F03-B0019
+
+% BEGIN F03-B0020
+Non significa che un MLP non possa mai essere usato con dati temporali: finestre e rappresentazioni di lunghezza fissata sono possibili. La RNN affronta direttamente il problema riutilizzando \textbf{lo stesso aggiornamento per ogni elemento}, per quante osservazioni siano presenti. Può variare \(T\), mentre la dimensione \(d\) dell\textquotesingle osservazione e quella dello stato rimangono fissate dal modello.
+% END F03-B0020
+
+% BEGIN F03-B0021
+\section{Pattern temporali: trend, stagionalità e residuo (slide 5--8)}\label{f03-r66}
+% END F03-B0021
+
+% BEGIN F03-B0022
+Il grafico dei passeggeri aerei internazionali contiene misure mensili espresse in migliaia. Mostra contemporaneamente due regolarità: picchi che tendono a ripetersi e un livello complessivo che cresce. La prima suggerisce una componente stagionale; la seconda un trend crescente. Le annotazioni della slide evidenziano proprio la coesistenza delle due componenti.
+% END F03-B0022
+
+% BEGIN F03-B0023
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_f22301011c2de1ca.png}}
+\caption{Slide 5 --- Serie dei passeggeri con annotazioni su periodicità e trend}
+\end{figure}
+% END F03-B0023
+
+% BEGIN F03-B0024
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Componente
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Significato
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Lettura dell\textquotesingle esempio
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Trend} & Tendenza di fondo verso valori più alti o più bassi & Il numero di passeggeri cresce negli anni \\
+\textbf{Stagionalità} & Fluttuazione che si ripete secondo un periodo di riferimento & Mesi corrispondenti tendono a mostrare comportamenti ricorrenti \\
+\textbf{Ciclo} & Oscillazione attorno al trend & Una variazione ricorrente, non necessariamente legata a un calendario rigidamente fissato \\
+\textbf{Outlier} & Osservazione insolita rispetto al comportamento atteso & Un valore eccezionalmente alto o basso, da interpretare nel suo contesto \\
+\textbf{Residuo} & Parte non spiegata dalle componenti considerate & Rumore, irregolarità e pattern rimasti fuori dalla decomposizione \\
+\end{longtable}
+% END F03-B0024
+
+% BEGIN F03-B0025
+Le misure possono contenere rumore di acquisizione; inoltre, l\textquotesingle evoluzione reale può dipendere da fattori non osservati. Nei dati finanziari, per esempio, molte cause influenzano il prezzo. Una componente stocastica non implica soltanto un sensore impreciso: può descrivere anche incertezza del processo o fattori non modellati.
+% END F03-B0025
+
+% BEGIN F03-B0026
+Una scomposizione additiva permette di leggere il grafico come
+% END F03-B0026
+
+% BEGIN F03-B0027
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{x_t=a_t+s_t+r_t,}$
+\end{adjustbox}
+\end{center}
+% END F03-B0027
+
+% BEGIN F03-B0028
+dove \(a_t\) è il trend, \(s_t\) la stagionalità e \(r_t\) il residuo, tutti scalari con le stesse unità di \(x_t\). Si ottiene il residuo sottraendo le parti spiegate:
+% END F03-B0028
+
+% BEGIN F03-B0029
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+x_t&=a_t+s_t+r_t &&\text{somma delle componenti},\\
+x_t-a_t-s_t&=r_t &&\text{sottrazione di trend e stagionalità}.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0029
+
+% BEGIN F03-B0030
+Se in un mese si osservano 135 migliaia di passeggeri, con trend stimato 120 e componente stagionale 10, il residuo è \(135-120-10=5\). La ricostruzione trend più stagionalità vale 130; la differenza di 5 è ciò che quella ricostruzione non descrive. Non è automaticamente rumore bianco.
+% END F03-B0030
+
+% BEGIN F03-B0031
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_762a5612ce759898.png}}
+\caption{Slide 7 --- Osservazione, trend e componente stagionale}
+\end{figure}
+% END F03-B0031
+
+% BEGIN F03-B0032
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_9adbce5099a492af.png}}
+\caption{Slide 8 --- Somma delle componenti e residuo}
+\end{figure}
+% END F03-B0032
+
+% BEGIN F03-B0033
+La \textbf{stazionarietà} descrive proprietà statistiche che non cambiano nel tempo. Una media che aumenta con il trend è già sufficiente a escludere la stazionarietà. Media e varianza costanti, da sole, non esauriscono tutte le condizioni: per la stazionarietà debole anche la covarianza deve dipendere dalla distanza temporale, non dall\textquotesingle istante assoluto. Qui il concetto serve a leggere i dati, senza introdurre test o procedure di stazionarizzazione.
+% END F03-B0033
+
+% BEGIN F03-B0034
+\begin{quote}
+\textbf{Slide 6--8 --- Formalizzazione presente nelle slide, non approfondita}
+\end{quote}
+% END F03-B0034
+
+% BEGIN F03-B0035
+\begin{quote}
+Le slide nominano la decomposizione \textbf{STL}, basata su regressione LOESS per separare trend e stagionalità, e la definizione di stazionarietà. La lettura qualitativa dei pattern è centrale; l\textquotesingle algoritmo LOESS, i test statistici e i dettagli della procedura STL non sono sviluppati e non vengono aggiunti.
+\end{quote}
+% END F03-B0035
+
+% BEGIN F03-B0036
+\section{Forecasting: continuare una sequenza (slide 9--12)}\label{f03-r106}
+% END F03-B0036
+
+% BEGIN F03-B0037
+Il \textbf{forecasting} consiste nel prevedere valori futuri usando osservazioni disponibili fino a un certo istante. Indichiamo con \(T\) l\textquotesingle ultimo passo osservato e con \(h>0\) l\textquotesingle{}\textbf{orizzonte di previsione}:
+% END F03-B0037
+
+% BEGIN F03-B0038
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{\widehat x_{T+h}=F_\theta(x_1,\ldots,x_T;h).}$
+\end{adjustbox}
+\end{center}
+% END F03-B0038
+
+% BEGIN F03-B0039
+\(F_\theta\) è il modello con parametri \(\theta\); \(\widehat x_{T+h}\) è la stima della futura osservazione. Nel caso multivariato appartiene a \(\mathbb R^d\), come \(x_t\). Per ottenere più passi si può considerare il vettore delle previsioni da \(T+1\) a \(T+H\).
+% END F03-B0039
+
+% BEGIN F03-B0040
+La costruzione del problema avviene in tre passaggi: si sceglie dove terminano i dati osservati; si decide quanto avanti guardare; si confronta la previsione con il valore futuro effettivamente osservato. Per esempio, osservando i valori mensili \((100,110,120)\), una prosecuzione illustrativa della crescita di 10 al mese darebbe 130 a orizzonte 1 e 140 a orizzonte 2. È una possibile previsione, non una conseguenza certa dei tre numeri.
+% END F03-B0040
+
+% BEGIN F03-B0041
+Tra le applicazioni ci sono la previsione della traiettoria di un veicolo, della domanda elettrica, della domanda di prodotti e dei valori finanziari. Prevedere la domanda permette di preparare l\textquotesingle offerta; prevedere una traiettoria aiuta ad anticipare dove si troverà un oggetto.
+% END F03-B0041
+
+% BEGIN F03-B0042
+\subsection{Previsione puntuale e incertezza (slide 10--11)}\label{f03-r118}
+% END F03-B0042
+
+% BEGIN F03-B0043
+La linea tratteggiata nella figura rappresenta una possibile previsione puntuale. La fascia attorno alla linea esprime invece un intervallo di valori plausibili. Nell\textquotesingle esempio la fascia si allarga all\textquotesingle aumentare dell\textquotesingle orizzonte: più ci si allontana dalle osservazioni, maggiore è l\textquotesingle incertezza rappresentata.
+% END F03-B0043
+
+% BEGIN F03-B0044
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_2e8b6609ad5f75ec.png}}
+\caption{Slide 11 --- Passato osservato, previsione e fascia di incertezza}
+\end{figure}
+% END F03-B0044
+
+% BEGIN F03-B0045
+Un intervallo dichiarato al 90\% mira a contenere il valore futuro con quella copertura, sotto le ipotesi e la calibrazione del metodo. Per esempio, una previsione 130 accompagnata dall\textquotesingle intervallo \([120,140]\) comunica sia un valore centrale sia la sua incertezza. La sola presenza di una fascia nel disegno non dimostra la copertura del 90\%, né impone una distribuzione gaussiana. La costruzione di tali intervalli non viene sviluppata qui.
+% END F03-B0045
+
+% BEGIN F03-B0046
+\begin{quote}
+\textbf{Errata slide 10 --- Conoscere il processo non elimina il caso}
+\end{quote}
+% END F03-B0046
+
+% BEGIN F03-B0047
+\begin{quote}
+Conoscere il processo generatore dei dati permette di descrivere correttamente la distribuzione futura; non garantisce di prevedere perfettamente ogni realizzazione se rimangono innovazioni casuali. Una previsione esatta a ogni orizzonte richiederebbe anche assenza di imprevedibilità residua e disponibilità delle informazioni necessarie.
+\end{quote}
+% END F03-B0047
+
+% BEGIN F03-B0048
+\subsection{Finestre di osservazione e componente casuale (slide 12)}\label{f03-r129}
+% END F03-B0048
+
+% BEGIN F03-B0049
+Spesso la previsione usa una finestra limitata di osservazioni precedenti. Per prevedere il passo \(t\) a partire da \(q\) ritardi, l\textquotesingle ingresso è \((x_{t-1},\ldots,x_{t-q})\): sono \(q\) osservazioni. La funzione appresa cerca di sfruttare le relazioni temporali contenute in quella finestra.
+% END F03-B0049
+
+% BEGIN F03-B0050
+\begin{quote}
+\textbf{Slide 12 --- Schema statistico generale non sviluppato}
+\end{quote}
+% END F03-B0050
+
+% BEGIN F03-B0051
+\begin{quote}
+La slide scrive \(x_t=f(x_{t-1},\ldots,x_{t-q};\phi)+g(\xi_{t-1},\ldots,\xi_{t-q};\theta)\), separando una funzione dei valori passati da una dei disturbi. \(\phi,\theta\) sono parametri e \(\xi\) indica disturbi casuali. È una rappresentazione introduttiva, non l\textquotesingle equazione della RNN né una definizione universale dei modelli di forecasting. Non si sviluppano qui stima dei disturbi o modelli combinati.
+\end{quote}
+% END F03-B0051
+
+% BEGIN F03-B0052
+\begin{quote}
+\textbf{Errata slide 12 --- Indici della finestra}
+\end{quote}
+% END F03-B0052
+
+% BEGIN F03-B0053
+\begin{quote}
+L\textquotesingle insieme \(\{x_t,\ldots,x_{t-q}\}\) riportato nel testo contiene \(q+1\) osservazioni e include il valore da prevedere nella formula sottostante. Per prevedere \(x_t\) con \(q\) soli valori passati si usa \(\{x_{t-1},\ldots,x_{t-q}\}\). Inoltre lo schema dei disturbi non esplicita un\textquotesingle innovazione corrente \(\xi_t\): non va letto come un modello stocastico completo senza ulteriori ipotesi.
+\end{quote}
+% END F03-B0053
+
+% BEGIN F03-B0054
+\section{Autoregressione e richiamo ai modelli statistici (slide 13--14)}\label{f03-r139}
+% END F03-B0054
+
+% BEGIN F03-B0055
+Un modello è \textbf{autoregressivo} quando descrive un valore attraverso i valori precedenti della stessa sequenza. Nel modello lineare AR di ordine \(p\):
+% END F03-B0055
+
+% BEGIN F03-B0056
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{x_t=\sum_{i=1}^{p}\phi_i x_{t-i}+\xi_t.}$
+\end{adjustbox}
+\end{center}
+% END F03-B0056
+
+% BEGIN F03-B0057
+Qui \(x_t,x_{t-i},\xi_t\) sono scalari; \(\phi=(\phi_1,\ldots,\phi_p)\in\mathbb R^p\) contiene i coefficienti da stimare. Il termine \(\xi_t\) rappresenta un\textquotesingle innovazione a media zero. Il rumore bianco ha assenza di correlazione fra istanti distinti; la gaussianità è una possibile ipotesi aggiuntiva, non la sua definizione.
+% END F03-B0057
+
+% BEGIN F03-B0058
+L\textquotesingle equazione nasce scegliendo una combinazione lineare di \(p\) ritardi e aggiungendo ciò che non è previsto da quella combinazione. Con \(p=2\):
+% END F03-B0058
+
+% BEGIN F03-B0059
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+x_t&=\phi_1x_{t-1}+\phi_2x_{t-2}+\xi_t &&\text{sviluppo della somma},\\
+\widehat x_t&=\phi_1x_{t-1}+\phi_2x_{t-2} &&\text{previsione con innovazione a media condizionale zero}.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0059
+
+% BEGIN F03-B0060
+Con coefficienti \(0.6\) e \(0.2\) e osservazioni precedenti 120 e 100:
+% END F03-B0060
+
+% BEGIN F03-B0061
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \widehat x_t=0.6\cdot120+0.2\cdot100=72+20=92.$
+\end{adjustbox}
+\end{center}
+% END F03-B0061
+
+% BEGIN F03-B0062
+Se l\textquotesingle innovazione realizzata è 3, il valore osservato è 95. La differenza rende concreta la distinzione fra previsione e osservazione. L\textquotesingle equazione mostrata omette l\textquotesingle intercetta; una trasformazione affine può includere anche un termine costante.
+% END F03-B0062
+
+% BEGIN F03-B0063
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_c490ed9c25c37069.png}}
+\caption{Slide 13 --- Modello AR e annotazione sulla dipendenza dai valori precedenti}
+\end{figure}
+% END F03-B0063
+
+% BEGIN F03-B0064
+Il principio autoregressivo ricompare nella generazione di testo: il nuovo token è condizionato al contesto già disponibile, compresi i token generati prima. Questo non rende un generatore linguistico un modello AR lineare: il principio di condizionamento è condiviso, la funzione che lo realizza può essere non lineare.
+% END F03-B0064
+
+% BEGIN F03-B0065
+\begin{quote}
+\textbf{Slide 14 --- Moving Average, presente nelle slide ma non sviluppato}
+\end{quote}
+% END F03-B0065
+
+% BEGIN F03-B0066
+\begin{quote}
+Il modello MA di ordine \(q\) è riportato come \(x_t=\mu+\xi_t+\sum_{i=1}^q\theta_i\xi_{t-i}\): combina innovazione corrente e innovazioni precedenti mediante coefficienti \(\theta_i\). Qui \(\mu\) è la media teorica del processo quando i disturbi hanno media zero; la media empirica può stimarla, ma non coincide per definizione con essa. Non è una media mobile dei valori osservati. Stima e applicazioni del modello MA non sono state sviluppate.
+\end{quote}
+% END F03-B0066
+
+% BEGIN F03-B0067
+\begin{quote}
+\textbf{Errata slide 14 --- Media del processo e media campionaria}
+\end{quote}
+% END F03-B0067
+
+% BEGIN F03-B0068
+\begin{quote}
+Identificare direttamente il parametro \(\mu\) con la media empirica confonde una quantità del modello con un suo possibile stimatore. Sono concetti distinti anche se la seconda viene usata per stimare la prima.
+\end{quote}
+% END F03-B0068
+
+% BEGIN F03-B0069
+\section{Preparazione dei dati e codifica ciclica (slide 15--18)}\label{f03-r172}
+% END F03-B0069
+
+% BEGIN F03-B0070
+Preparare una serie richiede di distinguere il \textbf{valore osservato} dall\textquotesingle{}\textbf{informazione temporale} associata. Una stringa come \texttt{1949-01} deve essere interpretata come una data, non come una generica etichetta: anno e mese possono essere estratti per organizzare e rappresentare le osservazioni. Le prime righe mostrate nelle slide associano, per esempio, gennaio 1949 a 112 migliaia di passeggeri e febbraio a 118.
+% END F03-B0070
+
+% BEGIN F03-B0071
+Una seconda scelta riguarda la rappresentazione del segnale. Nel \textbf{dominio del tempo} si mantengono le osservazioni ordinate; nel \textbf{dominio delle frequenze} si descrivono componenti oscillatorie, per esempio mediante Fourier. Per vibrazioni di motori, le componenti in frequenza possono essere informative. Le reti ricorrenti qui descritte lavorano sugli ingressi nel dominio del tempo, senza richiedere una trasformata di Fourier preliminare.
+% END F03-B0071
+
+% BEGIN F03-B0072
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_1b37f2cd21254e9d.png}}
+\caption{Slide 16 --- Rappresentazione nel tempo e nelle frequenze}
+\end{figure}
+% END F03-B0072
+
+% BEGIN F03-B0073
+\begin{quote}
+\textbf{Slide 16 --- Trasformate soltanto elencate}
+\end{quote}
+% END F03-B0073
+
+% BEGIN F03-B0074
+\begin{quote}
+La slide cita anche wavelet e Hilbert--Huang. Non ne vengono sviluppate definizioni, formule o algoritmi; rimangono indicazioni di possibili rappresentazioni alternative.
+\end{quote}
+% END F03-B0074
+
+% BEGIN F03-B0075
+\subsection{Perché i mesi non sono un semplice asse numerico (slide 18)}\label{f03-r183}
+% END F03-B0075
+
+% BEGIN F03-B0076
+Numerare gennaio con 0, febbraio con 1, fino a dicembre con 11 mantiene una differenza di 1 fra molti mesi consecutivi, ma separa dicembre e gennaio di 11 unità. Nel calendario, invece, sono adiacenti.
+% END F03-B0076
+
+% BEGIN F03-B0077
+Per una variabile con periodo \(P\), una codifica su una circonferenza conserva questa vicinanza:
+% END F03-B0077
+
+% BEGIN F03-B0078
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{\theta_k=\frac{2\pi k}{P},\qquad e(k)=\begin{bmatrix}\cos\theta_k\\\sin\theta_k\end{bmatrix}\in\mathbb R^2.}$
+\end{adjustbox}
+\end{center}
+% END F03-B0078
+
+% BEGIN F03-B0079
+Si divide un giro completo, \(2\pi\) radianti, in \(P\) intervalli; l\textquotesingle indice \(k\) determina l\textquotesingle angolo. Coseno e seno forniscono le coordinate del punto sulla circonferenza unitaria. L\textquotesingle ordine delle due coordinate può essere invertito, purché si mantenga la convenzione.
+% END F03-B0079
+
+% BEGIN F03-B0080
+Per le ore, \(P=24\); per i mesi con indice \(0,\ldots,11\), \(P=12\). La periodicità deriva direttamente da seno e coseno:
+% END F03-B0080
+
+% BEGIN F03-B0081
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+\theta_{k+P}&=\frac{2\pi(k+P)}P=\theta_k+2\pi,\\
+\cos(\theta_k+2\pi)&=\cos\theta_k,\\
+\sin(\theta_k+2\pi)&=\sin\theta_k,\\
+e(k+P)&=e(k).
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0081
+
+% BEGIN F03-B0082
+\begin{longtable}[]{@{}lrlrr@{}}
+\toprule\noalign{}
+Mese & \(k\) & Angolo & \(\cos\theta_k\) & \(\sin\theta_k\) \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Gennaio & 0 & \(0\) & 1 & 0 \\
+Febbraio & 1 & \(\pi/6\) & \(\sqrt3/2\approx0.8660\) & \(1/2\) \\
+Dicembre & 11 & \(11\pi/6\) & \(\sqrt3/2\approx0.8660\) & \(-1/2\) \\
+\end{longtable}
+% END F03-B0082
+
+% BEGIN F03-B0083
+La distanza gennaio--dicembre è
+% END F03-B0083
+
+% BEGIN F03-B0084
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+\|e(0)-e(11)\|_2
+&=\sqrt{(1-\sqrt3/2)^2+(0+1/2)^2} &&\text{distanza euclidea},\\
+&=\sqrt{2-\sqrt3}\approx0.5176 &&\text{sviluppo dei quadrati}.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0084
+
+% BEGIN F03-B0085
+È la stessa distanza di gennaio--febbraio. Usando mesi da 1 a 12 si può porre \(k=m-1\); usare direttamente \(m\) produce soltanto una rotazione comune della codifica.
+% END F03-B0085
+
+% BEGIN F03-B0086
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_62fad448dfe46649.png}}
+\caption{Slide 18 --- Ora del giorno rappresentata sulla circonferenza}
+\end{figure}
+% END F03-B0086
+
+% BEGIN F03-B0087
+Servono entrambe le coordinate per distinguere posizioni che una sola funzione confonderebbe: il seno, per esempio, vale zero sia a mezzanotte sia a mezzogiorno. Per l\textquotesingle ora 10, l\textquotesingle angolo è \(5\pi/6\) e la coppia \((\cos,\sin)\) è \((-\sqrt3/2,1/2)\), coerente con il punto nel secondo quadrante della figura.
+% END F03-B0087
+
+% BEGIN F03-B0088
+La codifica periodica è appropriata per grandezze \textbf{effettivamente cicliche}. L\textquotesingle anno assoluto non riparte automaticamente da zero: non gli si impone un ciclo senza una ragione legata al problema. Inoltre coordinate limitate fra \(-1\) e 1 non garantiscono media empirica zero o una particolare varianza se i dati non coprono uniformemente il ciclo.
+% END F03-B0088
+
+% BEGIN F03-B0089
+Il preprocessing costruisce le feature fornite al modello; non cambia la regola di ricorrenza. I richiami alla scala degli ingressi si collegano a \hyperref[fonte01]{Multilayer Perceptron} e, per il diverso caso della normalizzazione delle attivazioni interne, a \hyperref[fonte02]{reti convoluzionali}.
+% END F03-B0089
+
+% BEGIN F03-B0090
+\section{Reti ricorrenti e forme dei problemi sequenziali (slide 19--21)}\label{f03-r230}
+% END F03-B0090
+
+% BEGIN F03-B0091
+In una rete feedforward il calcolo procede dall\textquotesingle ingresso attraverso livelli intermedi fino all\textquotesingle uscita. Una RNN introduce una connessione di ritorno: \textbf{lo stato calcolato a un passo viene utilizzato nel passo successivo}. Il feedback riguarda qui la rappresentazione nascosta, non necessariamente la predizione finale.
+% END F03-B0091
+
+% BEGIN F03-B0092
+La sequenza può comparire all\textquotesingle ingresso, all\textquotesingle uscita o in entrambi. I termini «one» e «many» contano gli elementi della sequenza, non il numero di componenti del singolo vettore.
+% END F03-B0092
+
+% BEGIN F03-B0093
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Schema
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Ingresso e uscita
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Interpretazione
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{One-to-one} & Un elemento → un risultato & Situazione ordinaria non sequenziale \\
+\textbf{One-to-many} & Un elemento → una sequenza & Un ingresso avvia più passi di uscita \\
+\textbf{Many-to-one} & Una sequenza → un risultato & Sentiment o categoria di una frase \\
+\textbf{Many-to-many con uscita successiva} & Sequenza osservata → sequenza prodotta & Traduzione o prosecuzione futura di una serie \\
+\textbf{Many-to-many allineato} & Una uscita associata a ogni ingresso & Ingressi e uscite sono indicizzati lungo la stessa sequenza \\
+\end{longtable}
+% END F03-B0093
+
+% BEGIN F03-B0094
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_b9b03ce1d05693da.png}}
+\caption{Slide 21 --- Schemi di ingresso e uscita delle reti sequenziali}
+\end{figure}
+% END F03-B0094
+
+% BEGIN F03-B0095
+Una frase può contenere molti token ma avere un solo target di classificazione; quel target può essere rappresentato da un vettore di score. Nel forecasting multipasso si osservano più valori e si prevedono più valori futuri. Nella traduzione, lunghezza dell\textquotesingle ingresso e lunghezza dell\textquotesingle uscita possono essere differenti. Anche domanda e risposta testuale illustrano il rapporto fra una sequenza in ingresso e una sequenza in uscita, senza che questo determini da solo l\textquotesingle architettura usata.
+% END F03-B0095
+
+% BEGIN F03-B0096
+\section{Vanilla RNN: equazioni, dimensioni e significato (slide 22)}\label{f03-r248}
+% END F03-B0096
+
+% BEGIN F03-B0097
+La forma più semplice, detta \textbf{vanilla RNN}, aggiorna lo stato mediante due contributi: l\textquotesingle osservazione corrente e lo stato precedente. Adottiamo vettori colonna e la notazione della slide 22:
+% END F03-B0097
+
+% BEGIN F03-B0098
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{\begin{aligned}
+a_t&=Wh_{t-1}+Ux_t,\\
+h_t&=\phi(a_t),\\
+o_t&=Vh_t.
+\end{aligned}}$
+\end{adjustbox}
+\end{center}
+% END F03-B0098
+
+% BEGIN F03-B0099
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.1444}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3889}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.4667}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Simbolo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Forma
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Ruolo
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(x_t\) & \(d\times1\) & Osservazione al passo \(t\) \\
+\(h_{t-1},h_t\) & \(m\times1\) & Stato nascosto precedente e corrente \\
+\(a_t\) & \(m\times1\) & Pre-attivazione, prima della non linearità \\
+\(U\) & \(m\times d\) & Proiezione ingresso → stato \\
+\(W\) & \(m\times m\) & Trasformazione dello stato precedente \\
+\(\phi\) & Applicata componente per componente & Attivazione, per esempio \(\tanh\) \\
+\(V\) & \(r\times m\) & Proiezione stato → uscita \\
+\(o_t\) & \(r\times1\) & Uscita o score del passo corrente \\
+\end{longtable}
+% END F03-B0099
+
+% BEGIN F03-B0100
+La dimensione \(m\) dello stato è una scelta architetturale, come la larghezza di un livello nascosto di un MLP. Anche una serie univariata può essere proiettata in uno stato di 256 componenti: \(d=1\) non impone \(m=1\).
+% END F03-B0100
+
+% BEGIN F03-B0101
+\subsection{Come si costruisce un aggiornamento (slide 22)}\label{f03-r271}
+% END F03-B0101
+
+% BEGIN F03-B0102
+La formula si legge verificando prima le dimensioni:
+% END F03-B0102
+
+% BEGIN F03-B0103
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+u_t&=Ux_t\in\mathbb R^m &&(m\times d)(d\times1)=m\times1,\\
+v_t&=Wh_{t-1}\in\mathbb R^m &&(m\times m)(m\times1)=m\times1,\\
+a_t&=u_t+v_t\in\mathbb R^m &&\text{somma di vettori della stessa forma},\\
+h_t&=\phi(a_t)\in\mathbb R^m &&\text{attivazione componente per componente},\\
+o_t&=Vh_t\in\mathbb R^r &&(r\times m)(m\times1)=r\times1.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0103
+
+% BEGIN F03-B0104
+Le trasformazioni portano ingresso e memoria nello stesso spazio; la somma li fonde; l\textquotesingle attivazione produce il nuovo stato. È lo schema del neurone di \hyperref[fonte01]{Multilayer Perceptron}, con un secondo ingresso che arriva dal passato.
+% END F03-B0104
+
+% BEGIN F03-B0105
+Le slide omettono i bias per semplicità. Se presenti, si aggiungono un vettore \(b_h\in\mathbb R^m\) prima di \(\phi\) e un vettore \(b_o\in\mathbb R^r\) nell\textquotesingle uscita. L\textquotesingle omissione non implica che un\textquotesingle implementazione debba esserne priva.
+% END F03-B0105
+
+% BEGIN F03-B0106
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_a3642bd8b36508e6.png}}
+\caption{Slide 22 --- RNN con annotazione a mano dello srotolamento in tre passi}
+\end{figure}
+% END F03-B0106
+
+% BEGIN F03-B0107
+\subsection{Esempio numerico di un passo (slide 22)}\label{f03-r291}
+% END F03-B0107
+
+% BEGIN F03-B0108
+Consideriamo due feature di ingresso, due unità nascoste e una uscita: \(d=m=2\), \(r=1\). Siano
+% END F03-B0108
+
+% BEGIN F03-B0109
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+x_t=\begin{bmatrix}1\\2\end{bmatrix},\quad
+h_{t-1}=\begin{bmatrix}0.5\\-0.5\end{bmatrix},\quad
+U=\begin{bmatrix}1&0\\0&0.5\end{bmatrix},\quad
+W=\begin{bmatrix}0.2&0\\0&0.2\end{bmatrix},\quad
+V=\begin{bmatrix}1&-1\end{bmatrix}.
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0109
+
+% BEGIN F03-B0110
+Applicando i passaggi precedenti:
+% END F03-B0110
+
+% BEGIN F03-B0111
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+Ux_t&=\begin{bmatrix}1\cdot1+0\cdot2\\0\cdot1+0.5\cdot2\end{bmatrix}
+=\begin{bmatrix}1\\1\end{bmatrix},\\
+Wh_{t-1}&=\begin{bmatrix}0.2\cdot0.5\\0.2\cdot(-0.5)\end{bmatrix}
+=\begin{bmatrix}0.1\\-0.1\end{bmatrix},\\
+a_t&=\begin{bmatrix}1.1\\0.9\end{bmatrix},\\
+h_t&=\tanh(a_t)\approx\begin{bmatrix}0.800499\\0.716298\end{bmatrix},\\
+o_t&=1\cdot0.800499-1\cdot0.716298\approx0.084201.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0111
+
+% BEGIN F03-B0112
+L\textquotesingle uscita è qui uno scalare generico. In classificazione può essere uno score su cui costruire la loss appropriata; in regressione può rappresentare la quantità da stimare. Una trasformazione lineare \(Vh_t\) non produce automaticamente probabilità.
+% END F03-B0112
+
+% BEGIN F03-B0113
+\subsection{Lunghezza variabile e pesi condivisi (slide 22)}\label{f03-r319}
+% END F03-B0113
+
+% BEGIN F03-B0114
+Per una sequenza di tre elementi il modello calcola:
+% END F03-B0114
+
+% BEGIN F03-B0115
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+h_1&=\phi(Wh_0+Ux_1),\\
+h_2&=\phi(Wh_1+Ux_2),\\
+h_3&=\phi(Wh_2+Ux_3).
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0115
+
+% BEGIN F03-B0116
+Se arriva un quarto elemento si esegue un altro aggiornamento con \textbf{le stesse matrici}. Non si crea un nuovo insieme di pesi per ogni posizione. La ricorrenza cambia il numero delle iterazioni richieste, non la forma delle trasformazioni.
+% END F03-B0116
+
+% BEGIN F03-B0117
+Senza bias e senza apprendere \(h_0\), il conteggio deriva dal numero di elementi delle tre matrici:
+% END F03-B0117
+
+% BEGIN F03-B0118
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+P_U&=md,\qquad P_W=m^2,\qquad P_V=rm,\\
+\boxed{P_{\mathrm{RNN}}}&=\boxed{md+m^2+rm.}
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0118
+
+% BEGIN F03-B0119
+Nell\textquotesingle esempio \(d=m=2,r=1\) sono \(4+4+2=10\) pesi, sia per una sequenza di 3 passi sia per una di 100. Due bias aggiungerebbero \(m+r=3\) parametri; uno stato iniziale apprendibile aggiungerebbe altri \(m=2\) valori. È il conteggio della parametrizzazione descritta, non una formula universale per qualsiasi implementazione multilivello.
+% END F03-B0119
+
+% BEGIN F03-B0120
+La condivisione è temporale: nelle CNN lo stesso filtro viene riutilizzato in posizioni spaziali differenti; qui la stessa regola viene riutilizzata in istanti differenti. Più passi significano comunque più calcolo.
+% END F03-B0120
+
+% BEGIN F03-B0121
+\section{Hidden state: un riassunto utile, non il modello appreso (slide 23)}\label{f03-r346}
+% END F03-B0121
+
+% BEGIN F03-B0122
+Lo stato \(h_t\) può essere influenzato da tutti gli ingressi elaborati fino a \(t\), perché \(h_t\) dipende da \(h_{t-1}\), che dipende da \(h_{t-2}\), e così via. È un \textbf{riassunto della storia disponibile}, orientato al compito e generalmente con perdita di informazione. Una dimensione fissa \(m\) non equivale a memorizzare esplicitamente una lista che cresce con la sequenza.
+% END F03-B0122
+
+% BEGIN F03-B0123
+Per una classificazione many-to-one si può usare lo stato finale \(h_T\) per ottenere la decisione. La RNN agisce da estrattore di feature temporali, come la parte convoluzionale estrae feature spaziali; sopra lo stato o la sua proiezione si può collegare un MLP.
+% END F03-B0123
+
+% BEGIN F03-B0124
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f03_02.pdf}}
+% END F03-B0124
+
+% BEGIN F03-B0125
+Il riassunto non è necessariamente completo né sempre efficace: proprio l\textquotesingle apprendimento di informazioni lontane sarà il problema successivo. Il legame strutturale con il passato non garantisce che tutti gli elementi conservino la stessa influenza.
+% END F03-B0125
+
+% BEGIN F03-B0126
+\subsection{Che cosa rimane dopo il training? (slide 23)}\label{f03-r362}
+% END F03-B0126
+
+% BEGIN F03-B0127
+Le matrici \(U,W,V\) sono \textbf{parametri}, condivisi fra esempi. Lo stato \(h_t\) è una \textbf{attivazione}, calcolata per una specifica sequenza. Il risultato dell\textquotesingle apprendimento sono le matrici e gli eventuali altri parametri, non l\textquotesingle ultimo stato prodotto dall\textquotesingle ultimo esempio di training.
+% END F03-B0127
+
+% BEGIN F03-B0128
+Su una nuova sequenza si inizializza lo stato e si ripete il forward. \(h_0\) può essere fissato, spesso a zero, oppure essere un parametro apprendibile. Per proseguire una stessa sequenza in inferenza è sufficiente mantenere lo stato corrente e aggiornarlo con la nuova osservazione; per esempi indipendenti non si trasferisce automaticamente la storia dell\textquotesingle esempio precedente.
+% END F03-B0128
+
+% BEGIN F03-B0129
+In training, per calcolare i gradienti lungo la sequenza, servono invece gli intermedi del grafo o un modo di ricostruirli: dimensione fissa dello stato non significa memoria di addestramento indipendente da \(T\).
+% END F03-B0129
+
+% BEGIN F03-B0130
+\subsection{Comporre CNN e RNN per un video (slide 23)}\label{f03-r370}
+% END F03-B0130
+
+% BEGIN F03-B0131
+Un video è una sequenza di immagini. Una CNN può elaborare ciascun fotogramma e produrre un vettore di feature; la RNN può elaborare la successione di quei vettori. I due blocchi trattano rispettivamente struttura spaziale e ordine temporale.
+% END F03-B0131
+
+% BEGIN F03-B0132
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f03_03.pdf}}
+% END F03-B0132
+
+% BEGIN F03-B0133
+È un esempio di composizione dei blocchi già studiati, senza introdurre una nuova regola di apprendimento.
+% END F03-B0133
+
+% BEGIN F03-B0134
+\section{Unfolding: esplicitare il calcolo nel tempo (slide 24--26)}\label{f03-r384}
+% END F03-B0134
+
+% BEGIN F03-B0135
+Il disegno con un arco che torna sullo stato è una rappresentazione compatta. Lo \textbf{srotolamento}, o \textbf{unfolding/unrolling}, esplicita un nodo per ogni aggiornamento. Ogni copia usa gli stessi parametri: non rappresenta una cella con pesi nuovi.
+% END F03-B0135
+
+% BEGIN F03-B0136
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_5cd686723b91f868.png}}
+\caption{Slide 24 --- Grafo ricorrente e srotolamento}
+\end{figure}
+% END F03-B0136
+
+% BEGIN F03-B0137
+Per tre osservazioni e una sola uscita finale:
+% END F03-B0137
+
+% BEGIN F03-B0138
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f03_04.pdf}}
+% END F03-B0138
+
+% BEGIN F03-B0139
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_73242035e461b501.png}}
+\caption{Slide 26 --- Esempio many-to-one con tre passi e stato iniziale}
+\end{figure}
+% END F03-B0139
+
+% BEGIN F03-B0140
+Una volta fissata una sequenza finita, il grafo srotolato è un \textbf{DAG}, un grafo diretto senza cicli: \(h_1\) dipende da \(h_0\), \(h_2\) da \(h_1\), e nessun nodo torna indietro modificando il valore di un nodo precedente nello stesso forward. L\textquotesingle arco di ritorno del disegno compatto indica il riutilizzo al passo successivo.
+% END F03-B0140
+
+% BEGIN F03-B0141
+Si può quindi applicare la backpropagation ordinaria. Poiché il backward attraversa i passi temporali in ordine inverso, si parla di \textbf{Backpropagation Through Time}, abbreviata \textbf{BPTT}. La regola della catena è quella di \hyperref[fonte01]{Multilayer Perceptron}; qui le stesse matrici compaiono in più punti del grafo. Un sistema di differenziazione automatica può registrare questi passaggi e accumulare i gradienti corrispondenti.
+% END F03-B0141
+
+% BEGIN F03-B0142
+\section{BPTT: sommare i contributi ai parametri condivisi (slide 27)}\label{f03-r410}
+% END F03-B0142
+
+% BEGIN F03-B0143
+Consideriamo il caso mostrato: \(T=3\), un\textquotesingle uscita finale \(o_3=Vh_3\) e una loss differenziabile \(\mathcal L(y,o_3)\). Manteniamo vettori colonna, \(h_0\) inizialmente indipendente da \(U,W\) e bias omessi.
+% END F03-B0143
+
+% BEGIN F03-B0144
+Definiamo:
+% END F03-B0144
+
+% BEGIN F03-B0145
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{g=\nabla_{o_3}\mathcal L\in\mathbb R^r,\qquad
+D_t=\operatorname{diag}\bigl(\phi'(a_t)\bigr)\in\mathbb R^{m\times m}.}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0145
+
+% BEGIN F03-B0146
+La matrice diagonale \(D_t\) contiene una derivata di attivazione per ogni unità. Come già visto per l\textquotesingle MLP, la derivata della loss rispetto alla pre-attivazione combina il gradiente in arrivo con la derivata locale.
+% END F03-B0146
+
+% BEGIN F03-B0147
+\subsection{Gradiente della proiezione finale V (slide 27)}\label{f03-r423}
+% END F03-B0147
+
+% BEGIN F03-B0148
+Per ogni componente:
+% END F03-B0148
+
+% BEGIN F03-B0149
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+o_{3,j}&=\sum_{i=1}^{m}V_{ji}h_{3,i},\\
+\frac{\partial o_{3,j}}{\partial V_{ji}}&=h_{3,i}
+&&\text{derivata locale della combinazione lineare},\\
+\frac{\partial\mathcal L}{\partial V_{ji}}&=g_jh_{3,i}
+&&\text{regola della catena},\\
+\boxed{\nabla_V\mathcal L}&=\boxed{g h_3^T\in\mathbb R^{r\times m}.}
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0149
+
+% BEGIN F03-B0150
+È un \textbf{prodotto esterno}: un gradiente per ciascun peso. Nel grafo considerato \(V\) compare soltanto nella proiezione finale, quindi c\textquotesingle è un solo contributo locale. Il suo valore dipende comunque da \(h_3\), che riassume la sequenza: non significa che il passato sia irrilevante per \(V\).
+% END F03-B0150
+
+% BEGIN F03-B0151
+\subsection{Gradiente attraverso gli stati (slide 27)}\label{f03-r440}
+% END F03-B0151
+
+% BEGIN F03-B0152
+Poniamo \(\delta_t=\nabla_{a_t}\mathcal L\in\mathbb R^m\). Dall\textquotesingle uscita finale si torna prima allo stato e poi alla pre-attivazione:
+% END F03-B0152
+
+% BEGIN F03-B0153
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+\nabla_{h_3}\mathcal L&=V^Tg
+&&\text{backward della trasformazione lineare},\\
+\delta_3&=D_3V^Tg
+&&\text{backward dell'attivazione},\\
+\nabla_{h_2}\mathcal L&=W^T\delta_3
+&&\text{dipendenza di }a_3\text{ da }h_2,\\
+\delta_2&=D_2W^T\delta_3
+&&\text{backward dell'attivazione al passo 2},\\
+\delta_1&=D_1W^T\delta_2
+&&\text{stessa regola al passo 1}.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0153
+
+% BEGIN F03-B0154
+In generale, quando la loss è soltanto sull\textquotesingle uscita finale:
+% END F03-B0154
+
+% BEGIN F03-B0155
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{\delta_T=D_TV^Tg,\qquad\delta_t=D_tW^T\delta_{t+1}\quad(t<T).}$
+\end{adjustbox}
+\end{center}
+% END F03-B0155
+
+% BEGIN F03-B0156
+Tutti i prodotti restituiscono un vettore di \(m\) componenti. Se ci sono loss anche su uscite intermedie si aggiungono i contributi locali di quelle uscite: il caso della slide rimane quello con una sola loss finale.
+% END F03-B0156
+
+% BEGIN F03-B0157
+\subsection{Perché compare una somma per W e U (slide 27)}\label{f03-r465}
+% END F03-B0157
+
+% BEGIN F03-B0158
+La componente \(i\) della pre-attivazione è
+% END F03-B0158
+
+% BEGIN F03-B0159
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle a_{t,i}=\sum_jW_{ij}h_{t-1,j}+\sum_\ell U_{i\ell}x_{t,\ell}.$
+\end{adjustbox}
+\end{center}
+% END F03-B0159
+
+% BEGIN F03-B0160
+Trattando gli ingressi al singolo nodo come fissati, le derivate \textbf{locali} sono:
+% END F03-B0160
+
+% BEGIN F03-B0161
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+\left.\frac{\partial a_{t,i}}{\partial W_{ij}}\right|_{\mathrm{locale}}
+&=h_{t-1,j},\\
+\left.\frac{\partial a_{t,i}}{\partial U_{i\ell}}\right|_{\mathrm{locale}}
+&=x_{t,\ell}.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0161
+
+% BEGIN F03-B0162
+Moltiplicando per \(\delta_{t,i}\) si ottiene il contributo di quella specifica occorrenza del parametro. Poiché il parametro è lo stesso in ogni passo, si sommano tutte le occorrenze:
+% END F03-B0162
+
+% BEGIN F03-B0163
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\begin{aligned}
+\nabla_W\mathcal L&=\sum_{t=1}^{T}\delta_t h_{t-1}^T\in\mathbb R^{m\times m},\\
+\nabla_U\mathcal L&=\sum_{t=1}^{T}\delta_t x_t^T\in\mathbb R^{m\times d}.
+\end{aligned}}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0163
+
+% BEGIN F03-B0164
+Per \(T=3\), per esempio:
+% END F03-B0164
+
+% BEGIN F03-B0165
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \nabla_W\mathcal L=\delta_1h_0^T+\delta_2h_1^T+\delta_3h_2^T.$
+\end{adjustbox}
+\end{center}
+% END F03-B0165
+
+% BEGIN F03-B0166
+La \textbf{sovrapposizione degli effetti} consiste nel tenere conto di tutti i modi in cui un parametro condiviso influenza l\textquotesingle uscita. I prodotti dentro \(\delta_t\) trasportano l\textquotesingle effetto lungo un percorso; la somma combina le diverse occorrenze del peso. Somma fra contributi e prodotto lungo una catena hanno ruoli differenti.
+% END F03-B0166
+
+% BEGIN F03-B0167
+\begin{quote}
+\textbf{Errata slide 27 --- Derivate locali e stato iniziale}
+\end{quote}
+% END F03-B0167
+
+% BEGIN F03-B0168
+\begin{quote}
+Le somme con \(\partial h^{(k)}/\partial W\) e \(\partial h^{(k)}/\partial U\) richiedono di intendere queste derivate come contributi \textbf{locali} dell\textquotesingle occorrenza del parametro al passo \(k\). Se fossero derivate totali, si conterebbero più volte percorsi già inclusi. Con aggiornamenti indicizzati da 1 a \(T\) e \(h_0\) indipendente dai pesi, le occorrenze sono \(k=1,\ldots,T\); il termine \(k=0\) della slide è nullo. Un \(h_0\) appreso ha il proprio gradiente, non un\textquotesingle ulteriore occorrenza di \(W\) o \(U\).
+\end{quote}
+% END F03-B0168
+
+% BEGIN F03-B0169
+Se \(h_0\) è apprendibile, il suo gradiente in questo esempio è \(W^T\delta_1\). Se c\textquotesingle è un bias nascosto condiviso, il contributo locale è \(\delta_t\) e il gradiente del bias è la loro somma. Sono le stesse regole di accumulo.
+% END F03-B0169
+
+% BEGIN F03-B0170
+\subsection{Esempio numerico completo su tre passi (slide 26--27)}\label{f03-r502}
+% END F03-B0170
+
+% BEGIN F03-B0171
+Per rendere trasparenti i conti, usiamo \textbf{solo in questo esempio} una ricorrenza scalare con attivazione identità: \(h_t=Wh_{t-1}+Ux_t\). Non è il caso non lineare con \(\tanh\) dell\textquotesingle esempio precedente; serve a isolare condivisione e regola della catena.
+% END F03-B0171
+
+% BEGIN F03-B0172
+Siano \(h_0=0\), \(U=1\), \(W=0.5\), \(V=1\), ingressi \((x_1,x_2,x_3)=(1,2,0)\) e target \(y=1\). La loss è \(\mathcal L=\tfrac12(o_3-y)^2\), collegata alla MSE di \hyperref[fonte01]{Multilayer Perceptron}.
+% END F03-B0172
+
+% BEGIN F03-B0173
+\begin{longtable}[]{@{}llr@{}}
+\toprule\noalign{}
+Passo & Calcolo dello stato & Risultato \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & \(0.5\cdot0+1\cdot1\) & \(h_1=1\) \\
+2 & \(0.5\cdot1+1\cdot2\) & \(h_2=2.5\) \\
+3 & \(0.5\cdot2.5+1\cdot0\) & \(h_3=1.25\) \\
+\end{longtable}
+% END F03-B0173
+
+% BEGIN F03-B0174
+Seguono \(o_3=1.25\) e \(\mathcal L=\tfrac12(0.25)^2=0.03125\). La derivata della loss è \(g=o_3-y=0.25\); con attivazione identità tutti i fattori \(D_t\) valgono 1:
+% END F03-B0174
+
+% BEGIN F03-B0175
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+\delta_3&=1\cdot1\cdot0.25=0.25,\\
+\delta_2&=1\cdot0.5\cdot0.25=0.125,\\
+\delta_1&=1\cdot0.5\cdot0.125=0.0625.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0175
+
+% BEGIN F03-B0176
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.2727}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3636}}
+  >{\raggedleft\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3636}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Passo
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Contributo a \(\partial\mathcal L/\partial W\)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Contributo a \(\partial\mathcal L/\partial U\)
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+1 & \(\delta_1h_0=0\) & \(\delta_1x_1=0.0625\) \\
+2 & \(\delta_2h_1=0.125\) & \(\delta_2x_2=0.25\) \\
+3 & \(\delta_3h_2=0.625\) & \(\delta_3x_3=0\) \\
+\textbf{Somma} & \textbf{0.75} & \textbf{0.3125} \\
+\end{longtable}
+% END F03-B0176
+
+% BEGIN F03-B0177
+Per la proiezione finale, \(\partial\mathcal L/\partial V=g h_3=0.25\cdot1.25=0.3125\). Si può verificare anche sviluppando la ricorrenza:
+% END F03-B0177
+
+% BEGIN F03-B0178
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+h_1&=Ux_1,\\
+h_2&=WUx_1+Ux_2,\\
+h_3&=W^2Ux_1+WUx_2+Ux_3,\\
+\frac{\partial h_3}{\partial W}&=2WUx_1+Ux_2=1+2=3,\\
+\frac{\partial\mathcal L}{\partial W}&=gV\frac{\partial h_3}{\partial W}=0.25\cdot1\cdot3=0.75.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0178
+
+% BEGIN F03-B0179
+Il risultato coincide con la somma dei tre contributi. Il primo contributo locale a \(W\) è nullo perché \(h_0=0\), non perché il primo ingresso sia ignorato: \(x_1\) influenza anche gli stati successivi e il gradiente di \(U\).
+% END F03-B0179
+
+% BEGIN F03-B0180
+Con un passo di gradient descent di ampiezza \(\eta=0.1\), tutti i gradienti vengono prima calcolati con gli stessi valori correnti, poi i parametri diventano \(W'=0.425\), \(U'=0.96875\) e \(V'=0.96875\). Non si modifica \(W\) a metà del backward per usarlo nella derivazione degli altri contributi.
+% END F03-B0180
+
+% BEGIN F03-B0181
+\section{Dipendenze a lungo termine e instabilità del gradiente (slide 28--29)}\label{f03-r547}
+% END F03-B0181
+
+% BEGIN F03-B0182
+Una dipendenza a lungo termine si presenta quando un\textquotesingle informazione ricevuta molto prima è utile alla predizione corrente. La RNN possiede un percorso che collega i due istanti, ma il gradiente deve attraversare tutti gli aggiornamenti intermedi per apprendere come conservare quell\textquotesingle informazione.
+% END F03-B0182
+
+% BEGIN F03-B0183
+Definiamo la Jacobiana di una transizione:
+% END F03-B0183
+
+% BEGIN F03-B0184
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{J_t=\frac{\partial h_t}{\partial h_{t-1}}=D_tW\in\mathbb R^{m\times m}.}$
+\end{adjustbox}
+\end{center}
+% END F03-B0184
+
+% BEGIN F03-B0185
+La formula si ricava da \(h_t=\phi(a_t)\) e \(a_t=Wh_{t-1}+Ux_t\): la derivata dell\textquotesingle attivazione è \(D_t\); la derivata della pre-attivazione rispetto allo stato precedente è \(W\). Per la regola della catena i due fattori si moltiplicano in quest\textquotesingle ordine.
+% END F03-B0185
+
+% BEGIN F03-B0186
+\subsection{Il prodotto lungo il tempo (slide 28)}\label{f03-r557}
+% END F03-B0186
+
+% BEGIN F03-B0187
+Con tre passi:
+% END F03-B0187
+
+% BEGIN F03-B0188
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+\frac{\partial h_3}{\partial h_1}
+&=\frac{\partial h_3}{\partial h_2}\frac{\partial h_2}{\partial h_1}
+&&\text{regola della catena},\\
+&=J_3J_2
+&&\text{definizione delle Jacobiane},\\
+&=D_3WD_2W
+&&\text{sostituzione delle derivate locali}.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0188
+
+% BEGIN F03-B0189
+In generale, per \(t>k\):
+% END F03-B0189
+
+% BEGIN F03-B0190
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{\frac{\partial h_t}{\partial h_k}=J_tJ_{t-1}\cdots J_{k+1}.}$
+\end{adjustbox}
+\end{center}
+% END F03-B0190
+
+% BEGIN F03-B0191
+Il gradiente rispetto allo stato iniziale del tratto si ottiene moltiplicando il gradiente in arrivo per la trasposta di questo prodotto. Nel caso scalare sono semplicemente prodotti di derivate.
+% END F03-B0191
+
+% BEGIN F03-B0192
+Se ogni fattore scalare vale \(0.5\), dieci transizioni danno \(0.5^{10}=0.0009765625\); venti danno circa \(9.54\cdot10^{-7}\). Un contributo partito con ampiezza 1 può quindi arrivare molto attenuato. Nell\textquotesingle esempio lineare della sezione precedente, \(J_t=W=0.5\) e \(\partial h_3/\partial h_1=0.25\).
+% END F03-B0192
+
+% BEGIN F03-B0193
+Il \textbf{vanishing gradient} rende debole il segnale che dovrebbe insegnare alla rete a usare gli ingressi lontani. Non implica che ogni gradiente della rete sia nullo o che non rimanga alcuna informazione del passato: indica una difficoltà di apprendimento crescente lungo percorsi che contraggono ripetutamente il segnale.
+% END F03-B0193
+
+% BEGIN F03-B0194
+\subsection{Derivata dell\textquotesingle attivazione e matrice ricorrente (slide 28)}\label{f03-r583}
+% END F03-B0194
+
+% BEGIN F03-B0195
+Per \(\tanh\) e sigmoide, richiamando \hyperref[fonte01]{Multilayer Perceptron}:
+% END F03-B0195
+
+% BEGIN F03-B0196
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\tanh'(a)=1-\tanh^2(a)\leq1,\qquad
+\sigma'(a)=\sigma(a)(1-\sigma(a))\leq\tfrac14.}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0196
+
+% BEGIN F03-B0197
+Il limite della sigmoide si verifica completando il quadrato: posto \(s=\sigma(a)\in(0,1)\),
+% END F03-B0197
+
+% BEGIN F03-B0198
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+s(1-s)&=s-s^2,\\
+&=\frac14-\left(s-\frac12\right)^2,\\
+&\leq\frac14.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0198
+
+% BEGIN F03-B0199
+Per \(\tanh\), il quadrato è non negativo, quindi \(1-\tanh^2(a)\leq1\); in saturazione il quadrato è vicino a 1 e la derivata è piccola. Per esempio, \(\tanh'(0)=1\); \(\tanh'(2)\approx0.07065\). Per la sigmoide, \(\sigma'(0)=0.25\).
+% END F03-B0199
+
+% BEGIN F03-B0200
+Questi sono i limiti delle \textbf{derivate delle attivazioni}, non della transizione completa. Per la norma spettrale, la proprietà \(\|AB\|_2\leq\|A\|_2\|B\|_2\) dà:
+% END F03-B0200
+
+% BEGIN F03-B0201
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+\|J_t\|_2&=\|D_tW\|_2\leq\|D_t\|_2\|W\|_2,\\
+\left\|\frac{\partial h_t}{\partial h_k}\right\|_2
+&\leq\prod_{j=k+1}^{t}\|J_j\|_2.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0201
+
+% BEGIN F03-B0202
+Se ogni fattore è al più \(c<1\), il prodotto è al più \(c^{t-k}\), che diminuisce geometricamente. Con \(c=0.5\) si ritrovano i numeri precedenti.
+% END F03-B0202
+
+% BEGIN F03-B0203
+\begin{quote}
+\textbf{Errata slide 28 --- Il limite non vale senza W}
+\end{quote}
+% END F03-B0203
+
+% BEGIN F03-B0204
+\begin{quote}
+I limiti 1 per \(\tanh\) e \(1/4\) per sigmoide riguardano \(D_t\). La Jacobiana temporale è \(J_t=D_tW\) e dipende anche dai pesi. Per esempio, nel caso scalare con \(W=2\) e pre-attivazione zero, \(\tanh'(0)=1\) ma \(J_t=2\). Non si può dedurre dalla sola attivazione che ogni transizione abbia norma al più 1 o \(1/4\).
+\end{quote}
+% END F03-B0204
+
+% BEGIN F03-B0205
+\subsection{Exploding gradient e mitigazioni (slide 29)}\label{f03-r619}
+% END F03-B0205
+
+% BEGIN F03-B0206
+L\textquotesingle effetto opposto si verifica quando i prodotti amplificano il gradiente. Dieci fattori scalari uguali a 2 danno 1024; venti danno 1 048 576. Aggiornamenti molto grandi possono rendere instabile l\textquotesingle ottimizzazione e produrre problemi numerici. Si parla di \textbf{exploding gradient}.
+% END F03-B0206
+
+% BEGIN F03-B0207
+Un limite superiore grande non dimostra che ogni direzione venga amplificata: nei vettori contano anche i pesi, le attivazioni e la direzione del gradiente. Gli esempi scalari isolano il meccanismo.
+% END F03-B0207
+
+% BEGIN F03-B0208
+Inizializzazione e scelta delle attivazioni influenzano questi prodotti. Il \textbf{gradient clipping} limita gradienti eccessivamente grandi; per chiarirne il significato, un clipping sulla norma ha la forma:
+% END F03-B0208
+
+% BEGIN F03-B0209
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{g_{\mathrm{clip}}=g\min\left(1,\frac{c}{\|g\|_2}\right),\qquad c>0,}$
+\end{adjustbox}
+\end{center}
+% END F03-B0209
+
+% BEGIN F03-B0210
+con \(g_{\mathrm{clip}}=0\) se \(g=0\). Se \(\|g\|_2\leq c\), il minimo vale 1 e il gradiente non cambia. Se la norma supera \(c\), lo si moltiplica per \(c/\|g\|_2\), preservandone la direzione e portandone la norma a \(c\). Per \(g=(6,8)\) la norma è 10; con \(c=5\) il risultato è \((3,4)\), la cui norma è 5.
+% END F03-B0210
+
+% BEGIN F03-B0211
+\begin{quote}
+\textbf{Errata slide 29 --- Il clipping non recupera gradienti svaniti}
+\end{quote}
+% END F03-B0211
+
+% BEGIN F03-B0212
+\begin{quote}
+Il clipping controlla soprattutto l\textquotesingle esplosione del gradiente. Non ricostruisce un contributo già diventato trascurabile. Inizializzazione, attivazioni e architettura intervengono sul flusso dei gradienti in modi differenti; non sono rimedi intercambiabili ai due problemi.
+\end{quote}
+% END F03-B0212
+
+% BEGIN F03-B0213
+Una RNN srotolata su molti passi crea una grande profondità temporale anche se contiene un solo livello ricorrente. Problemi analoghi possono comparire nelle reti feedforward profonde, come già discusso in \hyperref[fonte02]{reti convoluzionali} per le connessioni residue.
+% END F03-B0213
+
+% BEGIN F03-B0214
+La condivisione dei pesi è una proprietà dell\textquotesingle architettura; la BPTT ne calcola correttamente le conseguenze, non la introduce. La difficoltà deriva dai lunghi prodotti di Jacobiane, non dalla sola presenza di parametri condivisi. Non basta inserire un logaritmo nel backward: il gradiente deve rimanere la derivata della funzione effettivamente calcolata. Per cambiarne i percorsi si interviene su modello e calcolo, non sostituendo arbitrariamente la regola della catena.
+% END F03-B0214
+
+% BEGIN F03-B0215
+\section{Memoria selettiva e architetture con gate (slide 30)}\label{f03-r638}
+% END F03-B0215
+
+% BEGIN F03-B0216
+La difficoltà delle dipendenze lontane motiva celle che possano imparare \textbf{quali informazioni conservare, quali aggiornare e quali esporre}. Le \textbf{Long Short-Term Memory}, o \textbf{LSTM}, introducono una memoria interna e gate apprendibili. Le \textbf{Gated Recurrent Unit}, o \textbf{GRU}, sono un\textquotesingle altra variante ricorrente, qui soltanto richiamata.
+% END F03-B0216
+
+% BEGIN F03-B0217
+L\textquotesingle intuizione è accettare una memoria di dimensione fissata e imparare a gestirla. Non si può trattare lo stato come un archivio esplicito che contiene tutto il passato: conviene selezionare ciò che aiuta a ridurre la loss. Anche la vanilla RNN apprende una trasformazione selettiva degli ingressi; la differenza è che nella LSTM la selezione viene resa esplicita mediante gate e un percorso additivo della memoria.
+% END F03-B0217
+
+% BEGIN F03-B0218
+Un \textbf{gate} si può immaginare come un interruttore graduabile. Un interruttore rigido lascia passare tutto o niente; un gate continuo può attenuare una componente in misura intermedia. I valori vicini a 1 lasciano passare quasi tutto, quelli vicini a 0 quasi nulla. Questa regolazione è appresa attraverso i pesi e la loss del compito, non impostata manualmente per ciascun ingresso.
+% END F03-B0218
+
+% BEGIN F03-B0219
+Per le GRU basta qui ricordare il cenno conclusivo: impiegano \textbf{due gate}, comunemente detti aggiornamento e reset, e una struttura più compatta rispetto alla LSTM standard a parità di dimensioni. Non vengono sviluppate le equazioni GRU, né si deduce che due gate siano universalmente sufficienti per qualsiasi problema.
+% END F03-B0219
+
+% BEGIN F03-B0220
+\section{LSTM: stato interno e quadro delle equazioni (slide 31)}\label{f03-r648}
+% END F03-B0220
+
+% BEGIN F03-B0221
+La LSTM mantiene due vettori di dimensione \(m\):
+% END F03-B0221
+
+% BEGIN F03-B0222
+\begin{itemize}
+\tightlist
+\item
+  il \textbf{cell state} \(C_t\), la memoria interna;
+\item
+  lo \textbf{hidden state} \(h_t\), la rappresentazione esposta dalla cella.
+\end{itemize}
+% END F03-B0222
+
+% BEGIN F03-B0223
+Entrambi vengono aggiornati lungo la sequenza. Il simbolo \(o_t\) ora indica l\textquotesingle{}\textbf{output gate}: non è l\textquotesingle uscita \(o_t=Vh_t\) usata per la vanilla RNN. Per evitare ambiguità, una eventuale proiezione finale della LSTM sarà chiamata \(s_t\).
+% END F03-B0223
+
+% BEGIN F03-B0224
+Le slide LSTM usano prodotti con vettori riga, mentre la slide 22 usava vettori colonna. Manteniamo qui la convenzione a colonne: la trasformazione \(x_tU_i\) della slide diventa \(U_ix_t\), con la matrice trasposta rispetto alla convenzione a righe. Non cambia l\textquotesingle operazione rappresentata.
+% END F03-B0224
+
+% BEGIN F03-B0225
+Come nelle slide, i bias sono omessi. Il passo completo è:
+% END F03-B0225
+
+% BEGIN F03-B0226
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\boxed{\begin{aligned}
+i_t&=\sigma(U_ix_t+W_ih_{t-1}),\\
+f_t&=\sigma(U_fx_t+W_fh_{t-1}),\\
+o_t&=\sigma(U_ox_t+W_oh_{t-1}),\\
+\widetilde C_t&=\tanh(U_Cx_t+W_Ch_{t-1}),\\
+C_t&=f_t\odot C_{t-1}+i_t\odot\widetilde C_t,\\
+h_t&=o_t\odot\tanh(C_t).
+\end{aligned}}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0226
+
+% BEGIN F03-B0227
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Quantità
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Forma
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Significato
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(x_t\) & \(d\times1\) & Osservazione corrente \\
+\(h_{t-1},h_t\) & \(m\times1\) & Stato nascosto precedente e corrente \\
+\(C_{t-1},C_t\) & \(m\times1\) & Memoria precedente e corrente \\
+\(i_t,f_t,o_t\) & \(m\times1\) & Gate di ingresso, mantenimento e uscita \\
+\(\widetilde C_t\) & \(m\times1\) & Contenuto candidato da scrivere \\
+\(U_i,U_f,U_o,U_C\) & \(m\times d\) & Pesi che elaborano l\textquotesingle ingresso \\
+\(W_i,W_f,W_o,W_C\) & \(m\times m\) & Pesi che elaborano lo stato precedente \\
+\(\odot\) & Operazione fra vettori della stessa forma & Prodotto elemento per elemento \\
+\end{longtable}
+% END F03-B0227
+
+% BEGIN F03-B0228
+\begin{figure}[H]
+\centering
+\pandocbounded{\includegraphics[keepaspectratio]{figure/fig_f0c5f113382b53d0.png}}
+\caption{Slide 31 --- Schema della cella LSTM}
+\end{figure}
+% END F03-B0228
+
+% BEGIN F03-B0229
+Le equazioni non sono un risultato da dedurre dalla vanilla RNN: \textbf{definiscono la nuova architettura}. Per comprenderle si segue il flusso del calcolo: si costruiscono i gate e il candidato da \(x_t,h_{t-1}\); si aggiorna la memoria; si ricava lo stato nascosto. I passaggi seguenti esplicitano ogni operazione.
+% END F03-B0229
+
+% BEGIN F03-B0230
+\section{Gate: interruttori continui apprendibili (slide 32)}\label{f03-r687}
+% END F03-B0230
+
+% BEGIN F03-B0231
+Tutti i gate ricevono ingresso corrente e stato nascosto precedente, ma hanno \textbf{matrici proprie}. Per un gate generico \(g_t\):
+% END F03-B0231
+
+% BEGIN F03-B0232
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+z_{g,t}&=U_gx_t+W_gh_{t-1}\in\mathbb R^m
+&&\text{combinazione delle due sorgenti},\\
+g_{t,j}&=\sigma(z_{g,t,j})=\frac1{1+e^{-z_{g,t,j}}}\in(0,1)
+&&\text{sigmoide per ciascuna componente}.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0232
+
+% BEGIN F03-B0233
+La sigmoide dà una quantità interpretabile come frazione da lasciare passare. Per esempio:
+% END F03-B0233
+
+% BEGIN F03-B0234
+\begin{longtable}[]{@{}lrl@{}}
+\toprule\noalign{}
+Pre-attivazione & Gate risultante & Interpretazione \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(0\) & \(0.5\) & Passaggio a metà \\
+\(\ln3\) & \(1/(1+1/3)=0.75\) & Passaggio al 75\% \\
+\(-\ln3\) & \(1/(1+3)=0.25\) & Passaggio al 25\% \\
+\end{longtable}
+% END F03-B0234
+
+% BEGIN F03-B0235
+Con pre-attivazioni finite, una sigmoide matematica è strettamente fra 0 e 1. I casi esatti 0 e 1 sono idealizzazioni utili per capire i meccanismi. La sigmoide è la scelta della cella descritta: il requisito concettuale è una selezione continua compatibile con l\textquotesingle apprendimento, non un teorema che impedisce ogni altro possibile gate.
+% END F03-B0235
+
+% BEGIN F03-B0236
+\subsection{Prodotto di Hadamard (slide 31--32)}\label{f03-r710}
+% END F03-B0236
+
+% BEGIN F03-B0237
+Il simbolo \(\odot\) è il \textbf{prodotto di Hadamard}:
+% END F03-B0237
+
+% BEGIN F03-B0238
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{(a\odot b)_j=a_jb_j.}$
+\end{adjustbox}
+\end{center}
+% END F03-B0238
+
+% BEGIN F03-B0239
+Due vettori di \(m\) componenti producono un vettore di \(m\) componenti. Ogni posizione viene moltiplicata soltanto per la posizione corrispondente, senza sommare fra coordinate.
+% END F03-B0239
+
+% BEGIN F03-B0240
+L\textquotesingle esempio dell\textquotesingle interruttore selettivo è:
+% END F03-B0240
+
+% BEGIN F03-B0241
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \begin{bmatrix}1\\2\\3\end{bmatrix}\odot\begin{bmatrix}0\\1\\0\end{bmatrix}
+=\begin{bmatrix}1\cdot0\\2\cdot1\\3\cdot0\end{bmatrix}
+=\begin{bmatrix}0\\2\\0\end{bmatrix}.$
+\end{adjustbox}
+\end{center}
+% END F03-B0241
+
+% BEGIN F03-B0242
+Un gate può quindi conservare una componente e sopprimerne altre. È diverso sia da un prodotto scalare, che restituirebbe un solo numero, sia dalla trasformazione tramite una matrice che mescola componenti.
+% END F03-B0242
+
+% BEGIN F03-B0243
+\subsection{I tre ruoli distinti (slide 32)}\label{f03-r726}
+% END F03-B0243
+
+% BEGIN F03-B0244
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Gate
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Dove interviene
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Cosa controlla
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{Forget} \(f_t\) & \(f_t\odot C_{t-1}\) & Quanto della memoria precedente conservare \\
+\textbf{Input} \(i_t\) & \(i_t\odot\widetilde C_t\) & Quanto del candidato scrivere nella memoria \\
+\textbf{Output} \(o_t\) & \(o_t\odot\tanh(C_t)\) & Quanto dello stato trasformato esporre come \(h_t\) \\
+\end{longtable}
+% END F03-B0244
+
+% BEGIN F03-B0245
+Il nome \emph{forget gate} può trarre in inganno: un valore grande \textbf{conserva} il contenuto precedente; un valore piccolo lo attenua. La quantità scartata, lungo quel percorso, cresce quando \(f_t\) diminuisce. Il gate di ingresso filtra il candidato, che dipende anche da \(h_{t-1}\), non semplicemente i valori grezzi di \(x_t\).
+% END F03-B0245
+
+% BEGIN F03-B0246
+\begin{quote}
+\textbf{Errata slide 32 --- Interpretazione del forget gate}
+\end{quote}
+% END F03-B0246
+
+% BEGIN F03-B0247
+\begin{quote}
+La descrizione in termini di memoria da «sovrascrivere» va letta attraverso l\textquotesingle equazione: il valore del forget gate è la frazione di memoria \textbf{conservata} sul percorso diretto. Un valore vicino a 1 non significa dimenticare tutto.
+\end{quote}
+% END F03-B0247
+
+% BEGIN F03-B0248
+I gate non sono tre RNN indipendenti con tre memorie nascoste separate: sono tre trasformazioni apprendibili che leggono lo stesso \(x_t\) e lo stesso \(h_{t-1}\) e operano in punti diversi della cella.
+% END F03-B0248
+
+% BEGIN F03-B0249
+\section{Stato candidato: proporre un nuovo contenuto (slide 33)}\label{f03-r741}
+% END F03-B0249
+
+% BEGIN F03-B0250
+Il candidato usa una combinazione di ingresso e stato precedente simile alla vanilla RNN:
+% END F03-B0250
+
+% BEGIN F03-B0251
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{\widetilde C_t=\tanh(U_Cx_t+W_Ch_{t-1})\in\mathbb R^m.}$
+\end{adjustbox}
+\end{center}
+% END F03-B0251
+
+% BEGIN F03-B0252
+Prima si proiettano le due sorgenti nello stesso spazio, poi si sommano e si applica \(\tanh\). Le matrici sono proprie del candidato, distinte da quelle dei gate. Ogni componente del candidato è compresa fra \(-1\) e 1: può proporre un contributo positivo o negativo.
+% END F03-B0252
+
+% BEGIN F03-B0253
+Per esempio, se una componente della pre-attivazione vale \(\ln3\), allora
+% END F03-B0253
+
+% BEGIN F03-B0254
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+\widetilde C_{t,j}
+&=\tanh(\ln3)
+=\frac{e^{\ln3}-e^{-\ln3}}{e^{\ln3}+e^{-\ln3}}\\
+&=\frac{3-1/3}{3+1/3}=\frac{8/3}{10/3}=0.8.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0254
+
+% BEGIN F03-B0255
+È un contenuto \textbf{candidato}, non ancora la nuova memoria. Se il gate di ingresso corrispondente vale \(0.5\), la componente effettivamente scritta è \(0.5\cdot0.8=0.4\). Il modello separa così la proposta del contenuto dalla decisione su quanto scriverne.
+% END F03-B0255
+
+% BEGIN F03-B0256
+\section{Aggiornare la memoria ed esporre lo stato (slide 34)}\label{f03-r762}
+% END F03-B0256
+
+% BEGIN F03-B0257
+La memoria nuova combina due percorsi:
+% END F03-B0257
+
+% BEGIN F03-B0258
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{C_t=f_t\odot C_{t-1}+i_t\odot\widetilde C_t.}$
+\end{adjustbox}
+\end{center}
+% END F03-B0258
+
+% BEGIN F03-B0259
+Per ciascuna componente:
+% END F03-B0259
+
+% BEGIN F03-B0260
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+p_{t,j}&=f_{t,j}C_{t-1,j} &&\text{parte conservata del passato},\\
+n_{t,j}&=i_{t,j}\widetilde C_{t,j} &&\text{parte accettata del candidato},\\
+C_{t,j}&=p_{t,j}+n_{t,j} &&\text{somma dei contributi}.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0260
+
+% BEGIN F03-B0261
+Non è obbligatoriamente una media pesata: \(f_{t,j}+i_{t,j}\) non deve essere 1. Le due selezioni sono apprese separatamente. Lo stato \(C_t\) non è perciò vincolato all\textquotesingle intervallo \([-1,1]\) del candidato.
+% END F03-B0261
+
+% BEGIN F03-B0262
+Il secondo passaggio costruisce lo stato nascosto:
+% END F03-B0262
+
+% BEGIN F03-B0263
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle \boxed{h_t=o_t\odot\tanh(C_t).}$
+\end{adjustbox}
+\end{center}
+% END F03-B0263
+
+% BEGIN F03-B0264
+Prima si trasforma ogni componente della memoria con \(\tanh\), poi si applica il gate di uscita. La cella può conservare un contenuto in \(C_t\) e decidere di non esporlo pienamente in \(h_t\). Il risultato rimane un vettore di \(m\) componenti.
+% END F03-B0264
+
+% BEGIN F03-B0265
+\pandocbounded{\includegraphics[keepaspectratio]{figure/diagramma_f03_05.pdf}}
+% END F03-B0265
+
+% BEGIN F03-B0266
+\subsection{Che cosa accade quando un gate si chiude? (slide 34)}\label{f03-r801}
+% END F03-B0266
+
+% BEGIN F03-B0267
+I casi limite rendono esplicito il significato delle formule:
+% END F03-B0267
+
+% BEGIN F03-B0268
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Caso ideale, componente per componente
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Nuova memoria
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Significato
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\(f_t=1\), \(i_t=0\) & \(C_t=C_{t-1}\) & Conservare il passato senza nuova scrittura \\
+\(f_t=0\), \(i_t=1\) & \(C_t=\widetilde C_t\) & Sostituire la memoria con il candidato \\
+\(f_t=0\), \(i_t=0\) & \(C_t=0\) & Eliminare entrambi i contributi \\
+\(i_t=0\), \(f_t=0.5\) & \(C_t=0.5C_{t-1}\) & Nessuna nuova scrittura, ma attenuazione del passato \\
+\end{longtable}
+% END F03-B0268
+
+% BEGIN F03-B0269
+Chiudere soltanto l\textquotesingle input gate non garantisce di conservare lo stato identico: rimane il fattore \(f_t\). Anche l\textquotesingle espressione «ignorare l\textquotesingle ingresso corrente» va intesa sul percorso di scrittura, perché \(x_t\) può continuare a influenzare gli altri gate.
+% END F03-B0269
+
+% BEGIN F03-B0270
+Se l\textquotesingle output gate vale zero, \(h_t=0\) su quella componente, ma \(C_t\) può rimanere diverso da zero. Chiudere l\textquotesingle esposizione non equivale a cancellare la memoria.
+% END F03-B0270
+
+% BEGIN F03-B0271
+\begin{quote}
+\textbf{Errata slide 34 --- Indice della memoria precedente}
+\end{quote}
+% END F03-B0271
+
+% BEGIN F03-B0272
+\begin{quote}
+Il testo descrittivo indica la memoria del passo precedente come \(C^{(t)}\): il simbolo corretto è \(C^{(t-1)}\). L\textquotesingle equazione dell\textquotesingle aggiornamento nella slide usa già l\textquotesingle indice corretto. Il forget gate pesa il contenuto precedente prima della somma con il candidato.
+\end{quote}
+% END F03-B0272
+
+% BEGIN F03-B0273
+\subsection{Esempio scalare completo della cella (slide 31--34)}\label{f03-r819}
+% END F03-B0273
+
+% BEGIN F03-B0274
+Prendiamo \(d=m=1\), \(x_t=1\), \(h_{t-1}=0\) e \(C_{t-1}=2\). Poniamo tutti i pesi ricorrenti \(W_i,W_f,W_o,W_C\) a zero e scegliamo \(U_i=U_o=0\), \(U_f=U_C=\ln3\). I bias rimangono omessi.
+% END F03-B0274
+
+% BEGIN F03-B0275
+\begin{longtable}[]{@{}llr@{}}
+\toprule\noalign{}
+Quantità & Calcolo & Valore \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Input gate & \(i_t=\sigma(0\cdot1+0\cdot0)\) & 0.5 \\
+Forget gate & \(f_t=\sigma((\ln3)\cdot1+0\cdot0)\) & 0.75 \\
+Output gate & \(o_t=\sigma(0\cdot1+0\cdot0)\) & 0.5 \\
+Candidato & \(\widetilde C_t=\tanh((\ln3)\cdot1+0\cdot0)\) & 0.8 \\
+Memoria conservata & \(f_tC_{t-1}=0.75\cdot2\) & 1.5 \\
+Nuova scrittura & \(i_t\widetilde C_t=0.5\cdot0.8\) & 0.4 \\
+Nuova memoria & \(C_t=1.5+0.4\) & 1.9 \\
+Stato nascosto & \(h_t=0.5\tanh(1.9)\) & \(\approx0.478119\) \\
+\end{longtable}
+% END F03-B0275
+
+% BEGIN F03-B0276
+L\textquotesingle esempio verifica due punti: la memoria può superare 1 e la sua esposizione può essere attenuata dal gate di uscita. Il valore iniziale \(C_{t-1}=2\) è ammesso; con output gate precedente nullo si può anche avere \(h_{t-1}=0\) pur conservando memoria non nulla.
+% END F03-B0276
+
+% BEGIN F03-B0277
+Con un\textquotesingle eventuale proiezione scalare \(s_t=2h_t\) si avrebbe \(s_t\approx0.956237\). Questa proiezione è esterna al meccanismo dei gate: il gate \(o_t=0.5\) non è la predizione finale.
+% END F03-B0277
+
+% BEGIN F03-B0278
+\section{Perché separare cell state e hidden state (slide 35)}\label{f03-r838}
+% END F03-B0278
+
+% BEGIN F03-B0279
+Il \textbf{cell state} offre un percorso di conservazione e aggiornamento additivo della memoria. Lo \textbf{hidden state} espone una versione trasformata e filtrata di tale memoria al resto della rete e al calcolo dei passi successivi.
+% END F03-B0279
+
+% BEGIN F03-B0280
+L\textquotesingle interpretazione «memoria a lungo termine» per \(C_t\) e «a breve termine» per \(h_t\) descrive i loro ruoli, non due durate fissate. Non c\textquotesingle è un numero prestabilito di passi oltre il quale un contenuto debba scomparire: la conservazione dipende dai gate e dall\textquotesingle apprendimento.
+% END F03-B0280
+
+% BEGIN F03-B0281
+\subsection{Percorso diretto della memoria e gradiente (slide 30--35)}\label{f03-r844}
+% END F03-B0281
+
+% BEGIN F03-B0282
+Per chiarire il vantaggio rispetto alla vanilla RNN, consideriamo il percorso diretto da \(C_{t-1}\) a \(C_t\), mantenendo fissi gate e candidato. Per la componente \(j\):
+% END F03-B0282
+
+% BEGIN F03-B0283
+\begin{center}
+\begin{adjustbox}{max width=\linewidth}
+$\displaystyle 
+\begin{aligned}
+C_{t,j}&=f_{t,j}C_{t-1,j}+i_{t,j}\widetilde C_{t,j},\\
+\left.\frac{\partial C_{t,j}}{\partial C_{t-1,j}}\right|_{\mathrm{diretto}}
+&=f_{t,j}
+&&\text{derivata del termine lineare nella memoria},\\
+\left.\frac{\partial C_t}{\partial C_{t-1}}\right|_{\mathrm{diretto}}
+&=\operatorname{diag}(f_t)
+&&\text{aggiornamento separato per componente}.
+\end{aligned}
+$
+\end{adjustbox}
+\end{center}
+% END F03-B0283
+
+% BEGIN F03-B0284
+Se un gate di mantenimento è vicino a 1 per più passi, questo percorso può trasportare la memoria e il relativo gradiente senza imporre ogni volta una nuova moltiplicazione per \(W\) e una nuova derivata di \(\tanh\) come nella catena della vanilla RNN. Per esempio, dieci fattori \(0.99\) danno \(0.99^{10}\approx0.9044\), contro \(0.5^{10}\approx0.0009766\).
+% END F03-B0284
+
+% BEGIN F03-B0285
+Si tratta del \textbf{contributo diretto}, non della derivata totale della cella: gate e candidato dipendono anche da \(h_{t-1}\) e quindi introducono altri percorsi. Le LSTM mitigano la difficoltà delle dipendenze lontane; non garantiscono memoria infinita né assenza di vanishing o exploding gradient in ogni condizione.
+% END F03-B0285
+
+% BEGIN F03-B0286
+La conservazione rimane orientata alla loss: i gate non hanno un criterio esterno che stabilisca cosa sia interessante. La BPTT aggiorna le loro matrici affinché la selezione aiuti la predizione del target. L\textquotesingle intuizione di un interruttore è utile, ma la selezione è continua e differenziabile, non una decisione simbolica separata.
+% END F03-B0286
+
+% BEGIN F03-B0287
+\subsection{Confine della trattazione e collegamenti (slide 35; riferimenti 36--37)}\label{f03-r866}
+% END F03-B0287
+
+% BEGIN F03-B0288
+La trattazione delle slide termina con i due stati della LSTM. Il cenno alle GRU resta limitato alla variante con due gate e alla maggiore compattezza; non sono state sviluppate le relative equazioni. La bibliografia della slide 36 richiama i lavori su LSTM, GRU e difficoltà dell\textquotesingle addestramento ricorrente; la slide 37 contiene ringraziamenti.
+% END F03-B0288
+
+% BEGIN F03-B0289
+I Transformer sono soltanto anticipati come successivo argomento: possono evitare la specifica catena di transizioni ricorrenti lungo il tempo, ma non è corretto trasformare questo richiamo nella garanzia che eliminino ogni difficoltà dei gradienti. La loro architettura non viene aggiunta a questa nota. Il laboratorio RNN è annunciato, senza sviluppare qui codice PyTorch non presente nelle fonti della lezione.
+% END F03-B0289
+
+% BEGIN F03-B0290
+I collegamenti utili per il ripasso sono \hyperref[fonte01]{Multilayer Perceptron} per neurone, attivazioni, loss e regola della catena; \hyperref[fonte02]{reti convoluzionali} per condivisione dei pesi, composizione dei blocchi e connessioni residue; manuale introduttivo di Machine Learning (documento separato) per regressione e ottimizzazione.
+% END F03-B0290
+
+% BEGIN F03-B0291
+\section{Riepilogo operativo (slide 4--35)}\label{f03-r874}
+% END F03-B0291
+
+% BEGIN F03-B0292
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Concetto
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Formula o forma
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Interpretazione e condizioni
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Sequenza & \(X\in\mathbb R^{T\times d}\) & \(T\) passi, \(d\) feature per passo; \(T\) può variare \\
+Codifica periodica & \((\cos(2\pi k/P),\sin(2\pi k/P))\) & Preserva la vicinanza a cavallo del ciclo \\
+AR(\(p\)) & \(x_t=\sum_{i=1}^p\phi_ix_{t-i}+\xi_t\) & Dipendenza lineare dai ritardi più innovazione \\
+Stato RNN & \(h_t=\phi(Wh_{t-1}+Ux_t)\) & Ingresso corrente e storia compressa \\
+Uscita RNN & \(o_t=Vh_t\) & Score o quantità di uscita, non automaticamente probabilità \\
+Dimensioni dei pesi & \(U:m\times d\), \(W:m\times m\), \(V:r\times m\) & Convenzione a vettori colonna \\
+Pesi RNN & \(md+m^2+rm\) & Senza bias o stato iniziale appreso; indipendenti da \(T\) \\
+Jacobiana temporale & \(J_t=D_tW\) & Include derivata dell\textquotesingle attivazione e pesi ricorrenti \\
+Dipendenza lontana & \(\partial h_t/\partial h_k=J_t\cdots J_{k+1}\) & Prodotto delle transizioni intermedie \\
+BPTT finale & \(\delta_T=D_TV^Tg\), \(\delta_t=D_tW^T\delta_{t+1}\) & Una sola loss finale; \(g=\nabla_{o_T}\mathcal L\) \\
+Gradiente di \(V\) & \(g h_T^T\) & Prodotto esterno alla proiezione finale \\
+Gradienti condivisi & \(\nabla_W\mathcal L=\sum_t\delta_th_{t-1}^T\), \(\nabla_U\mathcal L=\sum_t\delta_tx_t^T\) & Si sommano le occorrenze dello stesso parametro \\
+Gate LSTM & \(g_t=\sigma(U_gx_t+W_gh_{t-1})\) & Un valore fra 0 e 1 per componente; \(g=i,f,o\) \\
+Candidato LSTM & \(\widetilde C_t=\tanh(U_Cx_t+W_Ch_{t-1})\) & Proposta di contenuto da filtrare con \(i_t\) \\
+Memoria LSTM & \(C_t=f_t\odot C_{t-1}+i_t\odot\widetilde C_t\) & Conservazione più scrittura; non necessariamente media \\
+Hidden state LSTM & \(h_t=o_t\odot\tanh(C_t)\) & Esposizione filtrata della memoria \\
+\end{longtable}
+% END F03-B0292
+
+% BEGIN F03-B0293
+\begin{quote}
+\textbf{Da saper spiegare}
+\end{quote}
+% END F03-B0293
+
+% BEGIN F03-B0294
+\begin{quote}
+Una RNN riusa le stesse matrici per aggiornare uno stato di dimensione fissata, quindi può elaborare sequenze di lunghezza variabile. La BPTT applica la regola della catena al grafo srotolato e somma i contributi ai pesi condivisi. I lunghi prodotti di Jacobiane possono attenuare o amplificare il gradiente. La LSTM introduce una memoria con aggiornamento additivo e tre gate apprendibili: conservare il passato, scrivere il candidato ed esporre lo stato sono operazioni distinte.
+\end{quote}
+% END F03-B0294
+
+% BEGIN F03-B0295
+\section{Errata e precisazioni da conservare nel ripasso (slide 4--35)}\label{f03-r898}
+% END F03-B0295
+
+% BEGIN F03-B0296
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}
+  >{\raggedright\arraybackslash}p{(\linewidth - 2\tabcolsep) * \real{0.5000}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Riferimento
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+Correzione o precisazione
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Slide 4 & Discreto non significa finito; il campione osservato è finito, il processo può proseguire. \\
+Slide 6--8 & Stagionalità e ciclo non richiedono la stessa periodicità rigida; residuo non equivale automaticamente a rumore bianco. Media e varianza non esauriscono la stazionarietà. \\
+Slide 10 & Un processo stocastico noto può mantenere innovazioni imprevedibili: conoscere il DGP non dà sempre il valore futuro esatto. \\
+Slide 11 & Una fascia nel grafico non prova copertura al 90\% o gaussianità; l\textquotesingle incertezza è rappresentata, non derivata qui. \\
+Slide 12 & Per prevedere \(x_t\) con \(q\) ritardi usare \(x_{t-1},\ldots,x_{t-q}\); lo schema dei disturbi non esplicita l\textquotesingle innovazione corrente. \\
+Slide 13--14 & Rumore bianco non implica gaussianità; nel MA \(\mu\) è la media del processo, stimabile mediante la media empirica. \\
+Slide 18 & Usare codifiche cicliche per periodi effettivi; l\textquotesingle anno assoluto non è automaticamente ciclico. Media empirica zero non è garantita dalla sola coppia seno-coseno. \\
+Slide 22--23 & \(U,W,V\) sono parametri; \(h_t\) è un\textquotesingle attivazione della sequenza. Lunghezza variabile non significa numero di feature variabile. \\
+Slide 24--27 & Lo srotolamento riusa i pesi; la BPTT non crea la condivisione. La profondità temporale cresce con i passi. \\
+Slide 27 & Le derivate nella somma devono essere locali; per \(h_0\) indipendente dai pesi il termine \(k=0\) è nullo. Il gradiente di \(V\) usa lo stato finale, che dipende dalla storia. \\
+Slide 28 & La Jacobiana della transizione è \(D_tW\), non la sola derivata dell\textquotesingle attivazione. \\
+Slide 29 & Il clipping limita gradienti grandi, senza ricostruire contributi già svaniti. \\
+Slide 30--32 & I gate sono continui, non bit rigidi; il forget gate alto conserva, basso attenua. La LSTM non è l\textquotesingle unico modello con memoria di dimensione fissata. \\
+Slide 31 & Notazione LSTM a righe convertita coerentemente a colonne; l\textquotesingle output gate \(o_t\) è distinto dallo score della RNN. \\
+Slide 34 & La memoria precedente è \(C_{t-1}\). Con \(i_t=0\) rimane \(f_t\odot C_{t-1}\): identità solo se anche \(f_t=1\) nelle componenti considerate. \\
+Slide 35 & LSTM e GRU mitigano il problema delle dipendenze lontane; non garantiscono conservazione illimitata o stabilità assoluta. \\
+\end{longtable}
+% END F03-B0296
+
+% BEGIN F03-B0297
+Le forme trascritte come «Adamart/Adamard», «EFO» e «bad propagation» sono ricondotte rispettivamente a \textbf{Hadamard}, ai gate \textbf{\(i,f,o\)} e alla \textbf{backpropagation}, coerentemente con formule e contesto. I frammenti non intelligibili della domanda sul confronto con altri regressori non consentono di ricostruire un metodo preciso e non sono trasformati in contenuti aggiuntivi.
+% END F03-B0297

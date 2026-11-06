@@ -1,0 +1,330 @@
+{
+  "data": "2026-10-30",
+  "fonti": [
+    {
+      "file": "03_Fonti\\Slide\\06 GNN.pdf",
+      "byte": 15490633,
+      "sha256": "239762091547b8df5491a5122dc86a1e6d20490303382b05a3f022a48090a0a9"
+    },
+    {
+      "file": "03_Fonti\\Trascrizioni\\30-10.txt",
+      "byte": 44797,
+      "sha256": "23a306337b16a2e57472fc6028b2063e8b4d5e00e83785c67772ec69a580c84d"
+    },
+    {
+      "file": "03_Fonti\\Trascrizioni\\29-10.txt",
+      "byte": 53026,
+      "sha256": "defbe86144e6d07c404832fa0c239fc1f2b7625b4a2ee23c9e40e0ca6d00d1ea"
+    }
+  ],
+  "lettura_trascrizione_30_10": {
+    "caratteri": 44791,
+    "intervalli_contigui": [
+      [
+        0,
+        19000
+      ],
+      [
+        19000,
+        38000
+      ],
+      [
+        38000,
+        44791
+      ]
+    ],
+    "stato": "letta integralmente"
+  },
+  "perimetro_30_10": {
+    "ripasso_slide": [
+      20,
+      22
+    ],
+    "nuova_parte_slide": [
+      30,
+      56
+    ],
+    "pagina_pdf_finale": 58,
+    "ultima_spiegazione": "prior geometrico e conclusioni dopo GraphCast"
+  },
+  "lettura_slide_sessione_corrente": "testo e controllo visivo delle pagine PDF 21 e 31-58; ripasso matematico 20-22 confrontato anche con gli appunti precedenti; bibliografia identificata senza sviluppo",
+  "numerazione": [
+    {
+      "pagina_pdf": 1,
+      "slide_stampata": 1
+    },
+    {
+      "pagina_pdf": 2,
+      "slide_stampata": 2
+    },
+    {
+      "pagina_pdf": 3,
+      "slide_stampata": 3
+    },
+    {
+      "pagina_pdf": 4,
+      "slide_stampata": 4
+    },
+    {
+      "pagina_pdf": 5,
+      "slide_stampata": 5
+    },
+    {
+      "pagina_pdf": 6,
+      "slide_stampata": 6
+    },
+    {
+      "pagina_pdf": 7,
+      "slide_stampata": 7
+    },
+    {
+      "pagina_pdf": 8,
+      "slide_stampata": 8
+    },
+    {
+      "pagina_pdf": 9,
+      "slide_stampata": 9
+    },
+    {
+      "pagina_pdf": 10,
+      "slide_stampata": 10
+    },
+    {
+      "pagina_pdf": 11,
+      "slide_stampata": 11
+    },
+    {
+      "pagina_pdf": 12,
+      "slide_stampata": 12
+    },
+    {
+      "pagina_pdf": 13,
+      "slide_stampata": 13
+    },
+    {
+      "pagina_pdf": 14,
+      "slide_stampata": 14
+    },
+    {
+      "pagina_pdf": 15,
+      "slide_stampata": 15
+    },
+    {
+      "pagina_pdf": 16,
+      "slide_stampata": 16
+    },
+    {
+      "pagina_pdf": 17,
+      "slide_stampata": 17
+    },
+    {
+      "pagina_pdf": 18,
+      "slide_stampata": 18
+    },
+    {
+      "pagina_pdf": 19,
+      "slide_stampata": 19
+    },
+    {
+      "pagina_pdf": 20,
+      "slide_stampata": 19
+    },
+    {
+      "pagina_pdf": 21,
+      "slide_stampata": 20
+    },
+    {
+      "pagina_pdf": 22,
+      "slide_stampata": 21
+    },
+    {
+      "pagina_pdf": 23,
+      "slide_stampata": 22
+    },
+    {
+      "pagina_pdf": 24,
+      "slide_stampata": 23
+    },
+    {
+      "pagina_pdf": 25,
+      "slide_stampata": 24
+    },
+    {
+      "pagina_pdf": 26,
+      "slide_stampata": 25
+    },
+    {
+      "pagina_pdf": 27,
+      "slide_stampata": 26
+    },
+    {
+      "pagina_pdf": 28,
+      "slide_stampata": 27
+    },
+    {
+      "pagina_pdf": 29,
+      "slide_stampata": 28
+    },
+    {
+      "pagina_pdf": 30,
+      "slide_stampata": 29
+    },
+    {
+      "pagina_pdf": 31,
+      "slide_stampata": 30
+    },
+    {
+      "pagina_pdf": 32,
+      "slide_stampata": 31
+    },
+    {
+      "pagina_pdf": 33,
+      "slide_stampata": 32
+    },
+    {
+      "pagina_pdf": 34,
+      "slide_stampata": 33
+    },
+    {
+      "pagina_pdf": 35,
+      "slide_stampata": 34
+    },
+    {
+      "pagina_pdf": 36,
+      "slide_stampata": 35
+    },
+    {
+      "pagina_pdf": 37,
+      "slide_stampata": 36
+    },
+    {
+      "pagina_pdf": 38,
+      "slide_stampata": 37
+    },
+    {
+      "pagina_pdf": 39,
+      "slide_stampata": 38
+    },
+    {
+      "pagina_pdf": 40,
+      "slide_stampata": 39
+    },
+    {
+      "pagina_pdf": 41,
+      "slide_stampata": 40
+    },
+    {
+      "pagina_pdf": 42,
+      "slide_stampata": 41
+    },
+    {
+      "pagina_pdf": 43,
+      "slide_stampata": 42
+    },
+    {
+      "pagina_pdf": 44,
+      "slide_stampata": 43
+    },
+    {
+      "pagina_pdf": 45,
+      "slide_stampata": 43
+    },
+    {
+      "pagina_pdf": 46,
+      "slide_stampata": 44
+    },
+    {
+      "pagina_pdf": 47,
+      "slide_stampata": 45
+    },
+    {
+      "pagina_pdf": 48,
+      "slide_stampata": 46
+    },
+    {
+      "pagina_pdf": 49,
+      "slide_stampata": 47
+    },
+    {
+      "pagina_pdf": 50,
+      "slide_stampata": 48
+    },
+    {
+      "pagina_pdf": 51,
+      "slide_stampata": 49
+    },
+    {
+      "pagina_pdf": 52,
+      "slide_stampata": 50
+    },
+    {
+      "pagina_pdf": 53,
+      "slide_stampata": 51
+    },
+    {
+      "pagina_pdf": 54,
+      "slide_stampata": 52
+    },
+    {
+      "pagina_pdf": 55,
+      "slide_stampata": 53
+    },
+    {
+      "pagina_pdf": 56,
+      "slide_stampata": 54
+    },
+    {
+      "pagina_pdf": 57,
+      "slide_stampata": 55
+    },
+    {
+      "pagina_pdf": 58,
+      "slide_stampata": 56
+    },
+    {
+      "pagina_pdf": 59,
+      "slide_stampata": 57
+    },
+    {
+      "pagina_pdf": 60,
+      "slide_stampata": 58
+    },
+    {
+      "pagina_pdf": 61,
+      "slide_stampata": 59
+    },
+    {
+      "pagina_pdf": 62,
+      "slide_stampata": 60
+    }
+  ],
+  "duplicati": {
+    "19": [
+      19,
+      20
+    ],
+    "43": [
+      44,
+      45
+    ]
+  },
+  "dettagli_solo_slide": [
+    48,
+    49,
+    50
+  ],
+  "controlli_esterni_circoscritti": [
+    {
+      "motivo": "disambiguare il riferimento biologico e il target del caso citato; nessuna espansione del programma",
+      "fonti": [
+        "https://www.who.int/news-room/fact-sheets/detail/west-nile-virus",
+        "https://doi.org/10.1109/TGRS.2023.3293270"
+      ]
+    }
+  ],
+  "figure_annotate_intere": {
+    "slide20": 21,
+    "slide39": 40,
+    "slide45": 47
+  }
+}

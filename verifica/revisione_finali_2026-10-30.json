@@ -1,0 +1,3199 @@
+{
+  "data": "2026-10-30",
+  "incarico": "Rimuovere i finali autonomi di riepilogo ed errata; conservare quanto espresso nelle fonti e le note locali; nessun altro cambiamento teorico.",
+  "solo_impaginazione": [
+    {
+      "blocchi": [
+        "F03-B0050",
+        "F03-B0051"
+      ],
+      "vincolo": "ambiente samepage",
+      "scopo": "tenere il titolo della nota alla slide 12 con il suo testo"
+    }
+  ],
+  "tipo_controllo_copertura": "riscontro editoriale semantico per voce, distinto dalle verifiche automatiche di identità dei blocchi e formule",
+  "file": [
+    {
+      "fonte": "mlp_appunti_completi.md",
+      "blocchi_corpo_inalterati": 381,
+      "modifiche_ammesse": [
+        {
+          "indice_originale": 1,
+          "tipo": "indice locale aggiornato"
+        },
+        {
+          "indice_originale": 63,
+          "tipo": "sola etichetta della nota locale",
+          "prima": "Errata slide 15",
+          "dopo": "Nota sulla slide 15"
+        },
+        {
+          "indice_originale": 88,
+          "tipo": "sola etichetta della nota locale",
+          "prima": "Errata slide 18–19",
+          "dopo": "Nota sulle slide 18–19"
+        },
+        {
+          "indice_originale": 133,
+          "tipo": "sola etichetta della nota locale",
+          "prima": "Errata slide 25",
+          "dopo": "Nota sulla slide 25"
+        },
+        {
+          "indice_originale": 168,
+          "tipo": "sola etichetta della nota locale",
+          "prima": "Errata slide 30",
+          "dopo": "Nota sulla slide 30"
+        }
+      ],
+      "formule_corpo_inalterate": 479,
+      "riepilogo": [
+        {
+          "voce": 1,
+          "testo_precedente": "Il deep learning funziona oggi grazie a dati + GPU e perché impara le feature invece di fissarle. Il prezzo è la loro non interpretabilità.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F01-B0007",
+            "F01-B0008",
+            "F01-B0009",
+            "F01-B0010",
+            "F01-B0011",
+            "F01-B0012",
+            "F01-B0013",
+            "F01-B0014",
+            "F01-B0015",
+            "F01-B0016",
+            "F01-B0017",
+            "F01-B0018",
+            "F01-B0019",
+            "F01-B0020",
+            "F01-B0021",
+            "F01-B0022",
+            "F01-B0023",
+            "F01-B0024",
+            "F01-B0025",
+            "F01-B0026",
+            "F01-B0027",
+            "F01-B0028",
+            "F01-B0029",
+            "F01-B0030",
+            "F01-B0031",
+            "F01-B0032"
+          ],
+          "sha256_riscontro": "24cea9d99303e83b989a15c0f6380647169176eb3f6335b2fd533f1b5f663c4b"
+        },
+        {
+          "voce": 2,
+          "testo_precedente": "Classificatore lineare Wx+b + softmax + cross-entropy + discesa del gradiente = regressione logistica. La softmax definisce probabilità del modello, senza garantirne la calibrazione.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F01-B0035",
+            "F01-B0036",
+            "F01-B0037",
+            "F01-B0038",
+            "F01-B0039",
+            "F01-B0040",
+            "F01-B0041",
+            "F01-B0042",
+            "F01-B0043",
+            "F01-B0044",
+            "F01-B0045",
+            "F01-B0046",
+            "F01-B0047",
+            "F01-B0048",
+            "F01-B0049",
+            "F01-B0050",
+            "F01-B0051",
+            "F01-B0052",
+            "F01-B0053",
+            "F01-B0054",
+            "F01-B0055",
+            "F01-B0056",
+            "F01-B0057",
+            "F01-B0058",
+            "F01-B0059",
+            "F01-B0060",
+            "F01-B0061",
+            "F01-B0062",
+            "F01-B0063",
+            "F01-B0064",
+            "F01-B0065",
+            "F01-B0066",
+            "F01-B0067",
+            "F01-B0068",
+            "F01-B0069",
+            "F01-B0070",
+            "F01-B0071",
+            "F01-B0072",
+            "F01-B0073",
+            "F01-B0074",
+            "F01-B0075",
+            "F01-B0076",
+            "F01-B0077",
+            "F01-B0078",
+            "F01-B0079",
+            "F01-B0080",
+            "F01-B0081",
+            "F01-B0082",
+            "F01-B0083",
+            "F01-B0084",
+            "F01-B0085",
+            "F01-B0086",
+            "F01-B0087",
+            "F01-B0088",
+            "F01-B0089",
+            "F01-B0090"
+          ],
+          "sha256_riscontro": "136e1160ed5a3cf9b771e5dc820e15e3a14fc7089ccd30bbe528442bc28c755a"
+        },
+        {
+          "voce": 3,
+          "testo_precedente": "Neurone artificiale = mappa affine seguita da un’attivazione; il caso sigmoide corrisponde al modello logistico binario.La sigmoide satura (\\sigma' = \\sigma(1-\\sigma) \\le 0.25) e non è centrata.La tanh (= 2\\sigma(2x)-1) è centrata ma satura.La ReLU non satura per x>0 ed è economica.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F01-B0100",
+            "F01-B0101",
+            "F01-B0102",
+            "F01-B0103",
+            "F01-B0104",
+            "F01-B0105",
+            "F01-B0106",
+            "F01-B0107",
+            "F01-B0108",
+            "F01-B0109",
+            "F01-B0110",
+            "F01-B0111",
+            "F01-B0112",
+            "F01-B0113",
+            "F01-B0114",
+            "F01-B0115",
+            "F01-B0116",
+            "F01-B0117",
+            "F01-B0118",
+            "F01-B0119",
+            "F01-B0120",
+            "F01-B0121",
+            "F01-B0122",
+            "F01-B0123",
+            "F01-B0124",
+            "F01-B0125",
+            "F01-B0126",
+            "F01-B0127",
+            "F01-B0128",
+            "F01-B0129",
+            "F01-B0130",
+            "F01-B0131",
+            "F01-B0132",
+            "F01-B0133",
+            "F01-B0134",
+            "F01-B0135",
+            "F01-B0136",
+            "F01-B0137",
+            "F01-B0138",
+            "F01-B0139",
+            "F01-B0140",
+            "F01-B0141",
+            "F01-B0142",
+            "F01-B0143",
+            "F01-B0144"
+          ],
+          "sha256_riscontro": "208b73774511a7eea675ac42cfc78cd0389494956a16820500ba7831ef536c52"
+        },
+        {
+          "voce": 4,
+          "testo_precedente": "Senza non linearità qualunque rete collassa in un singolo strato lineare (W = W_2W_1).",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F01-B0145",
+            "F01-B0146",
+            "F01-B0147",
+            "F01-B0148",
+            "F01-B0149"
+          ],
+          "sha256_riscontro": "c175b0cfb88a3da9e9c5c2297cd4c472afbcdd53bb9b8375d4a0e13bccbc882c"
+        },
+        {
+          "voce": 5,
+          "testo_precedente": "MLP: strati fully connected, W \\in \\mathbb{R}^{\\text{out}\\times\\text{in}}, e ogni neurone ha un bias (6-4-3-1 → 47 parametri). La forward propagation è una composizione di funzioni: la rete è un'equazione esplicita.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F01-B0152",
+            "F01-B0153",
+            "F01-B0154",
+            "F01-B0155",
+            "F01-B0156",
+            "F01-B0157",
+            "F01-B0158",
+            "F01-B0159",
+            "F01-B0160",
+            "F01-B0161",
+            "F01-B0162",
+            "F01-B0163",
+            "F01-B0164",
+            "F01-B0165",
+            "F01-B0166",
+            "F01-B0167",
+            "F01-B0168",
+            "F01-B0169",
+            "F01-B0170",
+            "F01-B0171",
+            "F01-B0172",
+            "F01-B0173",
+            "F01-B0174"
+          ],
+          "sha256_riscontro": "bdff226df4626f17a4b52d5c277d252243b31fb19d4ff459036d3288d13710e9"
+        },
+        {
+          "voce": 6,
+          "testo_precedente": "Approssimazione universale: in teoria basta un hidden layer per qualunque funzione continua; in pratica, per la discretizzazione, reti più grandi e profonde sono più espressive. Rappresentare non significa saper imparare.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F01-B0179",
+            "F01-B0180",
+            "F01-B0181",
+            "F01-B0182",
+            "F01-B0183",
+            "F01-B0184",
+            "F01-B0185",
+            "F01-B0186",
+            "F01-B0187",
+            "F01-B0188"
+          ],
+          "sha256_riscontro": "58f808efc46b2c66ecda6d6c86dbf4392d0389fb359d5d04b25a4bbd1541d56f"
+        },
+        {
+          "voce": 7,
+          "testo_precedente": "Funzione obiettivo = \\frac1N\\sum_i L_i + \\lambda\\Omega(\\theta).Loss: hinge (margine 1, assorbibile nella scala dei pesi), softmax/cross-entropy (gradiente = \\text{softmax} - \\text{one-hot}), MSE.Regolarizzatori: L_2 (pesi piccoli, weight decay) e L_1 (pesi nulli).",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F01-B0206",
+            "F01-B0207",
+            "F01-B0208",
+            "F01-B0209",
+            "F01-B0210",
+            "F01-B0211",
+            "F01-B0212",
+            "F01-B0213",
+            "F01-B0214",
+            "F01-B0215",
+            "F01-B0216",
+            "F01-B0217",
+            "F01-B0218",
+            "F01-B0219",
+            "F01-B0220",
+            "F01-B0221",
+            "F01-B0222",
+            "F01-B0223",
+            "F01-B0224",
+            "F01-B0225",
+            "F01-B0226",
+            "F01-B0227",
+            "F01-B0228",
+            "F01-B0229",
+            "F01-B0230",
+            "F01-B0231",
+            "F01-B0232",
+            "F01-B0233",
+            "F01-B0234",
+            "F01-B0235",
+            "F01-B0236",
+            "F01-B0237",
+            "F01-B0238",
+            "F01-B0239",
+            "F01-B0240",
+            "F01-B0241",
+            "F01-B0242",
+            "F01-B0243",
+            "F01-B0244",
+            "F01-B0245",
+            "F01-B0246",
+            "F01-B0247",
+            "F01-B0248",
+            "F01-B0249",
+            "F01-B0250",
+            "F01-B0251",
+            "F01-B0252",
+            "F01-B0253",
+            "F01-B0254",
+            "F01-B0255",
+            "F01-B0256",
+            "F01-B0257",
+            "F01-B0258",
+            "F01-B0259",
+            "F01-B0260",
+            "F01-B0261",
+            "F01-B0262",
+            "F01-B0263"
+          ],
+          "sha256_riscontro": "30cebbd09452e5f03df4a38c935c2c3e15ca7cc3a749df1ae7133363e3e1f72d"
+        },
+        {
+          "voce": 8,
+          "testo_precedente": "Backpropagation:regola della catena applicata dall'uscita verso l'ingresso;ogni strato calcola solo \\partial h_{i+1}/\\partial W_{i+1} (\"preleva l'ingresso\") e \\partial h_{i+1}/\\partial h_i (\"preleva il peso\");il gradiente rispetto alle attivazioni viene riusato strato dopo strato;funziona per qualunque strato di cui si sappiano scrivere le due derivate ed è invariata dal 1986.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F01-B0270",
+            "F01-B0271",
+            "F01-B0272",
+            "F01-B0273",
+            "F01-B0274",
+            "F01-B0275",
+            "F01-B0276",
+            "F01-B0277",
+            "F01-B0278",
+            "F01-B0279",
+            "F01-B0280",
+            "F01-B0281",
+            "F01-B0282",
+            "F01-B0283",
+            "F01-B0284",
+            "F01-B0285",
+            "F01-B0286",
+            "F01-B0287",
+            "F01-B0288",
+            "F01-B0289",
+            "F01-B0290",
+            "F01-B0291",
+            "F01-B0292",
+            "F01-B0293",
+            "F01-B0294",
+            "F01-B0295",
+            "F01-B0296",
+            "F01-B0297",
+            "F01-B0298",
+            "F01-B0299",
+            "F01-B0300",
+            "F01-B0301",
+            "F01-B0302",
+            "F01-B0303",
+            "F01-B0304",
+            "F01-B0305",
+            "F01-B0306",
+            "F01-B0307",
+            "F01-B0308",
+            "F01-B0309",
+            "F01-B0310",
+            "F01-B0311",
+            "F01-B0312",
+            "F01-B0313",
+            "F01-B0314",
+            "F01-B0315",
+            "F01-B0316",
+            "F01-B0317",
+            "F01-B0318",
+            "F01-B0319",
+            "F01-B0320",
+            "F01-B0321",
+            "F01-B0322",
+            "F01-B0323",
+            "F01-B0324",
+            "F01-B0325",
+            "F01-B0326",
+            "F01-B0327",
+            "F01-B0328",
+            "F01-B0329",
+            "F01-B0330"
+          ],
+          "sha256_riscontro": "572be0dc8e0ea3a82a2d3870961ed4a25e1f912850d15a4d16d401ced9eb2b9d"
+        },
+        {
+          "voce": 9,
+          "testo_precedente": "Inizializzazione: pesi piccoli, a media zero e diversi (rottura della simmetria), scalati con il fan-in; bias a zero.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F01-B0332",
+            "F01-B0333",
+            "F01-B0334",
+            "F01-B0335",
+            "F01-B0336",
+            "F01-B0337",
+            "F01-B0338",
+            "F01-B0339",
+            "F01-B0340",
+            "F01-B0341",
+            "F01-B0342",
+            "F01-B0343",
+            "F01-B0344",
+            "F01-B0345",
+            "F01-B0346",
+            "F01-B0347"
+          ],
+          "sha256_riscontro": "473505f02a861e183c5d204f6f28158e6215a404302731c9faeaf5f7d262bd67"
+        },
+        {
+          "voce": 10,
+          "testo_precedente": "Regolarizzazione implicita:dropout: spegne neuroni a caso in training, mai in test;data augmentation: varianti con la stessa etichetta;early stopping: si ferma quando la loss di validazione sale, con una patience.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F01-B0350",
+            "F01-B0351",
+            "F01-B0352",
+            "F01-B0353",
+            "F01-B0354",
+            "F01-B0355",
+            "F01-B0356",
+            "F01-B0357",
+            "F01-B0358",
+            "F01-B0359",
+            "F01-B0360",
+            "F01-B0361",
+            "F01-B0362",
+            "F01-B0363",
+            "F01-B0364",
+            "F01-B0365",
+            "F01-B0366",
+            "F01-B0367",
+            "F01-B0368",
+            "F01-B0369",
+            "F01-B0370",
+            "F01-B0371",
+            "F01-B0372",
+            "F01-B0373",
+            "F01-B0374",
+            "F01-B0375",
+            "F01-B0376",
+            "F01-B0377",
+            "F01-B0378",
+            "F01-B0379",
+            "F01-B0380",
+            "F01-B0381",
+            "F01-B0382",
+            "F01-B0383",
+            "F01-B0384",
+            "F01-B0385",
+            "F01-B0386"
+          ],
+          "sha256_riscontro": "26264a6c825f4a59b441c288a95858e6e281cc723cdf546ed7771ccdef1bfefd"
+        }
+      ],
+      "precisazioni_finali": [
+        {
+          "voce": 1,
+          "testo_precedente": "Slide 15: s_{ship} = 60.75, non 61.95 (manca il bias).",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F01-B0064",
+            "F01-B0065"
+          ],
+          "sha256_riscontro": "a7262443be256270f22db55e5be0a63bc10b05231e6f9591ed35850d8b30b533"
+        },
+        {
+          "voce": 2,
+          "testo_precedente": "Slide 18: denominatore della softmax \\sum_k e^{z_k}.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F01-B0089",
+            "F01-B0090"
+          ],
+          "sha256_riscontro": "56190c2d4e11ff783934eb99789ab21e2ef8fc540964dffea865184f3d5e63b5"
+        },
+        {
+          "voce": 3,
+          "testo_precedente": "Slide 19: manca il segno meno nella cross-entropy.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F01-B0089",
+            "F01-B0090"
+          ],
+          "sha256_riscontro": "56190c2d4e11ff783934eb99789ab21e2ef8fc540964dffea865184f3d5e63b5"
+        },
+        {
+          "voce": 4,
+          "testo_precedente": "Slide 25: \\tanh(x) = 2\\sigma(2x) - 1.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F01-B0134",
+            "F01-B0135"
+          ],
+          "sha256_riscontro": "8bef9c897cff04d680e2f1192e242e1ca663ada1d4ab37c27c7cbb7497d44208"
+        },
+        {
+          "voce": 5,
+          "testo_precedente": "Slide 30: W_2 \\in \\mathbb{R}^{3\\times4}, W_3 \\in \\mathbb{R}^{1\\times3}.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F01-B0169",
+            "F01-B0170"
+          ],
+          "sha256_riscontro": "ddb21480d715303bc15ba28187ced6d1cd43e544d1da36ecd274f93659d142ae"
+        }
+      ],
+      "conteggi_prima": {
+        "Header": 50,
+        "Para": 254,
+        "Plain": 402,
+        "Math": 496,
+        "Table": 13,
+        "Image": 27,
+        "CodeBlock": 0,
+        "BlockQuote": 30,
+        "BulletList": 33,
+        "OrderedList": 17
+      },
+      "conteggi_dopo": {
+        "Header": 49,
+        "Para": 253,
+        "Plain": 375,
+        "Math": 479,
+        "Table": 13,
+        "Image": 27,
+        "CodeBlock": 0,
+        "BlockQuote": 28,
+        "BulletList": 28,
+        "OrderedList": 16
+      },
+      "esito": "PASS"
+    },
+    {
+      "fonte": "03_CNN.md",
+      "blocchi_corpo_inalterati": 439,
+      "modifiche_ammesse": [
+        {
+          "indice_originale": 1,
+          "tipo": "indice locale aggiornato"
+        }
+      ],
+      "formule_corpo_inalterate": 523,
+      "riepilogo": [
+        {
+          "voce": 1,
+          "testo_precedente": "Tensore Immagine RGBX \\in \\mathbb{R}^{C \\times H \\times W}Standard PyTorch: C=3 canali, H altezza, W larghezza",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0024",
+            "F02-B0025",
+            "F02-B0026",
+            "F02-B0027",
+            "F02-B0028",
+            "F02-B0029"
+          ],
+          "sha256_riscontro": "ddcb88a38d9b5d2612cf93d00ce052d6033d8ea2dd79ad6771a5151521290f71"
+        },
+        {
+          "voce": 2,
+          "testo_precedente": "Operatore LSI Discretoo(x, y) = \\sum_m \\sum_n i(m, n) K(x-m, y-n)Convoluzione 2D con risposta all'impulso K",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0113",
+            "F02-B0114",
+            "F02-B0115",
+            "F02-B0116",
+            "F02-B0117",
+            "F02-B0118",
+            "F02-B0119"
+          ],
+          "sha256_riscontro": "ef00ea7f749a9d4ed9381b35943399e512195884f535be5faaf5576f6a47567e"
+        },
+        {
+          "voce": 3,
+          "testo_precedente": "Mappa di Feature MulticanaleF(i, j) = b + \\sum_{c=1}^{C_{in}} \\sum_m \\sum_n I(i+m, j+n, c) K_c(m, n)Somma attraverso tutti i C_{in} canali di ingresso più bias scalare b",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0161",
+            "F02-B0162",
+            "F02-B0163",
+            "F02-B0164",
+            "F02-B0165"
+          ],
+          "sha256_riscontro": "fcff345ddfa0dfd175c729db5417dfe45ac0db4c1d91f2ff7e98e7b369090234"
+        },
+        {
+          "voce": 4,
+          "testo_precedente": "Dimensioni Spaziali UscitaH' = \\left\\lfloor \\frac{H - K + 2P}{S} \\right\\rfloor + 1, \\; W' = \\left\\lfloor \\frac{W - K + 2P}{S} \\right\\rfloor + 1K: kernel, P: padding, S: stride, \\lfloor \\cdot \\rfloor: floor",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0192",
+            "F02-B0193",
+            "F02-B0194",
+            "F02-B0195",
+            "F02-B0196",
+            "F02-B0197"
+          ],
+          "sha256_riscontro": "662fb4677b2e983edb4de54fd24f0085d860176f851316b7e81bd8e84065bff5"
+        },
+        {
+          "voce": 5,
+          "testo_precedente": "Padding per Dimensione Costante (\"same\")P = \\frac{K - 1}{2}Valido per kernel dispari K con stride unitario S = 1",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0187",
+            "F02-B0188",
+            "F02-B0189",
+            "F02-B0190"
+          ],
+          "sha256_riscontro": "288f1342c7442040bde0121e57e007be7060294055dc52d1d9c800cf5b66b882"
+        },
+        {
+          "voce": 6,
+          "testo_precedente": "Parametri Apprendibili Strato Conv\\text{Parametri} = C_{out} \\cdot (K^2 \\cdot C_{in} + 1)Completamente indipendente dalla risoluzione spaziale H \\times W",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0201",
+            "F02-B0202",
+            "F02-B0203",
+            "F02-B0204",
+            "F02-B0205",
+            "F02-B0206",
+            "F02-B0207",
+            "F02-B0208"
+          ],
+          "sha256_riscontro": "e2d711b0bbf724486a86318c91734055e7f3b7296fb5cd9acf59b123af424c75"
+        },
+        {
+          "voce": 7,
+          "testo_precedente": "Attivazione ReLUf(x) = \\max(0, x)Gradiente 1 per x>0; gradiente 0 per x<0 (rischio dying ReLU)",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0245",
+            "F02-B0246",
+            "F02-B0247",
+            "F02-B0248",
+            "F02-B0249",
+            "F02-B0250"
+          ],
+          "sha256_riscontro": "7d38a6208dec6f92b83f6401b38b7f3d6bc8519dd029212746577640e2f6f19f"
+        },
+        {
+          "voce": 8,
+          "testo_precedente": "Attivazione Leaky ReLUf(x) = \\max(x, \\alpha x)Pendenza \\alpha \\approx 0.01 per x<0 (mantiene vivo il gradiente)",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0254",
+            "F02-B0255",
+            "F02-B0256",
+            "F02-B0257",
+            "F02-B0258",
+            "F02-B0259"
+          ],
+          "sha256_riscontro": "262b1be06991d0f6bda2561e9659e4ac0d130e8a4aaf54e18be99a934f97c73e"
+        },
+        {
+          "voce": 9,
+          "testo_precedente": "Attivazione ELUf(x) = x \\text{ se } x>0, \\; \\alpha(e^x - 1) \\text{ se } x \\le 0Asintoto a -\\alpha per x \\to -\\infty; media attivazioni vicina a 0",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0261",
+            "F02-B0262",
+            "F02-B0263",
+            "F02-B0264",
+            "F02-B0265"
+          ],
+          "sha256_riscontro": "1f453329ead896e23bb62108cf9e79fb8f2d9c54328ac8fa1c42f93e07cc8f75"
+        },
+        {
+          "voce": 10,
+          "testo_precedente": "Pooling: forma, senza paddingH'=\\lfloor(H-K)/S\\rfloor+1, W'=\\lfloor(W-K)/S\\rfloor+1N,C invariati; dilatazione 1, finestre compatibili",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0272",
+            "F02-B0273",
+            "F02-B0274",
+            "F02-B0275",
+            "F02-B0276",
+            "F02-B0277"
+          ],
+          "sha256_riscontro": "ddb156b197ec658c930189207600b9fd86f1795ef14934929e4db70af764a53d"
+        },
+        {
+          "voce": 11,
+          "testo_precedente": "Max poolingY_{n,c,i,j}=\\max_{u,v}X_{n,c,iS+u,jS+v}0\\leq u,v<K; zero parametri apprendibili",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0269",
+            "F02-B0270",
+            "F02-B0271",
+            "F02-B0272",
+            "F02-B0273",
+            "F02-B0274"
+          ],
+          "sha256_riscontro": "559edb80a1df9985754c8e358fd02df8f43dfd04e2ea0fd849b03ae44c350053"
+        },
+        {
+          "voce": 12,
+          "testo_precedente": "Average poolingY_{n,c,i,j}=K^{-2}\\sum_{u,v}X_{n,c,iS+u,jS+v}Media sulla finestra; zero parametri apprendibili",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0269",
+            "F02-B0270",
+            "F02-B0271",
+            "F02-B0272",
+            "F02-B0273",
+            "F02-B0274"
+          ],
+          "sha256_riscontro": "559edb80a1df9985754c8e358fd02df8f43dfd04e2ea0fd849b03ae44c350053"
+        },
+        {
+          "voce": 13,
+          "testo_precedente": "Global average poolingz_{n,c}=(hw)^{-1}\\sum_{i,j}X_{n,c,i,j}N\\times C\\times h\\times w\\to N\\times C\\times1\\times1",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0309",
+            "F02-B0310",
+            "F02-B0311",
+            "F02-B0312",
+            "F02-B0313",
+            "F02-B0314",
+            "F02-B0315",
+            "F02-B0316"
+          ],
+          "sha256_riscontro": "e00bb17113388a40c0bced4a0f10cbcee558836f9a3e976b7ab47dbdaa23c181"
+        },
+        {
+          "voce": 14,
+          "testo_precedente": "Pool adattivo a griglia fissaN\\times C\\times h\\times w\\to N\\times C\\times o\\times oDopo flatten: Co^2 ingressi per esempio",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0320",
+            "F02-B0321"
+          ],
+          "sha256_riscontro": "2ddd99f78f1da3df7981cae487a6d180aac95e3e419c5fd763508864033d7611"
+        },
+        {
+          "voce": 15,
+          "testo_precedente": "Campo recettivor_\\ell=r_{\\ell-1}+(k_\\ell-1)j_{\\ell-1}, j_\\ell=s_\\ell j_{\\ell-1}r_0=j_0=1, senza dilatazione",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0151",
+            "F02-B0152"
+          ],
+          "sha256_riscontro": "e8158d1cf41d34117d74092b88bbc68694b352e6ac436f43dbb0a763d4c0e3d3"
+        },
+        {
+          "voce": 16,
+          "testo_precedente": "Parametri densed_{\\mathrm{out}}(d_{\\mathrm{in}}+1)Bias incluso",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0353",
+            "F02-B0354",
+            "F02-B0355",
+            "F02-B0356"
+          ],
+          "sha256_riscontro": "123cf9dbab947a9ac5a1f3d8838b2fb907ae94c8c297c5627fae605037b9c6c1"
+        },
+        {
+          "voce": 17,
+          "testo_precedente": "Blocco residuoH=x+F(x)Stesse forme; entrambi i rami calcolati",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0370",
+            "F02-B0371",
+            "F02-B0372",
+            "F02-B0373",
+            "F02-B0374",
+            "F02-B0375",
+            "F02-B0376",
+            "F02-B0377",
+            "F02-B0378",
+            "F02-B0379"
+          ],
+          "sha256_riscontro": "4d96e9a8810294677037816d1136e0e3831b783e5486e03e42101787c2952763"
+        },
+        {
+          "voce": 18,
+          "testo_precedente": "Gradiente residuo\\nabla_x\\mathcal L=g+J_F^TgSomma, non selezione, dei contributi",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0381",
+            "F02-B0382",
+            "F02-B0383",
+            "F02-B0384",
+            "F02-B0385"
+          ],
+          "sha256_riscontro": "7ae9d5bb676f9f0f7905e77ae817a15b2485c8aff6b2e8efc0c646334072e2cd"
+        },
+        {
+          "voce": 19,
+          "testo_precedente": "BN: media e varianza\\mu_{B,c}=M^{-1}\\sum_aX_{a,c}, v_{B,c}=M^{-1}\\sum_a(X_{a,c}-\\mu_{B,c})^2M=NHW, una coppia per canale",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0397",
+            "F02-B0398",
+            "F02-B0399",
+            "F02-B0400",
+            "F02-B0401",
+            "F02-B0402",
+            "F02-B0403",
+            "F02-B0404"
+          ],
+          "sha256_riscontro": "bf43c9fec140d77a61cad58040f93e5faa02c9afd056783ae677afe7ab45a99b"
+        },
+        {
+          "voce": 20,
+          "testo_precedente": "BN: trainingY_c=\\gamma_c(X_c-\\mu_{B,c})/\\sqrt{v_{B,c}+\\epsilon}+\\beta_cForma invariata; 2C parametri apprendibili",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0398",
+            "F02-B0399",
+            "F02-B0400",
+            "F02-B0401",
+            "F02-B0402",
+            "F02-B0403",
+            "F02-B0404",
+            "F02-B0405",
+            "F02-B0406",
+            "F02-B0407",
+            "F02-B0408",
+            "F02-B0409",
+            "F02-B0410",
+            "F02-B0411",
+            "F02-B0412",
+            "F02-B0413",
+            "F02-B0414",
+            "F02-B0415",
+            "F02-B0416",
+            "F02-B0417",
+            "F02-B0418",
+            "F02-B0419",
+            "F02-B0420",
+            "F02-B0421"
+          ],
+          "sha256_riscontro": "8d063073572bc482fa3f94eb2d350a918797d5179db5641b6ef64e833806ae89"
+        },
+        {
+          "voce": 21,
+          "testo_precedente": "BN: inferenzaY_c=\\gamma_c(X_c-\\bar\\mu_c)/\\sqrt{\\bar v_c+\\epsilon}+\\beta_cStatistiche memorizzate; nessun nuovo calcolo sul batch",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0427",
+            "F02-B0428",
+            "F02-B0429",
+            "F02-B0430",
+            "F02-B0431",
+            "F02-B0432",
+            "F02-B0433",
+            "F02-B0434"
+          ],
+          "sha256_riscontro": "4ce940c31fc6eca55da565c76561225f9c8263fe9fbc7f3ac3a48ed9fad5b616"
+        }
+      ],
+      "precisazioni_finali": [
+        {
+          "voce": 1,
+          "testo_precedente": "Slide 25Linearità significa sovrapposizione dei segnali, non movimento rettilineo della finestra.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0092",
+            "F02-B0093"
+          ],
+          "sha256_riscontro": "cb61a03269454ca3e8272a6bf871c3d852a7388de7bc29a3eae3cbe9ea1a736c"
+        },
+        {
+          "voce": 2,
+          "testo_precedente": "Slide 32 e spiegazione oraleConvoluzione e correlazione differiscono per il ribaltamento del kernel, non per la scelta del centro dell'uscita.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0111",
+            "F02-B0112",
+            "F02-B0113",
+            "F02-B0114",
+            "F02-B0115",
+            "F02-B0116",
+            "F02-B0117",
+            "F02-B0118",
+            "F02-B0119"
+          ],
+          "sha256_riscontro": "44cd23e6c4d4449c62597b218946b8ee439a5ee80b3575aac7cdb9ea2b602f6e"
+        },
+        {
+          "voce": 3,
+          "testo_precedente": "Slide 38Il campo recettivo teorico cresce componendo regioni; due kernel 3\\times3 a stride 1 danno 5\\times5.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0145",
+            "F02-B0146",
+            "F02-B0147",
+            "F02-B0148",
+            "F02-B0149",
+            "F02-B0150",
+            "F02-B0151",
+            "F02-B0152"
+          ],
+          "sha256_riscontro": "3e298b0b3d4d583fbf47163af1a52f8b7c2d0a25077c003204334d0d954fdcad"
+        },
+        {
+          "voce": 4,
+          "testo_precedente": "Slide 54Una ReLU negativa non blocca l'intero modello; ELU è differenziabile in zero solo per \\alpha=1.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0249",
+            "F02-B0250",
+            "F02-B0251",
+            "F02-B0252",
+            "F02-B0253",
+            "F02-B0254",
+            "F02-B0255",
+            "F02-B0256",
+            "F02-B0257",
+            "F02-B0258",
+            "F02-B0259",
+            "F02-B0260",
+            "F02-B0261",
+            "F02-B0262",
+            "F02-B0263",
+            "F02-B0264",
+            "F02-B0265"
+          ],
+          "sha256_riscontro": "025bbef828ac909d86b25fefe8d9af39cbea4607347e81371168932ce05c5efc"
+        },
+        {
+          "voce": 5,
+          "testo_precedente": "Slide 55–57Il dimezzamento dei due assi richiede K=S=2 nell'esempio; pooling non cambia i canali.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0268",
+            "F02-B0269",
+            "F02-B0270",
+            "F02-B0271",
+            "F02-B0272",
+            "F02-B0273",
+            "F02-B0274",
+            "F02-B0275",
+            "F02-B0276",
+            "F02-B0277",
+            "F02-B0278",
+            "F02-B0279",
+            "F02-B0280",
+            "F02-B0281",
+            "F02-B0282",
+            "F02-B0283",
+            "F02-B0284",
+            "F02-B0285",
+            "F02-B0286",
+            "F02-B0287",
+            "F02-B0288",
+            "F02-B0289",
+            "F02-B0290",
+            "F02-B0291",
+            "F02-B0292",
+            "F02-B0293",
+            "F02-B0294",
+            "F02-B0295",
+            "F02-B0296"
+          ],
+          "sha256_riscontro": "ac5d7f595b51601249fa40648d602861ce837b402ed2b42ae1cc1a95f64f8fe6"
+        },
+        {
+          "voce": 6,
+          "testo_precedente": "Slide 59Il pooling adattivo precede flattening e MLP; non li sostituisce entrambi.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0309",
+            "F02-B0310",
+            "F02-B0311",
+            "F02-B0312",
+            "F02-B0313",
+            "F02-B0314",
+            "F02-B0315",
+            "F02-B0316",
+            "F02-B0317",
+            "F02-B0318",
+            "F02-B0319",
+            "F02-B0320",
+            "F02-B0321"
+          ],
+          "sha256_riscontro": "4c5af0298a19fc45bd4d6d11f2d478cf7504b584c99bb5f1459ba7b3e4c5811b"
+        },
+        {
+          "voce": 7,
+          "testo_precedente": "Slide 65–66Le ReLU dei livelli nascosti sono distinte dall'uscita finale di classificazione.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0346",
+            "F02-B0347",
+            "F02-B0348",
+            "F02-B0349",
+            "F02-B0350",
+            "F02-B0351"
+          ],
+          "sha256_riscontro": "bfb6c5c806195733c342a9736d7325ef749d0f541e42fc8de29837b7527526ce"
+        },
+        {
+          "voce": 8,
+          "testo_precedente": "Slide 71–74Shortcut identità solo a forme coincidenti; i rami e i gradienti vengono sommati.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0370",
+            "F02-B0371",
+            "F02-B0372",
+            "F02-B0373",
+            "F02-B0374",
+            "F02-B0375",
+            "F02-B0376",
+            "F02-B0377",
+            "F02-B0378",
+            "F02-B0379",
+            "F02-B0380",
+            "F02-B0381",
+            "F02-B0382",
+            "F02-B0383",
+            "F02-B0384",
+            "F02-B0385"
+          ],
+          "sha256_riscontro": "d18b1d8c5efe4decbe6cb10db56ce133a590d1c27d56bd8a61131c2f2d66a130"
+        },
+        {
+          "voce": 9,
+          "testo_precedente": "Slide 80–85BN non impone gaussianità né decorrelazione; con \\epsilon>0 la varianza normalizzata non è esattamente 1.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0397",
+            "F02-B0398",
+            "F02-B0399",
+            "F02-B0400",
+            "F02-B0401",
+            "F02-B0402",
+            "F02-B0403",
+            "F02-B0404",
+            "F02-B0405",
+            "F02-B0406",
+            "F02-B0407",
+            "F02-B0408",
+            "F02-B0409",
+            "F02-B0410",
+            "F02-B0411",
+            "F02-B0412",
+            "F02-B0413",
+            "F02-B0414",
+            "F02-B0415",
+            "F02-B0416",
+            "F02-B0417",
+            "F02-B0418",
+            "F02-B0419",
+            "F02-B0420",
+            "F02-B0421"
+          ],
+          "sha256_riscontro": "196cc61ae1148ccf145d94fcb3e60050cd93abc7306a4c048087ca66ac4111d1"
+        },
+        {
+          "voce": 10,
+          "testo_precedente": "Slide 86Nelle CNN N=1 non implica NHW=1; train()/eval() cambiano la modalità dei livelli.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F02-B0427",
+            "F02-B0428",
+            "F02-B0429",
+            "F02-B0430",
+            "F02-B0431",
+            "F02-B0432",
+            "F02-B0433",
+            "F02-B0434",
+            "F02-B0435",
+            "F02-B0436",
+            "F02-B0437",
+            "F02-B0438",
+            "F02-B0439",
+            "F02-B0440"
+          ],
+          "sha256_riscontro": "c2df599513ebfbbda37dc74669b321fc4947c7fdd7aa1ddc48e8b557b40d246f"
+        }
+      ],
+      "conteggi_prima": {
+        "Header": 74,
+        "Para": 297,
+        "Plain": 297,
+        "Math": 580,
+        "Table": 7,
+        "Image": 66,
+        "CodeBlock": 0,
+        "BlockQuote": 7,
+        "BulletList": 9,
+        "OrderedList": 11
+      },
+      "conteggi_dopo": {
+        "Header": 72,
+        "Para": 297,
+        "Plain": 209,
+        "Math": 523,
+        "Table": 5,
+        "Image": 66,
+        "CodeBlock": 0,
+        "BlockQuote": 7,
+        "BulletList": 9,
+        "OrderedList": 11
+      },
+      "esito": "PASS"
+    },
+    {
+      "fonte": "04_RNN.md",
+      "blocchi_corpo_inalterati": 280,
+      "modifiche_ammesse": [
+        {
+          "indice_originale": 1,
+          "tipo": "indice locale aggiornato"
+        },
+        {
+          "indice_originale": 14,
+          "tipo": "sola etichetta della nota locale",
+          "prima": "Errata slide 4 — Discreto non significa finito",
+          "dopo": "Nota sulla slide 4 — Discreto non significa finito"
+        },
+        {
+          "indice_originale": 45,
+          "tipo": "sola etichetta della nota locale",
+          "prima": "Errata slide 10 — Conoscere il processo non elimina il caso",
+          "dopo": "Nota sulla slide 10 — Conoscere il processo non elimina il caso"
+        },
+        {
+          "indice_originale": 51,
+          "tipo": "sola etichetta della nota locale",
+          "prima": "Errata slide 12 — Indici della finestra",
+          "dopo": "Nota sulla slide 12 — Indici della finestra"
+        },
+        {
+          "indice_originale": 66,
+          "tipo": "sola etichetta della nota locale",
+          "prima": "Errata slide 14 — Media del processo e media campionaria",
+          "dopo": "Nota sulla slide 14 — Media del processo e media campionaria"
+        },
+        {
+          "indice_originale": 166,
+          "tipo": "sola etichetta della nota locale",
+          "prima": "Errata slide 27 — Derivate locali e stato iniziale",
+          "dopo": "Nota sulla slide 27 — Derivate locali e stato iniziale"
+        },
+        {
+          "indice_originale": 202,
+          "tipo": "sola etichetta della nota locale",
+          "prima": "Errata slide 28 — Il limite non vale senza W",
+          "dopo": "Nota sulla slide 28 — Il limite non vale senza W"
+        },
+        {
+          "indice_originale": 210,
+          "tipo": "sola etichetta della nota locale",
+          "prima": "Errata slide 29 — Il clipping non recupera gradienti svaniti",
+          "dopo": "Nota sulla slide 29 — Il clipping non recupera gradienti svaniti"
+        },
+        {
+          "indice_originale": 245,
+          "tipo": "sola etichetta della nota locale",
+          "prima": "Errata slide 32 — Interpretazione del forget gate",
+          "dopo": "Nota sulla slide 32 — Interpretazione del forget gate"
+        },
+        {
+          "indice_originale": 270,
+          "tipo": "sola etichetta della nota locale",
+          "prima": "Errata slide 34 — Indice della memoria precedente",
+          "dopo": "Nota sulla slide 34 — Indice della memoria precedente"
+        }
+      ],
+      "formule_corpo_inalterate": 386,
+      "riepilogo": [
+        {
+          "voce": 1,
+          "testo_precedente": "SequenzaX\\in\\mathbb R^{T\\times d}T passi, d feature per passo; T può variare",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0008",
+            "F03-B0009",
+            "F03-B0010",
+            "F03-B0011",
+            "F03-B0012",
+            "F03-B0013",
+            "F03-B0014",
+            "F03-B0015",
+            "F03-B0016",
+            "F03-B0017",
+            "F03-B0018",
+            "F03-B0019",
+            "F03-B0020"
+          ],
+          "sha256_riscontro": "04e1f9a131c85f3208057a1d268d6a993f3c9235d111ae945ac17efa81f8af46"
+        },
+        {
+          "voce": 2,
+          "testo_precedente": "Codifica periodica(\\cos(2\\pi k/P),\\sin(2\\pi k/P))Preserva la vicinanza a cavallo del ciclo",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0076",
+            "F03-B0077",
+            "F03-B0078",
+            "F03-B0079",
+            "F03-B0080",
+            "F03-B0081",
+            "F03-B0082",
+            "F03-B0083",
+            "F03-B0084",
+            "F03-B0085",
+            "F03-B0086",
+            "F03-B0087",
+            "F03-B0088"
+          ],
+          "sha256_riscontro": "d34fe1d59ee27993005c2187f0dceae408d4d3f65013d252d931a6da6ac75950"
+        },
+        {
+          "voce": 3,
+          "testo_precedente": "AR(p)x_t=\\sum_{i=1}^p\\phi_ix_{t-i}+\\xi_tDipendenza lineare dai ritardi più innovazione",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0055",
+            "F03-B0056",
+            "F03-B0057",
+            "F03-B0058",
+            "F03-B0059",
+            "F03-B0060",
+            "F03-B0061",
+            "F03-B0062"
+          ],
+          "sha256_riscontro": "1177b7609274e96c086dfb08cc44e629f722651a04147e00ab3b133e72b7cbda"
+        },
+        {
+          "voce": 4,
+          "testo_precedente": "Stato RNNh_t=\\phi(Wh_{t-1}+Ux_t)Ingresso corrente e storia compressa",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0097",
+            "F03-B0098",
+            "F03-B0099",
+            "F03-B0100",
+            "F03-B0101",
+            "F03-B0102",
+            "F03-B0103",
+            "F03-B0104",
+            "F03-B0105"
+          ],
+          "sha256_riscontro": "84a756bba79baf5a2ec346119f94355cc9c50d4e99e2e12cbb7cfbe96a3c8869"
+        },
+        {
+          "voce": 5,
+          "testo_precedente": "Uscita RNNo_t=Vh_tScore o quantità di uscita, non automaticamente probabilità",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0098",
+            "F03-B0099",
+            "F03-B0100",
+            "F03-B0101",
+            "F03-B0102",
+            "F03-B0103",
+            "F03-B0104",
+            "F03-B0105",
+            "F03-B0106"
+          ],
+          "sha256_riscontro": "f35c3aedca6d0d55bb17a35206ee26d52dc88463acd651059cb2e2b03b4edb18"
+        },
+        {
+          "voce": 6,
+          "testo_precedente": "Dimensioni dei pesiU:m\\times d, W:m\\times m, V:r\\times mConvenzione a vettori colonna",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0099",
+            "F03-B0100",
+            "F03-B0101",
+            "F03-B0102",
+            "F03-B0103",
+            "F03-B0104",
+            "F03-B0105"
+          ],
+          "sha256_riscontro": "069547447c45cd0770bc63f46a86cfa2f8e5d4adb78e041ee50538e21f8e34a6"
+        },
+        {
+          "voce": 7,
+          "testo_precedente": "Pesi RNNmd+m^2+rmSenza bias o stato iniziale appreso; indipendenti da T",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0114",
+            "F03-B0115",
+            "F03-B0116",
+            "F03-B0117",
+            "F03-B0118",
+            "F03-B0119",
+            "F03-B0120"
+          ],
+          "sha256_riscontro": "59f0aaff52ae885eba09b4d96b8d83e0b1d5e18a83777bd747ce85aef5bc9033"
+        },
+        {
+          "voce": 8,
+          "testo_precedente": "Jacobiana temporaleJ_t=D_tWInclude derivata dell'attivazione e pesi ricorrenti",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0182",
+            "F03-B0183",
+            "F03-B0184",
+            "F03-B0185",
+            "F03-B0186",
+            "F03-B0187",
+            "F03-B0188",
+            "F03-B0189",
+            "F03-B0190",
+            "F03-B0191",
+            "F03-B0192",
+            "F03-B0193",
+            "F03-B0194",
+            "F03-B0195",
+            "F03-B0196",
+            "F03-B0197",
+            "F03-B0198",
+            "F03-B0199",
+            "F03-B0200",
+            "F03-B0201",
+            "F03-B0202",
+            "F03-B0203",
+            "F03-B0204"
+          ],
+          "sha256_riscontro": "ad4989c5bbfb219de183f6f6de7b64641f0c0f1e0aede1bff038fd2706420b3b"
+        },
+        {
+          "voce": 9,
+          "testo_precedente": "Dipendenza lontana\\partial h_t/\\partial h_k=J_t\\cdots J_{k+1}Prodotto delle transizioni intermedie",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0187",
+            "F03-B0188",
+            "F03-B0189",
+            "F03-B0190",
+            "F03-B0191",
+            "F03-B0192",
+            "F03-B0193",
+            "F03-B0194",
+            "F03-B0195",
+            "F03-B0196",
+            "F03-B0197",
+            "F03-B0198",
+            "F03-B0199",
+            "F03-B0200",
+            "F03-B0201",
+            "F03-B0202"
+          ],
+          "sha256_riscontro": "b9d95d07bf6b490d067e0c870c21b564bbec3e69121869279b5f5269a5abf1e8"
+        },
+        {
+          "voce": 10,
+          "testo_precedente": "BPTT finale\\delta_T=D_TV^Tg, \\delta_t=D_tW^T\\delta_{t+1}Una sola loss finale; g=\\nabla_{o_T}\\mathcal L",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0144",
+            "F03-B0145",
+            "F03-B0146",
+            "F03-B0147",
+            "F03-B0148",
+            "F03-B0149",
+            "F03-B0150",
+            "F03-B0151",
+            "F03-B0152",
+            "F03-B0153",
+            "F03-B0154",
+            "F03-B0155",
+            "F03-B0156"
+          ],
+          "sha256_riscontro": "40983aec3cb5cdace3290fb5fe4a8d00a35b76763f0c4204d24656ff590a3f4c"
+        },
+        {
+          "voce": 11,
+          "testo_precedente": "Gradiente di Vg h_T^TProdotto esterno alla proiezione finale",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0144",
+            "F03-B0145",
+            "F03-B0146",
+            "F03-B0147",
+            "F03-B0148",
+            "F03-B0149",
+            "F03-B0150"
+          ],
+          "sha256_riscontro": "5d3a7b5a5542ad8887f18417c0a6e188cae3282d5dcfe14b928a09b62141a34d"
+        },
+        {
+          "voce": 12,
+          "testo_precedente": "Gradienti condivisi\\nabla_W\\mathcal L=\\sum_t\\delta_th_{t-1}^T, \\nabla_U\\mathcal L=\\sum_t\\delta_tx_t^TSi sommano le occorrenze dello stesso parametro",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0158",
+            "F03-B0159",
+            "F03-B0160",
+            "F03-B0161",
+            "F03-B0162",
+            "F03-B0163",
+            "F03-B0164",
+            "F03-B0165",
+            "F03-B0166",
+            "F03-B0167",
+            "F03-B0168",
+            "F03-B0169"
+          ],
+          "sha256_riscontro": "34ddf75f245641b0119e3bf2b54dde64d6111e31aca13526b461d081bd8c39cc"
+        },
+        {
+          "voce": 13,
+          "testo_precedente": "Gate LSTMg_t=\\sigma(U_gx_t+W_gh_{t-1})Un valore fra 0 e 1 per componente; g=i,f,o",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0225",
+            "F03-B0226",
+            "F03-B0227",
+            "F03-B0228",
+            "F03-B0229",
+            "F03-B0230",
+            "F03-B0231",
+            "F03-B0232",
+            "F03-B0233",
+            "F03-B0234",
+            "F03-B0235",
+            "F03-B0236",
+            "F03-B0237",
+            "F03-B0238",
+            "F03-B0239",
+            "F03-B0240",
+            "F03-B0241",
+            "F03-B0242",
+            "F03-B0243",
+            "F03-B0244"
+          ],
+          "sha256_riscontro": "f451b854f7f3cc9e4b2ca59d2810ba673e7acae4f1f1a4aaa8b3753e4a2c9455"
+        },
+        {
+          "voce": 14,
+          "testo_precedente": "Candidato LSTM\\widetilde C_t=\\tanh(U_Cx_t+W_Ch_{t-1})Proposta di contenuto da filtrare con i_t",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0250",
+            "F03-B0251",
+            "F03-B0252",
+            "F03-B0253",
+            "F03-B0254",
+            "F03-B0255"
+          ],
+          "sha256_riscontro": "2ee411af2d26d4e5b42dddfb5379f3cb7853fc705010c4d6e24455aebf7e4600"
+        },
+        {
+          "voce": 15,
+          "testo_precedente": "Memoria LSTMC_t=f_t\\odot C_{t-1}+i_t\\odot\\widetilde C_tConservazione più scrittura; non necessariamente media",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0257",
+            "F03-B0258",
+            "F03-B0259",
+            "F03-B0260",
+            "F03-B0261",
+            "F03-B0262",
+            "F03-B0263",
+            "F03-B0264",
+            "F03-B0265",
+            "F03-B0266",
+            "F03-B0267",
+            "F03-B0268",
+            "F03-B0269",
+            "F03-B0270",
+            "F03-B0271",
+            "F03-B0272"
+          ],
+          "sha256_riscontro": "50278c58d6f2b2ae392c66d283672bb2d91f9240eb18aee8fc598a5841a46484"
+        },
+        {
+          "voce": 16,
+          "testo_precedente": "Hidden state LSTMh_t=o_t\\odot\\tanh(C_t)Esposizione filtrata della memoria",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0263",
+            "F03-B0264",
+            "F03-B0265"
+          ],
+          "sha256_riscontro": "391a2dbb982de5ef2a653f5c5bd3f6ba9ccc205ce7229ea02af511a2f655cde1"
+        }
+      ],
+      "precisazioni_finali": [
+        {
+          "voce": 1,
+          "testo_precedente": "Slide 4Discreto non significa finito; il campione osservato è finito, il processo può proseguire.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0014",
+            "F03-B0015",
+            "F03-B0016"
+          ],
+          "sha256_riscontro": "e58207888660b81ff49195827a00a750587478b8c0d64f6888075e05239c6263"
+        },
+        {
+          "voce": 2,
+          "testo_precedente": "Slide 6–8Stagionalità e ciclo non richiedono la stessa periodicità rigida; residuo non equivale automaticamente a rumore bianco. Media e varianza non esauriscono la stazionarietà.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0024",
+            "F03-B0025",
+            "F03-B0026",
+            "F03-B0027",
+            "F03-B0028",
+            "F03-B0029",
+            "F03-B0030",
+            "F03-B0031",
+            "F03-B0032",
+            "F03-B0033",
+            "F03-B0034",
+            "F03-B0035"
+          ],
+          "sha256_riscontro": "f948fb6cbd3f24621ea1c7eb1342fac86086e9d33d663d821132b749f969b0f6"
+        },
+        {
+          "voce": 3,
+          "testo_precedente": "Slide 10Un processo stocastico noto può mantenere innovazioni imprevedibili: conoscere il DGP non dà sempre il valore futuro esatto.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0046",
+            "F03-B0047"
+          ],
+          "sha256_riscontro": "4ca707ca0cf79a9aa76b19a1e220e4e47933e23e2540c2626e7fc33b6e2640fc"
+        },
+        {
+          "voce": 4,
+          "testo_precedente": "Slide 11Una fascia nel grafico non prova copertura al 90% o gaussianità; l'incertezza è rappresentata, non derivata qui.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0043",
+            "F03-B0044",
+            "F03-B0045"
+          ],
+          "sha256_riscontro": "5a913b4834206ba5f9c1a4be51f65fa33f735f9f78c95eb82b5a357c38610b4a"
+        },
+        {
+          "voce": 5,
+          "testo_precedente": "Slide 12Per prevedere x_t con q ritardi usare x_{t-1},\\ldots,x_{t-q}; lo schema dei disturbi non esplicita l'innovazione corrente.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0049",
+            "F03-B0050",
+            "F03-B0051",
+            "F03-B0052",
+            "F03-B0053"
+          ],
+          "sha256_riscontro": "fc75e6d9bc7b45d728e4d24a0d5b2f3983edc3ceac34c01d25267bbef6a88d3b"
+        },
+        {
+          "voce": 6,
+          "testo_precedente": "Slide 13–14Rumore bianco non implica gaussianità; nel MA \\mu è la media del processo, stimabile mediante la media empirica.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0056",
+            "F03-B0057",
+            "F03-B0058",
+            "F03-B0059",
+            "F03-B0060",
+            "F03-B0061",
+            "F03-B0062",
+            "F03-B0063",
+            "F03-B0064",
+            "F03-B0065",
+            "F03-B0066",
+            "F03-B0067",
+            "F03-B0068"
+          ],
+          "sha256_riscontro": "edbff2f8ebbd6e047a1576f71a603576ff9eeaa73efc4c5183f1739d52aa5250"
+        },
+        {
+          "voce": 7,
+          "testo_precedente": "Slide 18Usare codifiche cicliche per periodi effettivi; l'anno assoluto non è automaticamente ciclico. Media empirica zero non è garantita dalla sola coppia seno-coseno.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0076",
+            "F03-B0077",
+            "F03-B0078",
+            "F03-B0079",
+            "F03-B0080",
+            "F03-B0081",
+            "F03-B0082",
+            "F03-B0083",
+            "F03-B0084",
+            "F03-B0085",
+            "F03-B0086",
+            "F03-B0087",
+            "F03-B0088"
+          ],
+          "sha256_riscontro": "d34fe1d59ee27993005c2187f0dceae408d4d3f65013d252d931a6da6ac75950"
+        },
+        {
+          "voce": 8,
+          "testo_precedente": "Slide 22–23U,W,V sono parametri; h_t è un'attivazione della sequenza. Lunghezza variabile non significa numero di feature variabile.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0097",
+            "F03-B0098",
+            "F03-B0099",
+            "F03-B0100",
+            "F03-B0101",
+            "F03-B0102",
+            "F03-B0103",
+            "F03-B0104",
+            "F03-B0105",
+            "F03-B0106",
+            "F03-B0107",
+            "F03-B0108",
+            "F03-B0109",
+            "F03-B0110",
+            "F03-B0111",
+            "F03-B0112",
+            "F03-B0113",
+            "F03-B0114",
+            "F03-B0115",
+            "F03-B0116",
+            "F03-B0117",
+            "F03-B0118",
+            "F03-B0119",
+            "F03-B0120",
+            "F03-B0121",
+            "F03-B0122",
+            "F03-B0123",
+            "F03-B0124",
+            "F03-B0125",
+            "F03-B0126",
+            "F03-B0127",
+            "F03-B0128",
+            "F03-B0129"
+          ],
+          "sha256_riscontro": "b7542720b950fd1d3b524af312afd166f08da2e6f1b176d24f7f8647025de33e"
+        },
+        {
+          "voce": 9,
+          "testo_precedente": "Slide 24–27Lo srotolamento riusa i pesi; la BPTT non crea la condivisione. La profondità temporale cresce con i passi.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0135",
+            "F03-B0136",
+            "F03-B0137",
+            "F03-B0138",
+            "F03-B0139",
+            "F03-B0140",
+            "F03-B0141"
+          ],
+          "sha256_riscontro": "fbf1528b9e0c227308dbeb9ed269a3dfdfff45eb1ffd972b54effe9f8b6b4ab9"
+        },
+        {
+          "voce": 10,
+          "testo_precedente": "Slide 27Le derivate nella somma devono essere locali; per h_0 indipendente dai pesi il termine k=0 è nullo. Il gradiente di V usa lo stato finale, che dipende dalla storia.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0144",
+            "F03-B0145",
+            "F03-B0146",
+            "F03-B0147",
+            "F03-B0148",
+            "F03-B0149",
+            "F03-B0150",
+            "F03-B0151",
+            "F03-B0152",
+            "F03-B0153",
+            "F03-B0154",
+            "F03-B0155",
+            "F03-B0156",
+            "F03-B0157",
+            "F03-B0158",
+            "F03-B0159",
+            "F03-B0160",
+            "F03-B0161",
+            "F03-B0162",
+            "F03-B0163",
+            "F03-B0164",
+            "F03-B0165",
+            "F03-B0166",
+            "F03-B0167",
+            "F03-B0168",
+            "F03-B0169"
+          ],
+          "sha256_riscontro": "1e957bdfd82f7661e6a2f0bdd79b9e53e0da3f8609c2f7797233afb9bbec1867"
+        },
+        {
+          "voce": 11,
+          "testo_precedente": "Slide 28La Jacobiana della transizione è D_tW, non la sola derivata dell'attivazione.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0182",
+            "F03-B0183",
+            "F03-B0184",
+            "F03-B0185",
+            "F03-B0186",
+            "F03-B0187",
+            "F03-B0188",
+            "F03-B0189",
+            "F03-B0190",
+            "F03-B0191",
+            "F03-B0192",
+            "F03-B0193",
+            "F03-B0194",
+            "F03-B0195",
+            "F03-B0196",
+            "F03-B0197",
+            "F03-B0198",
+            "F03-B0199",
+            "F03-B0200",
+            "F03-B0201",
+            "F03-B0202",
+            "F03-B0203",
+            "F03-B0204"
+          ],
+          "sha256_riscontro": "ad4989c5bbfb219de183f6f6de7b64641f0c0f1e0aede1bff038fd2706420b3b"
+        },
+        {
+          "voce": 12,
+          "testo_precedente": "Slide 29Il clipping limita gradienti grandi, senza ricostruire contributi già svaniti.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0206",
+            "F03-B0207",
+            "F03-B0208",
+            "F03-B0209",
+            "F03-B0210",
+            "F03-B0211",
+            "F03-B0212",
+            "F03-B0213",
+            "F03-B0214"
+          ],
+          "sha256_riscontro": "68a19dfaef7ec7bf88167f7cf073ba9fefa9e26a1dfbec8d1faf10b3c90a82f7"
+        },
+        {
+          "voce": 13,
+          "testo_precedente": "Slide 30–32I gate sono continui, non bit rigidi; il forget gate alto conserva, basso attenua. La LSTM non è l'unico modello con memoria di dimensione fissata.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0216",
+            "F03-B0217",
+            "F03-B0218",
+            "F03-B0219",
+            "F03-B0220",
+            "F03-B0221",
+            "F03-B0222",
+            "F03-B0223",
+            "F03-B0224",
+            "F03-B0225",
+            "F03-B0226",
+            "F03-B0227",
+            "F03-B0228",
+            "F03-B0229",
+            "F03-B0230",
+            "F03-B0231",
+            "F03-B0232",
+            "F03-B0233",
+            "F03-B0234",
+            "F03-B0235",
+            "F03-B0236",
+            "F03-B0237",
+            "F03-B0238",
+            "F03-B0239",
+            "F03-B0240",
+            "F03-B0241",
+            "F03-B0242",
+            "F03-B0243",
+            "F03-B0244",
+            "F03-B0245",
+            "F03-B0246",
+            "F03-B0247"
+          ],
+          "sha256_riscontro": "016d3a7cd3ae37d1ff30e7fa6db90de4b7adc3ec007a1850f3ee704b219d1286"
+        },
+        {
+          "voce": 14,
+          "testo_precedente": "Slide 31Notazione LSTM a righe convertita coerentemente a colonne; l'output gate o_t è distinto dallo score della RNN.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0223",
+            "F03-B0224",
+            "F03-B0225",
+            "F03-B0226",
+            "F03-B0227"
+          ],
+          "sha256_riscontro": "6a272711a3b9445fd6d2295a45969b8bf067ada096f1570572330fb86672d11d"
+        },
+        {
+          "voce": 15,
+          "testo_precedente": "Slide 34La memoria precedente è C_{t-1}. Con i_t=0 rimane f_t\\odot C_{t-1}: identità solo se anche f_t=1 nelle componenti considerate.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0257",
+            "F03-B0258",
+            "F03-B0259",
+            "F03-B0260",
+            "F03-B0261",
+            "F03-B0262",
+            "F03-B0263",
+            "F03-B0264",
+            "F03-B0265",
+            "F03-B0266",
+            "F03-B0267",
+            "F03-B0268",
+            "F03-B0269",
+            "F03-B0270",
+            "F03-B0271",
+            "F03-B0272"
+          ],
+          "sha256_riscontro": "50278c58d6f2b2ae392c66d283672bb2d91f9240eb18aee8fc598a5841a46484"
+        },
+        {
+          "voce": 16,
+          "testo_precedente": "Slide 35LSTM e GRU mitigano il problema delle dipendenze lontane; non garantiscono conservazione illimitata o stabilità assoluta.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F03-B0279",
+            "F03-B0280",
+            "F03-B0281",
+            "F03-B0282",
+            "F03-B0283",
+            "F03-B0284",
+            "F03-B0285",
+            "F03-B0286"
+          ],
+          "sha256_riscontro": "f15184ac3096ff36b373b844e70d3304fb497c78276eb661ec34c7b0c3c08f11"
+        }
+      ],
+      "conteggi_prima": {
+        "Header": 42,
+        "Para": 227,
+        "Plain": 316,
+        "Math": 431,
+        "Table": 13,
+        "Image": 17,
+        "CodeBlock": 0,
+        "BlockQuote": 28,
+        "BulletList": 2,
+        "OrderedList": 0
+      },
+      "conteggi_dopo": {
+        "Header": 40,
+        "Para": 224,
+        "Plain": 231,
+        "Math": 386,
+        "Table": 11,
+        "Image": 17,
+        "CodeBlock": 0,
+        "BlockQuote": 26,
+        "BulletList": 2,
+        "OrderedList": 0
+      },
+      "esito": "PASS"
+    },
+    {
+      "fonte": "05_Transformer.md",
+      "blocchi_corpo_inalterati": 330,
+      "modifiche_ammesse": [
+        {
+          "indice_originale": 93,
+          "tipo": "sola etichetta della nota locale",
+          "prima": "Errata slide 14 — Nessuna garanzia assoluta sui gradienti",
+          "dopo": "Nota sulla slide 14 — Nessuna garanzia assoluta sui gradienti"
+        },
+        {
+          "indice_originale": 97,
+          "tipo": "indice locale aggiornato"
+        }
+      ],
+      "formule_corpo_inalterate": 342,
+      "riepilogo": [
+        {
+          "voce": 1,
+          "testo_precedente": "Conv1D multicanaleY_{t,o}=b_o+\\sum_{i,c}X_{t+i,c}K_{i,c,o}Filtro condiviso lungo un solo asse",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0020",
+            "F04-B0021",
+            "F04-B0022",
+            "F04-B0023"
+          ],
+          "sha256_riscontro": "d311e3441d2337f731a228183640e6861132b9e726596504124db529776d4629"
+        },
+        {
+          "voce": 2,
+          "testo_precedente": "Parametri Conv1DC_{\\mathrm{out}}(kC_{\\mathrm{in}}+1)Con bias; non dipendono da T",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0036",
+            "F04-B0037",
+            "F04-B0038"
+          ],
+          "sha256_riscontro": "e7ca2dbfe4b10d1322581ed4c5343b31df71359f357b8f29bbee76ed187c06be"
+        },
+        {
+          "voce": 3,
+          "testo_precedente": "Dilatazione causaley_t=\\sum_{i=0}^{k-1}x_{t-di}\\omega_iPunti distanziati di d",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0042",
+            "F04-B0043",
+            "F04-B0044",
+            "F04-B0045",
+            "F04-B0046",
+            "F04-B0047",
+            "F04-B0048",
+            "F04-B0049",
+            "F04-B0050",
+            "F04-B0051",
+            "F04-B0052",
+            "F04-B0053",
+            "F04-B0054",
+            "F04-B0055"
+          ],
+          "sha256_riscontro": "484553bfdd1341e8ed41d0efff1c9ce8bc1006d00a28055a97036884d08b33a1"
+        },
+        {
+          "voce": 4,
+          "testo_precedente": "Ampiezza del kernel dilatato1+(k-1)dAmpiezza coperta, non numero di pesi",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0044",
+            "F04-B0045",
+            "F04-B0046",
+            "F04-B0047",
+            "F04-B0048",
+            "F04-B0049",
+            "F04-B0050",
+            "F04-B0051",
+            "F04-B0052",
+            "F04-B0053",
+            "F04-B0054",
+            "F04-B0055"
+          ],
+          "sha256_riscontro": "1e19af97bb9dfeac75369e093f11755a960e79d6e9ce65947c437595574e5fc5"
+        },
+        {
+          "voce": 5,
+          "testo_precedente": "Padding causaleP_{\\mathrm{sinistra}}=(k-1)dStride 1, stessa lunghezza in uscita",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0057",
+            "F04-B0058",
+            "F04-B0059",
+            "F04-B0060",
+            "F04-B0061",
+            "F04-B0062",
+            "F04-B0063"
+          ],
+          "sha256_riscontro": "ebedf800de9950d6cb48619b8b528fcd6e693832fd628c85dd1962be637fdfa2"
+        },
+        {
+          "voce": 6,
+          "testo_precedente": "Campo recettivor_\\ell=r_{\\ell-1}+(k_\\ell-1)d_\\ell j_{\\ell-1}j_\\ell=s_\\ell j_{\\ell-1}",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0069",
+            "F04-B0070",
+            "F04-B0071",
+            "F04-B0072",
+            "F04-B0073",
+            "F04-B0074",
+            "F04-B0075",
+            "F04-B0076",
+            "F04-B0077",
+            "F04-B0078",
+            "F04-B0079"
+          ],
+          "sha256_riscontro": "07106b77e0d3935872d3171e4946c65ae36bcee56ee851e0a5ac4be413ee9080"
+        },
+        {
+          "voce": 7,
+          "testo_precedente": "Sequenza TransformerX:T\\times DUna riga per token",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0115",
+            "F04-B0116",
+            "F04-B0117",
+            "F04-B0118",
+            "F04-B0119",
+            "F04-B0120",
+            "F04-B0121",
+            "F04-B0122",
+            "F04-B0123",
+            "F04-B0124",
+            "F04-B0125",
+            "F04-B0126",
+            "F04-B0127"
+          ],
+          "sha256_riscontro": "3bbe6e5532a451a1499548ea2b832e2758fdefa13791bec14cd50036d7d71810"
+        },
+        {
+          "voce": 8,
+          "testo_precedente": "Feed-forward\\operatorname{ReLU}(y_tW_1+b_1)W_2+b_2Stessi pesi sulle posizioni; D\\to F\\to D",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0137",
+            "F04-B0138",
+            "F04-B0139",
+            "F04-B0140",
+            "F04-B0141",
+            "F04-B0142",
+            "F04-B0143",
+            "F04-B0144",
+            "F04-B0145",
+            "F04-B0146"
+          ],
+          "sha256_riscontro": "27e24ff0a941772a953988241ac747a02eab6a10909829f25ec2826118e88369"
+        },
+        {
+          "voce": 9,
+          "testo_precedente": "LayerNormy_j=\\gamma_j(x_j-\\mu)/\\sqrt{v+\\epsilon}+\\beta_jStatistiche sulle feature del singolo token",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0148",
+            "F04-B0149",
+            "F04-B0150",
+            "F04-B0151",
+            "F04-B0152",
+            "F04-B0153",
+            "F04-B0154",
+            "F04-B0155",
+            "F04-B0156",
+            "F04-B0157",
+            "F04-B0158",
+            "F04-B0159",
+            "F04-B0160",
+            "F04-B0161",
+            "F04-B0162",
+            "F04-B0163",
+            "F04-B0164"
+          ],
+          "sha256_riscontro": "1f112df2ee9636ae316350f5c77c551800b14c0eaa58375b025e446c258c8120"
+        },
+        {
+          "voce": 10,
+          "testo_precedente": "ProiezioniQ=XW^Q, K=XW^K, V=XW^VQ e K: T\\times d_k; V: T\\times d_v",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0200",
+            "F04-B0201",
+            "F04-B0202",
+            "F04-B0203",
+            "F04-B0204",
+            "F04-B0205",
+            "F04-B0206",
+            "F04-B0207",
+            "F04-B0208",
+            "F04-B0209",
+            "F04-B0210",
+            "F04-B0211",
+            "F04-B0212",
+            "F04-B0213",
+            "F04-B0214",
+            "F04-B0215",
+            "F04-B0216"
+          ],
+          "sha256_riscontro": "d423da8038667a16052d8736c4e2bf4504f22e426d35527c38d4945b0991ed75"
+        },
+        {
+          "voce": 11,
+          "testo_precedente": "ScoreQK^T:T\\times TRiga = query; colonna = key",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0223",
+            "F04-B0224",
+            "F04-B0225",
+            "F04-B0226",
+            "F04-B0227",
+            "F04-B0228",
+            "F04-B0229"
+          ],
+          "sha256_riscontro": "b5b89fcddff927d09c14e0ecfcfc2b988c55a1e91c85333da585f31be6f3dead"
+        },
+        {
+          "voce": 12,
+          "testo_precedente": "ScalaS=QK^T/\\sqrt{d_k}Con d_k=64 si divide per 8",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0232",
+            "F04-B0233",
+            "F04-B0234",
+            "F04-B0235",
+            "F04-B0236",
+            "F04-B0237"
+          ],
+          "sha256_riscontro": "d4654ab5c328656633d5ddfb49b8197b793114330f3d1ef1c46fecb91a48eeff"
+        },
+        {
+          "voce": 13,
+          "testo_precedente": "PesiA=\\operatorname{softmax}_{\\mathrm{righe}}(S)Ogni riga somma a 1",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0239",
+            "F04-B0240",
+            "F04-B0241",
+            "F04-B0242",
+            "F04-B0243",
+            "F04-B0244",
+            "F04-B0245",
+            "F04-B0246"
+          ],
+          "sha256_riscontro": "596cc376000431612b586f127324b1fb01fbae92a2a25deffdf195a383d30c29"
+        },
+        {
+          "voce": 14,
+          "testo_precedente": "AttentionZ=AV:T\\times d_vSomma pesata dei value per query",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0249",
+            "F04-B0250",
+            "F04-B0251",
+            "F04-B0252",
+            "F04-B0253",
+            "F04-B0254"
+          ],
+          "sha256_riscontro": "8cce5fd7b8714e11486d567a3e280f57fadba7080d2542f56bce16eda78e7629"
+        },
+        {
+          "voce": 15,
+          "testo_precedente": "Multi-head\\operatorname{Concat}(Z_1,\\ldots,Z_H)W^OConcatenazione sulle feature, uscita T\\times D",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0256",
+            "F04-B0257",
+            "F04-B0258",
+            "F04-B0259",
+            "F04-B0260",
+            "F04-B0261",
+            "F04-B0262",
+            "F04-B0263",
+            "F04-B0264",
+            "F04-B0265",
+            "F04-B0266",
+            "F04-B0267",
+            "F04-B0268",
+            "F04-B0269",
+            "F04-B0270",
+            "F04-B0271",
+            "F04-B0272",
+            "F04-B0273",
+            "F04-B0274",
+            "F04-B0275",
+            "F04-B0276",
+            "F04-B0277"
+          ],
+          "sha256_riscontro": "d05663d76b54ad9c6ca27fa94238ca6514f5f4adfd3519877e0cc1cd4cbe6c11"
+        },
+        {
+          "voce": 16,
+          "testo_precedente": "Residui e normY=\\operatorname{LN}_1(X+\\operatorname{MHA}(X)); B=\\operatorname{LN}_2(Y+\\operatorname{FFN}(Y))Forma del blocco conservata",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0130",
+            "F04-B0131",
+            "F04-B0132",
+            "F04-B0133",
+            "F04-B0134",
+            "F04-B0135",
+            "F04-B0136",
+            "F04-B0137",
+            "F04-B0138",
+            "F04-B0139",
+            "F04-B0140",
+            "F04-B0141",
+            "F04-B0142",
+            "F04-B0143",
+            "F04-B0144",
+            "F04-B0145",
+            "F04-B0146"
+          ],
+          "sha256_riscontro": "26b423bcfa9038fff84a63a9bd99bd87bf0c1148f85820f6c926a9fc487cda87"
+        },
+        {
+          "voce": 17,
+          "testo_precedente": "Average poolingg=T^{-1}\\sum_tz_tDa T\\times D a un vettore di D feature",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0282",
+            "F04-B0283",
+            "F04-B0284",
+            "F04-B0285",
+            "F04-B0286",
+            "F04-B0287",
+            "F04-B0288",
+            "F04-B0289",
+            "F04-B0290",
+            "F04-B0291"
+          ],
+          "sha256_riscontro": "e5dd914e37e84ef048ac6bdf2ea05d7957ed293651f14bc28ab8ab7b97ee3e89"
+        },
+        {
+          "voce": 18,
+          "testo_precedente": "Token [CLS]Ingresso (T+1)\\times D, poi estrazione di una rigaIl riassunto va appreso dal modello",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0293",
+            "F04-B0294",
+            "F04-B0295",
+            "F04-B0296",
+            "F04-B0297",
+            "F04-B0298"
+          ],
+          "sha256_riscontro": "509e79577b6e552fe6b90fdb748643ea1511ee8934fb615bf41881e08b48e663"
+        }
+      ],
+      "precisazioni_finali": [
+        {
+          "voce": 1,
+          "testo_precedente": "Slide 5–6LeNet-5 non è la prima comparsa assoluta delle idee convoluzionali. 1D descrive l'asse di scorrimento, non l'assenza di canali.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0036",
+            "F04-B0037",
+            "F04-B0038",
+            "F04-B0039",
+            "F04-B0040"
+          ],
+          "sha256_riscontro": "376645297c5150c54e0d430ad45f83f48bdf3f6826578cfaf8ebbb26512da70c"
+        },
+        {
+          "voce": 2,
+          "testo_precedente": "Slide 7–8La formula a ritardi e l'esempio a finestre usano convenzioni di orientamento diverse; esplicitare indici e ribaltamento del kernel. I cinque risultati numerici della slide 8 sono verificati.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0015",
+            "F04-B0016",
+            "F04-B0017",
+            "F04-B0018",
+            "F04-B0019",
+            "F04-B0020",
+            "F04-B0021",
+            "F04-B0022",
+            "F04-B0023",
+            "F04-B0024",
+            "F04-B0025",
+            "F04-B0026",
+            "F04-B0027",
+            "F04-B0028",
+            "F04-B0029",
+            "F04-B0030",
+            "F04-B0031",
+            "F04-B0032",
+            "F04-B0033",
+            "F04-B0034",
+            "F04-B0035",
+            "F04-B0036",
+            "F04-B0037",
+            "F04-B0038"
+          ],
+          "sha256_riscontro": "39a080b06341b3ce425e320bb0a934e522b7711165472413e613393ba3d85797"
+        },
+        {
+          "voce": 3,
+          "testo_precedente": "Slide 9–11Dilatazione 2 su tre punti dà offset 0, 2, 4. La dilatazione è distinta dallo stride; il campo recettivo cresce anche a stride 1.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0042",
+            "F04-B0043",
+            "F04-B0044",
+            "F04-B0045",
+            "F04-B0046",
+            "F04-B0047",
+            "F04-B0048",
+            "F04-B0049",
+            "F04-B0050",
+            "F04-B0051",
+            "F04-B0052",
+            "F04-B0053",
+            "F04-B0054",
+            "F04-B0055"
+          ],
+          "sha256_riscontro": "484553bfdd1341e8ed41d0efff1c9ce8bc1006d00a28055a97036884d08b33a1"
+        },
+        {
+          "voce": 4,
+          "testo_precedente": "Slide 10Causalità significa non accedere a ingressi futuri; non dimostra causalità fisica e non sostituisce l'allineamento corretto dei target.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0057",
+            "F04-B0058",
+            "F04-B0059",
+            "F04-B0060",
+            "F04-B0061",
+            "F04-B0062",
+            "F04-B0063"
+          ],
+          "sha256_riscontro": "ebedf800de9950d6cb48619b8b528fcd6e693832fd628c85dd1962be637fdfa2"
+        },
+        {
+          "voce": 5,
+          "testo_precedente": "Slide 11Tre convoluzioni con dilatazioni 1, 2, 4 danno campo recettivo 15; tre blocchi con due convoluzioni ciascuno danno 29 alle stesse dilatazioni.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0069",
+            "F04-B0070",
+            "F04-B0071",
+            "F04-B0072",
+            "F04-B0073",
+            "F04-B0074",
+            "F04-B0075",
+            "F04-B0076",
+            "F04-B0077",
+            "F04-B0078",
+            "F04-B0079"
+          ],
+          "sha256_riscontro": "07106b77e0d3935872d3171e4946c65ae36bcee56ee851e0a5ac4be413ee9080"
+        },
+        {
+          "voce": 6,
+          "testo_precedente": "Slide 12–13Aggiungere feature aumenta i canali e i pesi; accuracy e F1 possono ordinare diversamente i modelli. F1 casuale 0.5 non è una baseline universale.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0081",
+            "F04-B0082",
+            "F04-B0083",
+            "F04-B0084",
+            "F04-B0085",
+            "F04-B0086",
+            "F04-B0087",
+            "F04-B0088"
+          ],
+          "sha256_riscontro": "258d5ef9bc6e062a4bf69bf88091d8f2b8a11ed359fd13221a15b6c2ae1bae96"
+        },
+        {
+          "voce": 7,
+          "testo_precedente": "Slide 14TCN non garantisce assenza di vanishing/exploding gradient; usa la backpropagation. Anche RNN può essere studiata con metodi di attribuzione.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0090",
+            "F04-B0091",
+            "F04-B0092",
+            "F04-B0093",
+            "F04-B0094",
+            "F04-B0095",
+            "F04-B0096"
+          ],
+          "sha256_riscontro": "8dab381235a72043db8fd1b8e9dc7c00a65366753dbcb94fe1d1235e9073b82f"
+        },
+        {
+          "voce": 8,
+          "testo_precedente": "Slide 19–20Encoder–decoder non serve soltanto a cambiare modalità. Sei livelli sono una configurazione di riferimento, non una regola generale.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0105",
+            "F04-B0106",
+            "F04-B0107",
+            "F04-B0108",
+            "F04-B0109",
+            "F04-B0110",
+            "F04-B0111",
+            "F04-B0112",
+            "F04-B0113"
+          ],
+          "sha256_riscontro": "67d70aa4cd276a047f2f3df81d66ad7d63ab6d43374191190323e3308b7155a1"
+        },
+        {
+          "voce": 9,
+          "testo_precedente": "Slide 21Tokenizzazione ed embedding sono distinti; non c'è sempre un token per parola e l'embedding può essere addestrato end-to-end.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0115",
+            "F04-B0116",
+            "F04-B0117",
+            "F04-B0118",
+            "F04-B0119",
+            "F04-B0120",
+            "F04-B0121",
+            "F04-B0122",
+            "F04-B0123",
+            "F04-B0124",
+            "F04-B0125",
+            "F04-B0126",
+            "F04-B0127"
+          ],
+          "sha256_riscontro": "3bbe6e5532a451a1499548ea2b832e2758fdefa13791bec14cd50036d7d71810"
+        },
+        {
+          "voce": 10,
+          "testo_precedente": "Slide 22–25Il MLP è applicato separatamente alle posizioni ma con pesi condivisi; la forma finale uguale non esclude dimensioni interne diverse.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0130",
+            "F04-B0131",
+            "F04-B0132",
+            "F04-B0133",
+            "F04-B0134",
+            "F04-B0135",
+            "F04-B0136",
+            "F04-B0137",
+            "F04-B0138",
+            "F04-B0139",
+            "F04-B0140",
+            "F04-B0141",
+            "F04-B0142",
+            "F04-B0143",
+            "F04-B0144",
+            "F04-B0145",
+            "F04-B0146"
+          ],
+          "sha256_riscontro": "26b423bcfa9038fff84a63a9bd99bd87bf0c1148f85820f6c926a9fc487cda87"
+        },
+        {
+          "voce": 11,
+          "testo_precedente": "Slide 26–27Si divide per una deviazione standard stabilizzata, non per la varianza. \\gamma è una scala apprendibile non vincolata, non un gate sigmoidale.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0148",
+            "F04-B0149",
+            "F04-B0150",
+            "F04-B0151",
+            "F04-B0152",
+            "F04-B0153",
+            "F04-B0154",
+            "F04-B0155",
+            "F04-B0156",
+            "F04-B0157",
+            "F04-B0158",
+            "F04-B0159",
+            "F04-B0160",
+            "F04-B0161",
+            "F04-B0162",
+            "F04-B0163",
+            "F04-B0164"
+          ],
+          "sha256_riscontro": "1f112df2ee9636ae316350f5c77c551800b14c0eaa58375b025e446c258c8120"
+        },
+        {
+          "voce": 12,
+          "testo_precedente": "Slide 26–27LayerNorm non rende tutti i token ugualmente rilevanti e non garantisce identici gradienti; le statistiche sono per token, non fra tutti i token della sequenza.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0175",
+            "F04-B0176",
+            "F04-B0177"
+          ],
+          "sha256_riscontro": "3355f62262a6c77e9be0cbd89c11f3a0bac16d16b79ebf9579d16fa00bfbde08"
+        },
+        {
+          "voce": 13,
+          "testo_precedente": "Slide 30Ogni \\alpha_{t,i} è uno scalare; la softmax normalizza l'intero insieme degli score della riga. Nell'attenzione concreta si combinano i value proiettati.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0180",
+            "F04-B0181",
+            "F04-B0182",
+            "F04-B0183",
+            "F04-B0184",
+            "F04-B0185",
+            "F04-B0186",
+            "F04-B0187",
+            "F04-B0188",
+            "F04-B0189",
+            "F04-B0190",
+            "F04-B0191",
+            "F04-B0192"
+          ],
+          "sha256_riscontro": "ccf470708a6a063395e36161ea5013ef5dc80d900be79d9ee92b07445599a4b7"
+        },
+        {
+          "voce": 14,
+          "testo_precedente": "Slide 33Si confrontano tutte le coppie query–key, comprese quelle sulla diagonale. Q e K devono avere la stessa dimensione; V può in generale averne una diversa.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0200",
+            "F04-B0201",
+            "F04-B0202",
+            "F04-B0203",
+            "F04-B0204",
+            "F04-B0205",
+            "F04-B0206",
+            "F04-B0207",
+            "F04-B0208",
+            "F04-B0209",
+            "F04-B0210",
+            "F04-B0211",
+            "F04-B0212",
+            "F04-B0213",
+            "F04-B0214",
+            "F04-B0215",
+            "F04-B0216",
+            "F04-B0217",
+            "F04-B0218",
+            "F04-B0219",
+            "F04-B0220",
+            "F04-B0221",
+            "F04-B0222",
+            "F04-B0223",
+            "F04-B0224",
+            "F04-B0225",
+            "F04-B0226",
+            "F04-B0227",
+            "F04-B0228",
+            "F04-B0229"
+          ],
+          "sha256_riscontro": "cdef37ffa12fe72844606842e23ada3a26b3137b40deb84e866a5b5386828f85"
+        },
+        {
+          "voce": 15,
+          "testo_precedente": "Slide 34Q,K,V raccolgono vettori in matrici. Il fattore di scala usa \\sqrt{d_k}, non d_k. La matrice degli score non è necessariamente simmetrica e la diagonale non deve dominare.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0218",
+            "F04-B0219",
+            "F04-B0220",
+            "F04-B0221",
+            "F04-B0222",
+            "F04-B0223",
+            "F04-B0224",
+            "F04-B0225",
+            "F04-B0226",
+            "F04-B0227",
+            "F04-B0228",
+            "F04-B0229",
+            "F04-B0230",
+            "F04-B0231",
+            "F04-B0232",
+            "F04-B0233",
+            "F04-B0234",
+            "F04-B0235",
+            "F04-B0236",
+            "F04-B0237",
+            "F04-B0238",
+            "F04-B0239",
+            "F04-B0240",
+            "F04-B0241",
+            "F04-B0242",
+            "F04-B0243",
+            "F04-B0244",
+            "F04-B0245",
+            "F04-B0246"
+          ],
+          "sha256_riscontro": "ea745ef1c255669d3332ac1a301ae57764fd8b2afac5598adec0acd94b346812"
+        },
+        {
+          "voce": 16,
+          "testo_precedente": "Slide 35–36Si concatenano le feature delle teste allineate per posizione, non le lunghezze delle sequenze.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0256",
+            "F04-B0257",
+            "F04-B0258",
+            "F04-B0259",
+            "F04-B0260",
+            "F04-B0261",
+            "F04-B0262",
+            "F04-B0263",
+            "F04-B0264",
+            "F04-B0265",
+            "F04-B0266",
+            "F04-B0267",
+            "F04-B0268",
+            "F04-B0269",
+            "F04-B0270",
+            "F04-B0271",
+            "F04-B0272",
+            "F04-B0273",
+            "F04-B0274",
+            "F04-B0275",
+            "F04-B0276",
+            "F04-B0277"
+          ],
+          "sha256_riscontro": "d05663d76b54ad9c6ca27fa94238ca6514f5f4adfd3519877e0cc1cd4cbe6c11"
+        },
+        {
+          "voce": 17,
+          "testo_precedente": "Slide 37–38Il pooling finale riduce la sequenza; i blocchi interni la conservano. Un token [CLS] arbitrario non è automaticamente un riassunto utile.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0279",
+            "F04-B0280",
+            "F04-B0281",
+            "F04-B0282",
+            "F04-B0283",
+            "F04-B0284",
+            "F04-B0285",
+            "F04-B0286",
+            "F04-B0287",
+            "F04-B0288",
+            "F04-B0289",
+            "F04-B0290",
+            "F04-B0291",
+            "F04-B0292",
+            "F04-B0293",
+            "F04-B0294",
+            "F04-B0295",
+            "F04-B0296",
+            "F04-B0297",
+            "F04-B0298"
+          ],
+          "sha256_riscontro": "5269ed0043a9cdfe94bf75c2f2bbbfaf399779c853eb909f48b9d23a6be395f5"
+        },
+        {
+          "voce": 18,
+          "testo_precedente": "Slide 39–41L'80% di parametri nel MLP non è una quota universale; contano le dimensioni. Più token aumentano attivazioni e calcolo, non direttamente i pesi condivisi.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0309",
+            "F04-B0310",
+            "F04-B0311",
+            "F04-B0312",
+            "F04-B0313",
+            "F04-B0314",
+            "F04-B0315",
+            "F04-B0316",
+            "F04-B0317",
+            "F04-B0318",
+            "F04-B0319",
+            "F04-B0320",
+            "F04-B0321",
+            "F04-B0322",
+            "F04-B0323"
+          ],
+          "sha256_riscontro": "be9a7b2a4624c62de4e3be024b0075ae3407fd9a169f07e5b4ebc5cfec025931"
+        },
+        {
+          "voce": 19,
+          "testo_precedente": "Slide 39–41La cache KV descritta richiede la stabilità delle rappresentazioni passate nella generazione causale; non si trasferisce invariata all'encoder bidirezionale.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F04-B0325",
+            "F04-B0326",
+            "F04-B0327"
+          ],
+          "sha256_riscontro": "77f22809a6d6a4ab11f43ebe31eab9003e2a1816ca0be65fbe8135bf1f87eae1"
+        }
+      ],
+      "conteggi_prima": {
+        "Header": 48,
+        "Para": 263,
+        "Plain": 294,
+        "Math": 378,
+        "Table": 10,
+        "Image": 17,
+        "CodeBlock": 0,
+        "BlockQuote": 20,
+        "BulletList": 2,
+        "OrderedList": 1
+      },
+      "conteggi_dopo": {
+        "Header": 46,
+        "Para": 260,
+        "Plain": 197,
+        "Math": 342,
+        "Table": 8,
+        "Image": 17,
+        "CodeBlock": 0,
+        "BlockQuote": 18,
+        "BulletList": 2,
+        "OrderedList": 1
+      },
+      "esito": "PASS"
+    },
+    {
+      "fonte": "06_GNN.md",
+      "blocchi_corpo_inalterati": 223,
+      "modifiche_ammesse": [
+        {
+          "indice_originale": 1,
+          "tipo": "indice locale aggiornato"
+        },
+        {
+          "indice_originale": 87,
+          "tipo": "sola etichetta della nota locale",
+          "prima": "Errata slide 21 — Dimensioni dello strato precedente",
+          "dopo": "Nota sulla slide 21 — Dimensioni dello strato precedente"
+        }
+      ],
+      "formule_corpo_inalterate": 248,
+      "riepilogo": [
+        {
+          "voce": 1,
+          "testo_precedente": "IngressoX\\in\\mathbb R^{N\\times F_0}Una riga per nodo",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0056",
+            "F05-B0057",
+            "F05-B0058",
+            "F05-B0059",
+            "F05-B0060",
+            "F05-B0061",
+            "F05-B0062",
+            "F05-B0063",
+            "F05-B0064"
+          ],
+          "sha256_riscontro": "acdce84573cc383f173264634211decb237ef9898fdbcab413e7044ebba74434"
+        },
+        {
+          "voce": 2,
+          "testo_precedente": "AdiacenzaA\\in\\mathbb R^{N\\times N}Connessioni del grafo",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0056",
+            "F05-B0057",
+            "F05-B0058",
+            "F05-B0059",
+            "F05-B0060",
+            "F05-B0061",
+            "F05-B0062",
+            "F05-B0063",
+            "F05-B0064"
+          ],
+          "sha256_riscontro": "acdce84573cc383f173264634211decb237ef9898fdbcab413e7044ebba74434"
+        },
+        {
+          "voce": 3,
+          "testo_precedente": "Self-loop\\widehat A=A+IContributo del nodo stesso",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0071",
+            "F05-B0072",
+            "F05-B0073",
+            "F05-B0074",
+            "F05-B0075"
+          ],
+          "sha256_riscontro": "10a4bdae9ed4ffcf30bfa098cb795261c3714333a37af0f90b0f3a354ad14650"
+        },
+        {
+          "voce": 4,
+          "testo_precedente": "Gradi aumentati\\widehat D_{ii}=\\sum_j\\widehat A_{ij}Normalizzazione della nuova adiacenza",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0072",
+            "F05-B0073",
+            "F05-B0074",
+            "F05-B0075",
+            "F05-B0076",
+            "F05-B0077",
+            "F05-B0078"
+          ],
+          "sha256_riscontro": "4847e1ab69ac880c5a9cc8500499c3c2309cde0cf9c2627af98e53baf4075083"
+        },
+        {
+          "voce": 5,
+          "testo_precedente": "Aggregazione GCN\\widehat S=\\widehat D^{-1/2}\\widehat A\\widehat D^{-1/2}Combinazione strutturale dei nodi",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0076",
+            "F05-B0077",
+            "F05-B0078",
+            "F05-B0079",
+            "F05-B0080",
+            "F05-B0081"
+          ],
+          "sha256_riscontro": "be4921e292c1dc94a3a4c9a23f8cd9a8bbb037c70834ac794c8e57a59084dda8"
+        },
+        {
+          "voce": 6,
+          "testo_precedente": "ProiezioneW^{(\\ell)}\\in\\mathbb R^{F_\\ell\\times F_{\\ell+1}}Feature in ingresso e uscita",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0083",
+            "F05-B0084",
+            "F05-B0085",
+            "F05-B0086",
+            "F05-B0087",
+            "F05-B0088",
+            "F05-B0089"
+          ],
+          "sha256_riscontro": "e12988e3607a0e2203c295471f3a8959fbd7fef08d92f7917cf5112602c03c81"
+        },
+        {
+          "voce": 7,
+          "testo_precedente": "StratoH^{(\\ell+1)}=\\sigma(\\widehat SH^{(\\ell)}W^{(\\ell)})Una nuova rappresentazione per nodo",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0083",
+            "F05-B0084",
+            "F05-B0085",
+            "F05-B0086",
+            "F05-B0087",
+            "F05-B0088",
+            "F05-B0089"
+          ],
+          "sha256_riscontro": "e12988e3607a0e2203c295471f3a8959fbd7fef08d92f7917cf5112602c03c81"
+        },
+        {
+          "voce": 8,
+          "testo_precedente": "Laplaciano di partenzaL=I-D^{-1/2}AD^{-1/2}Operatore spettrale sul grafo iniziale",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0128",
+            "F05-B0129",
+            "F05-B0130",
+            "F05-B0131",
+            "F05-B0132",
+            "F05-B0133"
+          ],
+          "sha256_riscontro": "686bceb5b93d0de359f032c0464d868aa9cc2d9526aa7bec8b4122f59658397f"
+        },
+        {
+          "voce": 9,
+          "testo_precedente": "Base spettraleL=U\\Lambda U^\\topAutovettori e autovalori",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0142",
+            "F05-B0143",
+            "F05-B0144"
+          ],
+          "sha256_riscontro": "7fbc9baf8ff1340565a7f6586db10e22e92ee8c61a04ef943c8c24982dae34c6"
+        },
+        {
+          "voce": 10,
+          "testo_precedente": "Trasformata e inversa\\widehat x=U^\\top x, x=U\\widehat xCambio di coordinate e ricostruzione",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0145",
+            "F05-B0146",
+            "F05-B0147",
+            "F05-B0148",
+            "F05-B0149"
+          ],
+          "sha256_riscontro": "d828c885cb32f1fdb2c6d1a89d85b235b03fe24a1ae15ab9f0d088ebc77be5b8"
+        },
+        {
+          "voce": 11,
+          "testo_precedente": "Filtro spettraley=Ug(\\Lambda)U^\\top xUna scala per ogni frequenza",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0152",
+            "F05-B0153",
+            "F05-B0154",
+            "F05-B0155",
+            "F05-B0156"
+          ],
+          "sha256_riscontro": "4828de3154cb84639752000be8053047fada3f412f4c467e63153fca7bc9789b"
+        },
+        {
+          "voce": 12,
+          "testo_precedente": "Riscalatura\\widetilde L=2L/\\lambda_{\\max}-ISpettro nell'intervallo di Chebyshev",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0177",
+            "F05-B0178",
+            "F05-B0179",
+            "F05-B0180",
+            "F05-B0181",
+            "F05-B0182",
+            "F05-B0183"
+          ],
+          "sha256_riscontro": "11806bf83de0266337d4a0d68de506cb1fb8daf79ca2d819ac47a8a38c14050b"
+        },
+        {
+          "voce": 13,
+          "testo_precedente": "Identità polinomialeUT_k(\\widetilde\\Lambda)U^\\top=T_k(\\widetilde L)Eliminazione esatta degli autovettori",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0186",
+            "F05-B0187",
+            "F05-B0188",
+            "F05-B0189",
+            "F05-B0190",
+            "F05-B0191",
+            "F05-B0192",
+            "F05-B0193",
+            "F05-B0194"
+          ],
+          "sha256_riscontro": "a3fc742875986f6e15c275d287f543c23622275c5a70472a0197fbfee6adeeb6"
+        },
+        {
+          "voce": 14,
+          "testo_precedente": "Primo grado vincolato\\theta(I+S)xDue termini con coefficienti opposti",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0206",
+            "F05-B0207",
+            "F05-B0208",
+            "F05-B0209",
+            "F05-B0210",
+            "F05-B0211",
+            "F05-B0212"
+          ],
+          "sha256_riscontro": "1ae33f49ed3d553dd852f378550cc59151855e1ae570d3adee11de297dd6afde"
+        },
+        {
+          "voce": 15,
+          "testo_precedente": "RinormalizzazioneI+S\\longmapsto\\widehat SCambio di operatore, non identità",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0214",
+            "F05-B0215",
+            "F05-B0216",
+            "F05-B0217",
+            "F05-B0218",
+            "F05-B0219",
+            "F05-B0220"
+          ],
+          "sha256_riscontro": "119c159567eb3c6d06c0cef7fa47091a44626d1e71abee95b9c55d0ee804576b"
+        }
+      ],
+      "precisazioni_finali": [
+        {
+          "voce": 1,
+          "testo_precedente": "Slide 5 e richiamo oraleConvoluzione e correlazione differiscono per il ribaltamento del kernel; la scelta dell'origine non è la distinzione fondamentale.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0010",
+            "F05-B0011",
+            "F05-B0012",
+            "F05-B0013",
+            "F05-B0014",
+            "F05-B0015"
+          ],
+          "sha256_riscontro": "2289a91efed9dda231e7922fc2f9e4f8d9a918a7975d6b8765ab3d3c13556130"
+        },
+        {
+          "voce": 2,
+          "testo_precedente": "Slide 6-9Il reticolo a quattro vicini non coincide automaticamente con tutti gli offset di un kernel 3\\times3.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0017",
+            "F05-B0018",
+            "F05-B0019",
+            "F05-B0020",
+            "F05-B0021",
+            "F05-B0022",
+            "F05-B0023",
+            "F05-B0024",
+            "F05-B0025",
+            "F05-B0026",
+            "F05-B0027"
+          ],
+          "sha256_riscontro": "cbe14cb21b1cd8749d686f9926702274689b651e2acadff94c8c918b10337f4d"
+        },
+        {
+          "voce": 3,
+          "testo_precedente": "Slide 13-14La località è topologica; assenza di una griglia non significa assenza di cammini o distanze sul grafo.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0030",
+            "F05-B0031",
+            "F05-B0032",
+            "F05-B0033",
+            "F05-B0034",
+            "F05-B0035"
+          ],
+          "sha256_riscontro": "c781eb2f90be6bbffaa1a59eb781162be2210c56f3f297025460b26bc2084ab5"
+        },
+        {
+          "voce": 4,
+          "testo_precedente": "Slide 13Le uscite per nodo sono equivarianti alla rinumerazione coerente; l'invarianza globale richiede una riduzione appropriata.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0037",
+            "F05-B0038",
+            "F05-B0039",
+            "F05-B0040",
+            "F05-B0041"
+          ],
+          "sha256_riscontro": "e4744b7807d7d10f5610f9b8fb91c8daafe6558f75e12691fe3e486ac3f50bcb"
+        },
+        {
+          "voce": 5,
+          "testo_precedente": "Slide 18-19Un grafo non orientato ha adiacenza simmetrica; ciò non impone un cammino unico. I pesi non sono necessariamente probabilità.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0058",
+            "F05-B0059",
+            "F05-B0060",
+            "F05-B0061",
+            "F05-B0062",
+            "F05-B0063",
+            "F05-B0064"
+          ],
+          "sha256_riscontro": "360b83b396a1714f8384085ba6e6913cc560c553f2209c898b7355bc98fd4281"
+        },
+        {
+          "voce": 6,
+          "testo_precedente": "Slide 20-21 e terminologia oraleL'operatore della GCN è un'adiacenza normalizzata, distinta dal Laplaciano I-S.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0076",
+            "F05-B0077",
+            "F05-B0078",
+            "F05-B0079",
+            "F05-B0080",
+            "F05-B0081"
+          ],
+          "sha256_riscontro": "be4921e292c1dc94a3a4c9a23f8cd9a8bbb037c70834ac794c8e57a59084dda8"
+        },
+        {
+          "voce": 7,
+          "testo_precedente": "Slide 21La dimensione delle feature di ingresso è quella dello strato precedente; gli indici devono essere coerenti con W.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0083",
+            "F05-B0084",
+            "F05-B0085",
+            "F05-B0086",
+            "F05-B0087",
+            "F05-B0088",
+            "F05-B0089"
+          ],
+          "sha256_riscontro": "e12988e3607a0e2203c295471f3a8959fbd7fef08d92f7917cf5112602c03c81"
+        },
+        {
+          "voce": 8,
+          "testo_precedente": "Slide 22La formula con numeratore 1 vale per archi binari; nel caso pesato va mantenuto il peso dell'arco. La normalizzazione simmetrica non è una softmax.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0092",
+            "F05-B0093",
+            "F05-B0094",
+            "F05-B0095",
+            "F05-B0096",
+            "F05-B0097",
+            "F05-B0098",
+            "F05-B0099"
+          ],
+          "sha256_riscontro": "3721ebd03023a0ab5e9be4c488baefcf499d2d82a67438acc9028d4902fb22a8"
+        },
+        {
+          "voce": 9,
+          "testo_precedente": "Slide 23Aumentano le dipendenze raggiungibili, non necessariamente gli archi. Componenti disconnesse restano separate.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0119",
+            "F05-B0120",
+            "F05-B0121",
+            "F05-B0122",
+            "F05-B0123",
+            "F05-B0124"
+          ],
+          "sha256_riscontro": "9cbfeccd94dc2f980d9826b202703b981bda4ecb69fa533b2bc3154eaecc957c"
+        },
+        {
+          "voce": 10,
+          "testo_precedente": "Slide 24-25La base ortonormale segue dalla simmetria; una SVD generale non ha necessariamente la stessa matrice sui due lati.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0142",
+            "F05-B0143",
+            "F05-B0144",
+            "F05-B0145",
+            "F05-B0146",
+            "F05-B0147",
+            "F05-B0148",
+            "F05-B0149",
+            "F05-B0150"
+          ],
+          "sha256_riscontro": "fec6ecb407c49a5e4f17eef96177a678f0c61da710c957ced4818127990cb0fc"
+        },
+        {
+          "voce": 11,
+          "testo_precedente": "Slide 24-27L'identità polinomiale matriciale vale su qualsiasi segnale; un filtro spettrale generale non è sempre un polinomio finito.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0135",
+            "F05-B0136",
+            "F05-B0137",
+            "F05-B0138",
+            "F05-B0139",
+            "F05-B0140",
+            "F05-B0141",
+            "F05-B0142",
+            "F05-B0143",
+            "F05-B0144",
+            "F05-B0145",
+            "F05-B0146",
+            "F05-B0147",
+            "F05-B0148",
+            "F05-B0149",
+            "F05-B0150",
+            "F05-B0151",
+            "F05-B0152",
+            "F05-B0153",
+            "F05-B0154",
+            "F05-B0155",
+            "F05-B0156"
+          ],
+          "sha256_riscontro": "a4a2ccf4646fe6ce79ad2ccd664cdb6ce1dc9d23d41356287b4da5a55eca921e"
+        },
+        {
+          "voce": 12,
+          "testo_precedente": "Slide 26La limitatezza di T_k vale sull'intervallo [-1,1]; il grado K comporta K+1 termini.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0171",
+            "F05-B0172",
+            "F05-B0173",
+            "F05-B0174",
+            "F05-B0175",
+            "F05-B0176",
+            "F05-B0177",
+            "F05-B0178",
+            "F05-B0179",
+            "F05-B0180",
+            "F05-B0181",
+            "F05-B0182",
+            "F05-B0183"
+          ],
+          "sha256_riscontro": "1d9d4e9f4c90fd01ec42943b13fb329e035de6e3b0acb6f2bfdc8af2814c99bb"
+        },
+        {
+          "voce": 13,
+          "testo_precedente": "Slide 27L'approssimazione riguarda la scelta del filtro polinomiale; l'eliminazione di U è esatta per quel filtro.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0186",
+            "F05-B0187",
+            "F05-B0188",
+            "F05-B0189",
+            "F05-B0190",
+            "F05-B0191",
+            "F05-B0192",
+            "F05-B0193",
+            "F05-B0194",
+            "F05-B0195",
+            "F05-B0196",
+            "F05-B0197",
+            "F05-B0198",
+            "F05-B0199",
+            "F05-B0200",
+            "F05-B0201",
+            "F05-B0202",
+            "F05-B0203"
+          ],
+          "sha256_riscontro": "07f2260c05d79db89e6161e03a5d583433c3bf76fd961a4bba9414c7c4a24063"
+        },
+        {
+          "voce": 14,
+          "testo_precedente": "Slide 28Mantenere T_0,T_1 significa grado 1. Il vincolo sui coefficienti e la rinormalizzazione sono scelte ulteriori.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0206",
+            "F05-B0207",
+            "F05-B0208",
+            "F05-B0209",
+            "F05-B0210",
+            "F05-B0211",
+            "F05-B0212",
+            "F05-B0213",
+            "F05-B0214",
+            "F05-B0215",
+            "F05-B0216"
+          ],
+          "sha256_riscontro": "ad225dfaf8ffb67b8cefc69a4fa07e75945b54c15c8491c9e291e591b5578c3d"
+        },
+        {
+          "voce": 15,
+          "testo_precedente": "Slide 28I+S e \\widehat S non sono uguali. Il controllo spettrale della propagazione non garantisce da solo stabilità dell'intera rete.",
+          "riscontro": "contenuto già presente nel corpo; riepilogo ridondante",
+          "blocchi_corpo": [
+            "F05-B0214",
+            "F05-B0215",
+            "F05-B0216",
+            "F05-B0217",
+            "F05-B0218",
+            "F05-B0219",
+            "F05-B0220"
+          ],
+          "sha256_riscontro": "119c159567eb3c6d06c0cef7fa47091a44626d1e71abee95b9c55d0ee804576b"
+        }
+      ],
+      "conteggi_prima": {
+        "Header": 40,
+        "Para": 172,
+        "Plain": 141,
+        "Math": 275,
+        "Table": 4,
+        "Image": 10,
+        "CodeBlock": 0,
+        "BlockQuote": 8,
+        "BulletList": 1,
+        "OrderedList": 1
+      },
+      "conteggi_dopo": {
+        "Header": 38,
+        "Para": 172,
+        "Plain": 61,
+        "Math": 248,
+        "Table": 2,
+        "Image": 10,
+        "CodeBlock": 0,
+        "BlockQuote": 8,
+        "BulletList": 1,
+        "OrderedList": 1
+      },
+      "esito": "PASS"
+    }
+  ],
+  "metadati_trasferiti_al_rapporto": [
+    {
+      "fonte": "04_RNN.md",
+      "blocco": "F03-B0297",
+      "testo": "Le forme trascritte come «Adamart/Adamard», «EFO» e «bad propagation» sono ricondotte rispettivamente a Hadamard, ai gate i,f,o e alla backpropagation, coerentemente con formule e contesto. I frammenti non intelligibili della domanda sul confronto con altri regressori non consentono di ricostruire un metodo preciso e non sono trasformati in contenuti aggiuntivi.",
+      "destinazione": "rapporto di revisione; termini corretti già usati nel corpo"
+    },
+    {
+      "fonte": "05_Transformer.md",
+      "blocco": "F04-B0339",
+      "testo": "Le forme trascritte come «deletion», «casual», «GCN/DCN/TCM», «MootGate/MootHead attention», «Venus/batteries» e «graph count» sono ricondotte, dove il contesto lo rende univoco, a dilation, causal, TCN, Multi-Head Attention, values e Grad-CAM. Il passaggio dai termini corrotti alle nozioni corrette segue formule e figure, senza introdurre nuovi moduli.",
+      "destinazione": "rapporto di revisione; termini corretti già usati nel corpo"
+    }
+  ]
+}
